@@ -1,6 +1,6 @@
 /**
- * Ingatlan 后端：注册、登录、会话
- * 用户数据存在 server/data/users.json，密码用 bcrypt 加密
+ * Ingatlan 后端：注册、登录、会话、房源
+ * 无 DATABASE_URL 时用 server/data/*.json；有 DATABASE_URL 时用 PostgreSQL（部署推荐）
  * 运行：cd server && npm install && npm start  默认端口 3000
  */
 const path = require('path');
@@ -8,11 +8,10 @@ const fs = require('fs');
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
+const store = require('./store');
 
 const PORT = process.env.PORT || 3000;
 const DATA_DIR = path.join(__dirname, 'data');
-const USERS_FILE = path.join(DATA_DIR, 'users.json');
-const LISTINGS_FILE = path.join(DATA_DIR, 'listings.json');
 const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
 const ADMIN_BOOTSTRAP_EMAILS = ['yilin_1024@hotmail.com'];
 
@@ -21,30 +20,9 @@ const app = express();
 // 生产环境若放在 Nginx/反向代理后，需信任代理头（用于 HTTPS 与 CORS 同源判断）
 if (process.env.NODE_ENV === 'production') app.set('trust proxy', 1);
 
-// 确保 data 和 uploads 目录存在
+// 确保 data 和 uploads 目录存在（文件模式时用）
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-
-// 读取用户列表
-function loadUsers() {
-  if (!fs.existsSync(USERS_FILE)) return [];
-  try {
-    const raw = JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
-    if (!Array.isArray(raw)) return [];
-    const normalized = raw.map(normalizeUserRecord);
-    if (JSON.stringify(raw) !== JSON.stringify(normalized)) {
-      saveUsers(normalized);
-    }
-    return normalized;
-  } catch (e) {
-    return [];
-  }
-}
-
-// 写入用户列表
-function saveUsers(users) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), 'utf8');
-}
 
 function deriveCreatedAtFromId(id) {
   const ts = parseInt(String(id || '').split('-')[0], 10);
@@ -86,24 +64,23 @@ function toClientUser(user) {
   };
 }
 
-function getSessionUser(req, res) {
+async function getSessionUser(req, res) {
   const userId = req.session.userId;
   if (!userId) {
     res.status(401).json({ ok: false, error: 'not_logged_in' });
     return null;
   }
-  const users = loadUsers();
-  const user = users.find((u) => String(u.id) === String(userId));
+  const user = await store.findUserById(userId);
   if (!user) {
     req.session = null;
     res.status(401).json({ ok: false, error: 'user_not_found' });
     return null;
   }
-  return user;
+  return normalizeUserRecord(user);
 }
 
-function requireAdmin(req, res) {
-  const user = getSessionUser(req, res);
+async function requireAdmin(req, res) {
+  const user = await getSessionUser(req, res);
   if (!user) return null;
   if (!user.isAdmin) {
     res.status(403).json({ ok: false, error: 'admin_only' });
@@ -112,29 +89,14 @@ function requireAdmin(req, res) {
   return user;
 }
 
-function requireApprovedPublisher(req, res) {
-  const user = getSessionUser(req, res);
+async function requireApprovedPublisher(req, res) {
+  const user = await getSessionUser(req, res);
   if (!user) return null;
   if (!isApprovedPublisher(user)) {
     res.status(403).json({ ok: false, error: 'not_approved' });
     return null;
   }
   return user;
-}
-
-// 读取房源列表（首页、搜索、详情用）
-function loadListings() {
-  if (!fs.existsSync(LISTINGS_FILE)) return [];
-  try {
-    return JSON.parse(fs.readFileSync(LISTINGS_FILE, 'utf8'));
-  } catch (e) {
-    return [];
-  }
-}
-
-// 写入房源列表（内部上传后持久化）
-function saveListings(list) {
-  fs.writeFileSync(LISTINGS_FILE, JSON.stringify(list, null, 2), 'utf8');
 }
 
 // CORS：开发允许 localhost；生产用 ALLOWED_ORIGINS（逗号分隔），不设则同源
@@ -206,8 +168,8 @@ htmlPages.forEach((name) => {
 // ---------- API ----------
 
 // 当前登录用户
-app.get('/api/me', (req, res) => {
-  const user = getSessionUser(req, res);
+app.get('/api/me', async (req, res) => {
+  const user = await getSessionUser(req, res);
   if (!user) return;
   res.json({
     ok: true,
@@ -225,8 +187,8 @@ app.post('/api/register', async (req, res) => {
   if (password.length < 6) {
     return res.status(400).json({ ok: false, error: 'password_too_short' });
   }
-  const users = loadUsers();
-  if (users.some((u) => u.email.toLowerCase() === emailNorm)) {
+  const existing = await store.findUserByEmail(emailNorm);
+  if (existing) {
     return res.status(409).json({ ok: false, error: 'email_exists' });
   }
   const id = String(Date.now()) + '-' + Math.random().toString(36).slice(2, 8);
@@ -240,8 +202,7 @@ app.post('/api/register', async (req, res) => {
     canPublish: false,
     createdAt: new Date().toISOString(),
   });
-  users.push(user);
-  saveUsers(users);
+  await store.insertUser(user);
   req.session.userId = id;
   res.json({
     ok: true,
@@ -256,11 +217,11 @@ app.post('/api/login', async (req, res) => {
   if (!emailNorm || !password) {
     return res.status(400).json({ ok: false, error: 'missing_fields' });
   }
-  const users = loadUsers();
-  const user = users.find((u) => u.email.toLowerCase() === emailNorm);
+  let user = await store.findUserByEmail(emailNorm);
   if (!user) {
     return res.status(401).json({ ok: false, error: 'invalid_credentials' });
   }
+  user = normalizeUserRecord(user);
   const match = await bcrypt.compare(password, user.passwordHash);
   if (!match) {
     return res.status(401).json({ ok: false, error: 'invalid_credentials' });
@@ -279,55 +240,53 @@ app.post('/api/logout', (req, res) => {
 });
 
 // 管理员：查看所有注册用户及发布权限
-app.get('/api/admin/users', (req, res) => {
-  const admin = requireAdmin(req, res);
+app.get('/api/admin/users', async (req, res) => {
+  const admin = await requireAdmin(req, res);
   if (!admin) return;
-  const items = loadUsers()
+  const users = await store.getUsers();
+  const items = users
     .slice()
     .sort((a, b) => {
       if (!!a.isAdmin !== !!b.isAdmin) return a.isAdmin ? -1 : 1;
       return String(a.createdAt || '').localeCompare(String(b.createdAt || '')) * -1;
     })
-    .map((user) => toClientUser(user));
+    .map((user) => toClientUser(normalizeUserRecord(user)));
   res.json({ ok: true, items });
 });
 
 // 管理员：批准 / 撤销发布权限
-app.post('/api/admin/users/:id/publish-approval', (req, res) => {
-  const admin = requireAdmin(req, res);
+app.post('/api/admin/users/:id/publish-approval', async (req, res) => {
+  const admin = await requireAdmin(req, res);
   if (!admin) return;
   const body = req.body || {};
   if (typeof body.approved !== 'boolean') {
     return res.status(400).json({ ok: false, error: 'missing_approval_state' });
   }
-  const users = loadUsers();
-  const idx = users.findIndex((u) => String(u.id) === String(req.params.id));
-  if (idx === -1) {
+  const user = await store.findUserById(req.params.id);
+  if (!user) {
     return res.status(404).json({ ok: false, error: 'user_not_found' });
   }
-  if (users[idx].isAdmin && body.approved === false) {
+  if (user.isAdmin && body.approved === false) {
     return res.status(400).json({ ok: false, error: 'cannot_revoke_admin' });
   }
-  users[idx] = normalizeUserRecord(Object.assign({}, users[idx], {
-    canPublish: body.approved === true,
-  }));
-  saveUsers(users);
-  res.json({ ok: true, user: toClientUser(users[idx]) });
+  await store.updateUser(user.id, { canPublish: body.approved === true });
+  const updated = Object.assign({}, user, { canPublish: body.approved === true });
+  res.json({ ok: true, user: toClientUser(updated) });
 });
 
 // ---------- 房源与统计 API ----------
 
 // 统计：在售数量、今日新增
-app.get('/api/stats', (req, res) => {
-  const list = loadListings();
+app.get('/api/stats', async (req, res) => {
+  const list = await store.loadListings();
   const today = new Date().toISOString().slice(0, 10);
   const newToday = list.filter((l) => (l.listedAt || '').slice(0, 10) === today).length;
   res.json({ activeListings: list.length, newToday });
 });
 
 // 区域数量（首页热门区域用）
-app.get('/api/areas/counts', (req, res) => {
-  const list = loadListings();
+app.get('/api/areas/counts', async (req, res) => {
+  const list = await store.loadListings();
   const counts = { 'budapest-belvaros': 0, balaton: 0, 'budapest-agglomeracio': 0 };
   list.forEach((item) => {
     const loc = item.location || '';
@@ -390,8 +349,8 @@ function matchesBoolFilter(filterValue, actualValue) {
 }
 
 // 房源列表（支持分页、排序）
-app.get('/api/listings', (req, res) => {
-  let list = loadListings();
+app.get('/api/listings', async (req, res) => {
+  let list = await store.loadListings();
   const q = (req.query.q || '').toLowerCase().trim();
   const category = (req.query.category || '').toLowerCase();
   const buildingType = normalizePropertyType(req.query.building_type || req.query.propertyType || '');
@@ -492,19 +451,18 @@ app.get('/api/listings', (req, res) => {
 });
 
 // 单条房源详情
-app.get('/api/listings/:id', (req, res) => {
-  const list = loadListings();
-  const item = list.find((l) => String(l.id) === String(req.params.id));
+app.get('/api/listings/:id', async (req, res) => {
+  const item = await store.getListingById(req.params.id);
   if (!item) return res.status(404).json({ error: 'not_found' });
   res.json(item);
 });
 
 // 当前登录用户发布的房源（需登录）
-app.get('/api/my-listings', (req, res) => {
-  const user = getSessionUser(req, res);
+app.get('/api/my-listings', async (req, res) => {
+  const user = await getSessionUser(req, res);
   if (!user) return;
   const userId = user.id;
-  const list = loadListings();
+  const list = await store.loadListings();
   const mine = list.filter((l) => l.publisher && String(l.publisher.id) === String(userId));
   const items = mine.map((item) => ({
     id: item.id,
@@ -522,8 +480,8 @@ app.get('/api/my-listings', (req, res) => {
 });
 
 // 图片上传（需登录）：接收 base64 dataURL，保存为文件，返回可访问的 URL
-app.post('/api/upload', (req, res) => {
-  const user = requireApprovedPublisher(req, res);
+app.post('/api/upload', async (req, res) => {
+  const user = await requireApprovedPublisher(req, res);
   if (!user) return;
   const { dataUrl } = req.body || {};
   if (!dataUrl || typeof dataUrl !== 'string') return res.status(400).json({ ok: false, error: 'missing_data' });
@@ -543,8 +501,8 @@ app.post('/api/upload', (req, res) => {
 });
 
 // 内部上传房源（需登录）
-app.post('/api/listings', (req, res) => {
-  const user = requireApprovedPublisher(req, res);
+app.post('/api/listings', async (req, res) => {
+  const user = await requireApprovedPublisher(req, res);
   if (!user) return;
   const b = req.body || {};
   const title = (b.title || '').trim();
@@ -609,25 +567,21 @@ app.post('/api/listings', (req, res) => {
     totalFloors: parseInt(b.totalFloors, 10) || 0,
     district: (b.district || '').trim(),
   };
-  const list = loadListings();
-  list.push(item);
-  saveListings(list);
+  await store.addListing(item);
   res.json({ ok: true, id: item.id });
 });
 
 // 编辑本人发布的房源（需登录，且只能改自己的）
-app.put('/api/listings/:id', (req, res) => {
-  const user = requireApprovedPublisher(req, res);
+app.put('/api/listings/:id', async (req, res) => {
+  const user = await requireApprovedPublisher(req, res);
   if (!user) return;
   const userId = user.id;
-  const list = loadListings();
-  const idx = list.findIndex((l) => String(l.id) === String(req.params.id));
-  if (idx === -1) return res.status(404).json({ error: 'not_found' });
-  if (!list[idx].publisher || String(list[idx].publisher.id) !== String(userId)) {
+  const old = await store.getListingById(req.params.id);
+  if (!old) return res.status(404).json({ error: 'not_found' });
+  if (!old.publisher || String(old.publisher.id) !== String(userId)) {
     return res.status(403).json({ error: 'forbidden' });
   }
   const b = req.body || {};
-  const old = list[idx];
   const price = parseInt(b.price, 10) || old.price;
   const area = parseInt(b.area, 10) || old.area;
   const location = (b.location || old.location || '').trim();
@@ -669,23 +623,20 @@ app.put('/api/listings/:id', (req, res) => {
     floor: b.floor !== undefined ? (b.floor || '') : (old.floor || ''),
     district: b.district !== undefined ? (b.district || '').trim() : (old.district || ''),
   });
-  list[idx] = updated;
-  saveListings(list);
+  await store.updateListingById(updated.id, updated);
   res.json({ ok: true, id: updated.id });
 });
 
 // 删除本人发布的房源（需登录，且只能删自己的）
-app.delete('/api/listings/:id', (req, res) => {
+app.delete('/api/listings/:id', async (req, res) => {
   const userId = req.session.userId;
   if (!userId) return res.status(401).json({ error: 'not_logged_in' });
-  const list = loadListings();
-  const idx = list.findIndex((l) => String(l.id) === String(req.params.id));
-  if (idx === -1) return res.status(404).json({ error: 'not_found' });
-  if (!list[idx].publisher || String(list[idx].publisher.id) !== String(userId)) {
+  const item = await store.getListingById(req.params.id);
+  if (!item) return res.status(404).json({ error: 'not_found' });
+  if (!item.publisher || String(item.publisher.id) !== String(userId)) {
     return res.status(403).json({ error: 'forbidden' });
   }
-  list.splice(idx, 1);
-  saveListings(list);
+  await store.deleteListingById(req.params.id);
   res.json({ ok: true });
 });
 
@@ -698,10 +649,23 @@ app.get('*', (req, res, next) => {
   res.status(404).sendFile(path.join(staticDir, '404.html'));
 });
 
-// 启动
-app.listen(PORT, () => {
-  console.log('Ingatlan server: http://localhost:' + PORT);
-  console.log('  API: /api/me, /api/register, /api/login, /api/logout');
-  console.log('       /api/stats, /api/listings, /api/listings/:id, /api/my-listings (auth), /api/areas/counts');
-  console.log('       POST /api/listings (auth) = 内部上传房源');
-});
+// 启动：有 DATABASE_URL 时先初始化表再监听
+async function start() {
+  if (store.isUsingDb()) {
+    try {
+      await store.initDbSchema();
+      console.log('Database schema ready.');
+    } catch (e) {
+      console.error('Database init failed:', e.message);
+      process.exit(1);
+    }
+  }
+  app.listen(PORT, () => {
+    console.log('Ingatlan server: http://localhost:' + PORT);
+    console.log('  Storage:', store.isUsingDb() ? 'PostgreSQL' : 'JSON files (server/data/)');
+    console.log('  API: /api/me, /api/register, /api/login, /api/logout');
+    console.log('       /api/stats, /api/listings, /api/listings/:id, /api/my-listings (auth), /api/areas/counts');
+    console.log('       POST /api/listings (auth) = 内部上传房源');
+  });
+}
+start();

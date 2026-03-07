@@ -16,7 +16,37 @@
 | `PORT` | 服务端口（多数平台自动注入） | `3000` 或平台指定 |
 | `SESSION_SECRET` | 会话加密密钥，**务必随机且不泄露** | 用 `openssl rand -hex 32` 生成 |
 
-### 2. 可选环境变量
+### 2. 使用 PostgreSQL 持久化数据（推荐，避免每次部署清空用户和房源）
+
+**不设数据库时**：用户和房源存在 `server/data/*.json`。在 Render 等 PaaS 上每次重新部署都会用代码里的文件覆盖，**线上新发布的房源和注册用户会丢失**。
+
+**设置数据库后**：数据存进 PostgreSQL，部署只更新代码，**不会清空线上数据**。
+
+| 变量名 | 说明 | 示例 |
+|--------|------|------|
+| `DATABASE_URL` | PostgreSQL 连接串（见下方「Render 添加数据库」） | `postgresql://user:pass@host:5432/dbname` |
+
+**Render 上添加 PostgreSQL：**
+
+1. 登录 Render → Dashboard → **New +** → **PostgreSQL**。
+2. 填名称、选 Region（与 Web Service 同区），**Create Database**。
+3. 创建好后进入该数据库，在 **Connections** 里复制 **Internal Database URL**（内网连接，同区域免费）。
+4. 打开你的 **Web Service** → **Environment** → **Environment Variables** → **Add**：
+   - Key：`DATABASE_URL`
+   - Value：粘贴刚才的 Internal Database URL。
+5. 保存后 Render 会重新部署；首次启动时服务会自动建表（`users`、`listings`）。
+
+**如需把本地已有用户/房源导入到线上数据库（只做一次）：**
+
+- 在**本地**执行（需能连到该数据库，一般用 **External Database URL** 在本地跑一次）：
+  ```bash
+  cd server
+  set DATABASE_URL=你复制的External连接串
+  node migrate-to-db.js
+  ```
+- 若 Render 只提供 Internal URL，可在 Render 的 **Shell**（或临时加一个一次性 Job）里运行 `node server/migrate-to-db.js`，并把本地的 `server/data/users.json`、`listings.json` 先拷到能访问该环境的地方再执行。
+
+### 3. 其他可选环境变量
 
 | 变量名 | 说明 | 何时需要 |
 |--------|------|----------|
@@ -26,7 +56,7 @@
 
 **同域名部署（推荐）**：前端和后端在同一域名下（例如都通过 `https://你的域名.com` 访问）时，**不用**设置 `ALLOWED_ORIGINS`，CORS 会按同源处理。
 
-### 3. 代码上不需要改的地方
+### 4. 代码上不需要改的地方
 
 - 前端请求 API 时使用的是**相对路径**（如 `/api/me`），只要页面和接口在同一域名下，部署后无需改前端代码。
 - 若你**确实**把前端和后端拆成两个域名部署，再在页面里通过 `window.INGATLAN_API_BASE = 'https://你的API域名';` 指定 API 根地址（在引入 `api.js` 之前设置）。
@@ -43,10 +73,10 @@
    - **Build Command**：`cd server && npm install`
    - **Start Command**：`cd server && node server.js`
    - 若无单独 Build，可在 Start 里写：`cd server && npm install && node server.js`
-4. 在平台里配置 **环境变量**：至少设置 `NODE_ENV=production` 和 `SESSION_SECRET`。
+4. 在平台里配置 **环境变量**：至少设置 `NODE_ENV=production`、`SESSION_SECRET`；**强烈建议**再添加 PostgreSQL 的 `DATABASE_URL`（见上文「使用 PostgreSQL 持久化数据」），否则每次部署后用户和房源会丢失。
 5. 平台会分配一个 HTTPS 域名，也可绑定自己的域名。
 
-注意：PaaS 的磁盘可能**不持久**，重启后 `server/data/` 和 `uploads/` 里的内容可能丢失。若需要长期保留数据，请用方式 B 或平台提供的持久化卷/外部存储。
+注意：PaaS 的磁盘可能**不持久**，重启后 `server/data/` 和 `uploads/` 里的内容可能丢失。**请按上文「使用 PostgreSQL 持久化数据」设置 `DATABASE_URL`**，这样用户和房源会存在数据库中，不会因部署而丢失；图片仍会随部署丢失，若需持久化请用对象存储（如 S3）。
 
 ### 方式 B：自己的 VPS（如腾讯云、阿里云、DigitalOcean）
 
@@ -73,7 +103,7 @@
 
 1. **用浏览器访问你配置的域名**（或平台给的域名），确认首页、搜索、登录、注册、发布、审批流程都正常。
 2. **首次上线建议**：用管理员账号登录一次，在「审批状态」里确认已有你的账号且为「已通过」。
-3. **数据备份**：若在 VPS 上，定期备份 `server/data/users.json`、`server/data/listings.json` 和 `uploads/` 目录。
+3. **数据备份**：使用数据库时由托管方负责备份（如 Render 的 PostgreSQL 自动备份）；若仍用文件模式，定期备份 `server/data/users.json`、`server/data/listings.json` 和 `uploads/` 目录。
 4. **后续更新**：
    - PaaS：在 Git 里改完代码后推送到仓库，平台会自动重新部署（若已开启自动部署）。
    - VPS：在服务器上 `git pull`（或重新上传），在 `server` 目录执行 `npm install`（若有依赖变更），然后重启进程（如 `pm2 restart ingatlan`）。
