@@ -1,0 +1,206 @@
+/* 发布房源页 - 整体 UI 优化 */
+.publish-page main {
+  padding: var(--space-8) var(--space-4) var(--space-12);
+  min-height: 60vh;
+}
+
+.publish-form {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-6);
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--color-border);
+}
+
+.publish-form .page-title {
+  margin: 0 0 var(--space-1);
+  color: var(--color-primary);
+  font-size: var(--text-3xl);
+}
+
+.publish-form .page-subtitle {
+  margin: 0 0 var(--space-6);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: var(--text-base);
+}
+
+.publish-form .auth-prompt {
+  margin-bottom: var(--space-6);
+  padding: var(--space-5);
+  background: var(--gradient-green-soft);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(45, 140, 96, 0.2);
+}
+
+.publish-form .form-group {
+  margin-bottom: var(--space-5);
+}
+
+.publish-form .label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  color: var(--color-text);
+}
+
+.publish-form .input,
+.publish-form .select,
+.publish-form .textarea {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  font-family: inherit;
+  background: var(--color-surface);
+  color: var(--color-text);
+  transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+}
+
+.publish-form .input:focus,
+.publish-form .select:focus,
+.publish-form .textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-focus);
+}
+
+.publish-form .input::placeholder,
+.publish-form .textarea::placeholder {
+  color: var(--color-text-soft);
+}
+
+.publish-form .textarea {
+  min-height: 100px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+/* 双列布局：类型+房屋类型、价格+面积、房间+楼层、车库+装修、供暖+位置 */
+.publish-form .form-row-2,
+.publish-form .form-row-floors {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+  margin-bottom: var(--space-5);
+}
+
+.publish-form .form-row-2 .form-group,
+.publish-form .form-row-floors .form-group {
+  margin-bottom: 0;
+}
+
+@media (max-width: 640px) {
+  .publish-form .form-row-2,
+  .publish-form .form-row-floors {
+    grid-template-columns: 1fr;
+  }
+  .publish-form .form-row-2 .form-group,
+  .publish-form .form-row-floors .form-group {
+    margin-bottom: var(--space-5);
+  }
+  .publish-form .form-row-2 .form-group:last-child,
+  .publish-form .form-row-floors .form-group:last-child {
+    margin-bottom: 0;
+  }
+}
+
+/* 设施多选：网格 + 勾选样式 */
+.publish-form .publish-checkboxes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.publish-form .checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  transition: border-color var(--duration-fast), background var(--duration-fast);
+}
+
+.publish-form .checkbox-label:hover {
+  border-color: var(--color-primary);
+  background: var(--gradient-green-soft);
+}
+
+.publish-form .checkbox-label input {
+  accent-color: var(--color-primary);
+}
+
+/* 照片上传区 */
+.publish-form #photo-upload-area {
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--duration-fast), background var(--duration-fast);
+  user-select: none;
+}
+
+.publish-form #photo-upload-area:hover {
+  border-color: var(--color-primary);
+  background: var(--gradient-green-soft);
+}
+
+.publish-form .photo-upload-icon {
+  font-size: 2rem;
+  margin-bottom: var(--space-2);
+}
+
+.publish-form .photo-upload-hint {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.publish-form #pub-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.publish-form #pub-photo-status {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-top: var(--space-2);
+}
+
+/* 提交按钮 */
+.publish-form .btn-primary[type="submit"] {
+  width: 100%;
+  padding: var(--space-4) var(--space-6);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  margin-top: var(--space-6);
+  border-radius: var(--radius-md);
+}
+
+.publish-form .btn-primary[type="submit"]:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+@media (max-width: 640px) {
+  .publish-form {
+    padding: var(--space-6) var(--space-4);
+    margin-left: var(--space-2);
+    margin-right: var(--space-2);
+  }
+  .publish-page main {
+    padding: var(--space-4) 0 var(--space-8);
+  }
+}
