@@ -25,6 +25,11 @@
   --color-warning: #b8860b;
   --color-danger: #9d2c2c;
   --color-info: #1b3d4d;
+
+  /* 渐变绿 - 统一替换纯色背景 */
+  --gradient-green: linear-gradient(135deg, #12472f 0%, #1a5e3d 35%, #25774d 70%, #2d8c60 100%);
+  --gradient-green-hover: linear-gradient(135deg, #185339 0%, #1f6b49 50%, #2d8c60 100%);
+  --gradient-green-soft: linear-gradient(180deg, #f4f9f6 0%, #eef5f1 50%, #e8f1ec 100%);
   
   /* Typography */
   --font-heading: 'Cormorant Garamond', 'Georgia', serif;

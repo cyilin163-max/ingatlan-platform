@@ -374,6 +374,7 @@
       var floorStr = buildFloorSummary(data);
       specsEl.innerHTML = [
         (data.area ? data.area + ' m²' : ''),
+        (data.yardArea ? t('propYardArea') + ': ' + data.yardArea + ' m²' : ''),
         (data.rooms ? data.rooms + ' ' + t('unitRooms') : ''),
         (floorStr ? t('propFloor') + ': ' + floorStr : ''),
         (data.elevator ? t('propElevator') : '')
@@ -384,6 +385,7 @@
       var highlights = [
         data.balcony ? t('filterBalcony') : '',
         data.parking ? t('filterParking') : '',
+        data.garage ? t('propGarage') : '',
         data.elevator ? t('propElevator') : '',
         data.cellar ? t('propCellar') : '',
         data.fireplace ? t('propFireplace') : '',
@@ -418,8 +420,7 @@
   }
 
   var CONDITION_MAP = { 'new': 'conditionNew', 'renovated': 'conditionRenovated', 'good': 'conditionGood', 'needs_renovation': 'conditionNeedsRenovation' };
-  var FURNISHED_MAP = { 'fully': 'furnishedFully', 'partly': 'furnishedPartly', 'none': 'furnishedNone' };
-  var HEATING_MAP   = { 'gas': 'heatingGas', 'district': 'heatingDistrict', 'electric': 'heatingElectric', 'other': 'heatingOther' };
+  var HEATING_MAP   = { 'gas_boiler': 'heatingGasBoiler', 'district': 'heatingDistrict', 'electric': 'heatingElectric', 'heat_pump': 'heatingHeatPump', 'mixed': 'heatingMixed', 'renewable_heat_pump': 'heatingRenewableHeatPump', 'gas': 'heatingGas', 'other': 'heatingOther' };
 
   function renderSpecsTable(data) {
     var tbody = document.querySelector('#specs-table tbody');
@@ -427,7 +428,6 @@
 
     var floorVal = data.floor !== undefined && data.floor !== '' && data.floor !== null ? String(data.floor) : null;
     var conditionVal = data.condition && CONDITION_MAP[data.condition] ? t(CONDITION_MAP[data.condition]) : (data.condition || null);
-    var furnishedVal = data.furnished && FURNISHED_MAP[data.furnished] ? t(FURNISHED_MAP[data.furnished]) : (data.furnished || null);
     var heatingVal   = data.heating   && HEATING_MAP[data.heating]    ? t(HEATING_MAP[data.heating])    : (data.heating   || null);
     var districtVal = formatDistrictLabel(data.district, data.location || data.address || '') || null;
     var propertyTypeVal = propertyTypeLabel(data.propertyType) || null;
@@ -435,13 +435,14 @@
     var rows = [
       [t('propPropertyType'), propertyTypeVal],
       [t('propDistrict'),      districtVal],
+      [t('propYardArea'),      data.yardArea ? data.yardArea + ' m²' : null],
       [t('propYearBuilt'),     data.yearBuilt  || null],
       [t('propFloor'),         floorVal],
       [t('propTotalFloors'),   data.totalFloors || null],
       [t('propOrientation'),   data.orientation || null],
       [t('propCeilingHeight'), data.ceilingHeight || null],
       [t('propCondition'),     conditionVal],
-      [t('propFurnished'),     furnishedVal],
+      [t('propGarage'),        data.garage ? '✓' : null],
       [t('propHeating'),       heatingVal],
       [t('propCommonCost'),    data.commonCost  || null],
       [t('propAC'),            data.ac        ? '✓' : null],

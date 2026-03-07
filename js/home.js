@@ -32,9 +32,19 @@
       .then(applyStats)
       .catch(function () {
         if (window.INGATLAN_API && window.INGATLAN_API.getStats) {
-          window.INGATLAN_API.getStats().then(applyStats);
+          window.INGATLAN_API.getStats().then(applyStats).catch(setToZero);
+        } else {
+          setToZero();
         }
       });
+  }
+
+  function setToZero() {
+    if (activeEl) {
+      activeEl.setAttribute('data-count', '0');
+      activeEl.textContent = formatNum(0);
+    }
+    if (newTodayEl) newTodayEl.textContent = formatNum(0);
   }
 })();
 
@@ -47,10 +57,10 @@
   if (!api || !api.getAreaCounts) return;
   api.getAreaCounts().then(function (counts) {
     var bel = document.getElementById('area-count-belvaros');
-    var bal = document.getElementById('area-count-balaton');
+    var sur = document.getElementById('area-count-surrounding');
     var agg = document.getElementById('area-count-agglomeracio');
     if (bel && counts['budapest-belvaros'] != null) bel.textContent = formatNum(counts['budapest-belvaros']);
-    if (bal && counts['balaton'] != null) bal.textContent = formatNum(counts['balaton']);
+    if (sur && counts['surrounding-cities'] != null) sur.textContent = formatNum(counts['surrounding-cities']);
     if (agg && counts['budapest-agglomeracio'] != null) agg.textContent = formatNum(counts['budapest-agglomeracio']);
   });
 })();
@@ -89,10 +99,25 @@ document.querySelectorAll('.stat-value[data-count]').forEach(el => {
   var modalInput = modal && modal.querySelector('.location-modal-input');
   var districtsList = document.getElementById('budapest-districts');
   var mapEl = document.getElementById('budapest-map');
+  var cityRadios = modal && modal.querySelectorAll('input[name="location-city"]');
 
   if (!modal) return;
 
   var suppressOpenModal = false;
+  var CITIES = ['Debrecen', 'Szeged', 'Miskolc'];
+
+  if (cityRadios && cityRadios.length) {
+    cityRadios.forEach(function (radio) {
+      radio.addEventListener('change', function () {
+        if (!radio.checked) return;
+        if (modalInput) modalInput.value = radio.value;
+        if (districtsList) {
+          districtsList.querySelectorAll('input[type="checkbox"]').forEach(function (cb) { cb.checked = false; });
+        }
+        updateMapHighlight();
+      });
+    });
+  }
 
   var roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI', 'XXII', 'XXIII'];
 
@@ -105,6 +130,9 @@ document.querySelectorAll('.stat-value[data-count]').forEach(el => {
       input.value = (i + 1);
       input.setAttribute('data-district-index', i);
       input.addEventListener('change', function () {
+        if (cityRadios && cityRadios.length) {
+          cityRadios.forEach(function (r) { r.checked = false; });
+        }
         updateMapHighlight();
         syncModalInputFromCheckboxes();
       });
@@ -136,16 +164,27 @@ document.querySelectorAll('.stat-value[data-count]').forEach(el => {
     modal.removeAttribute('hidden');
     modal.style.display = '';
     if (modalInput) {
-      var initial = searchInput ? searchInput.value : '';
+      var initial = (searchInput ? searchInput.value : '').trim();
       modalInput.value = initial;
-      parseDistrictsIntoCheckboxes(initial);
+      parseInitialIntoCityAndDistricts(initial);
     }
     if (modalInput) modalInput.focus();
   }
 
-  function parseDistrictsIntoCheckboxes(text) {
+  function parseInitialIntoCityAndDistricts(text) {
+    var t = (text || '').trim();
+    var isCity = CITIES.indexOf(t) !== -1;
+    if (cityRadios && cityRadios.length) {
+      cityRadios.forEach(function (r) {
+        r.checked = (isCity && r.value === t);
+      });
+    }
+    if (isCity && districtsList) {
+      districtsList.querySelectorAll('input[type="checkbox"]').forEach(function (cb) { cb.checked = false; });
+      return;
+    }
     if (!districtsList) return;
-    var parts = text.split(/[·,，、\s]+/).map(function (s) { return s.trim(); }).filter(Boolean);
+    var parts = (text || '').split(/[·,，、\s]+/).map(function (s) { return s.trim(); }).filter(Boolean);
     function norm(p) { return (p || '').replace(/[.,\s]+$/, '').trim(); }
     districtsList.querySelectorAll('input[type="checkbox"]').forEach(function (input, i) {
       var matched = parts.some(function (p) { return norm(p) === roman[i]; });

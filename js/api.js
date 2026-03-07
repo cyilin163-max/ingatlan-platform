@@ -285,11 +285,14 @@
   function matchArea(location, areaKey) {
     var loc = (location || '');
     if (areaKey === 'budapest-belvaros') {
-      return loc.indexOf('V. kerület') !== -1 || loc.indexOf('VI. kerület') !== -1;
+      return loc.indexOf('V. kerület') !== -1 || loc.indexOf('VI. kerület') !== -1 || loc.indexOf('VII. kerület') !== -1;
     }
     if (areaKey === 'balaton') return loc.indexOf('Balaton') !== -1;
+    if (areaKey === 'surrounding-cities') {
+      return loc.indexOf('Debrecen') !== -1 || loc.indexOf('Szeged') !== -1 || loc.indexOf('Miskolc') !== -1;
+    }
     if (areaKey === 'budapest-agglomeracio') {
-      return loc.indexOf('Budapest') !== -1 && loc.indexOf('V. kerület') === -1 && loc.indexOf('VI. kerület') === -1;
+      return loc.indexOf('Budapest') !== -1 && loc.indexOf('V. kerület') === -1 && loc.indexOf('VI. kerület') === -1 && loc.indexOf('VII. kerület') === -1;
     }
     return true;
   }
@@ -328,18 +331,18 @@
 
   function normalizeHeating(raw) {
     if (!raw) return '';
+    var s = String(raw).toLowerCase().replace(/\s+/g, '_');
     var map = {
-      'gaz_cirko': 'gas',
+      'gazkazan': 'gas_boiler', 'gaz_cirko': 'gas_boiler', 'gas_boiler': 'gas_boiler',
       'gas': 'gas',
-      'tavfutes': 'district',
-      'district': 'district',
-      'electric': 'electric',
-      'villany': 'electric',
-      'hoszivattyu': 'other',
-      'egyeb': 'other',
-      'other': 'other'
+      'tavfutes': 'district', 'district': 'district',
+      'electric': 'electric', 'villany': 'electric',
+      'hoszivattyu': 'heat_pump', 'heat_pump': 'heat_pump',
+      'vegyes_tuzeles': 'mixed', 'mixed': 'mixed',
+      'renewable_heat_pump': 'renewable_heat_pump',
+      'egyeb': 'other', 'other': 'other'
     };
-    return map[String(raw).toLowerCase()] || String(raw).toLowerCase();
+    return map[s] || map[String(raw).toLowerCase()] || String(raw).toLowerCase();
   }
 
   function matchesBoolFilter(filterValue, actualValue) {
@@ -372,7 +375,7 @@
     // 去除点号，按空格/逗号分割，与服务器端保持一致
     var qParts = q ? q.replace(/\./g, ' ').split(/[\s,]+/).map(function (s) { return s.trim().toLowerCase(); }).filter(Boolean) : [];
     var out = list.filter(function (item) {
-      if (areaKey && !matchArea(item.location, areaKey)) return false;
+      if (areaKey && !matchArea(areaKey === 'surrounding-cities' ? (item.location || '') + ' ' + (item.district || '') : item.location, areaKey)) return false;
       if (district && (item.district || '') !== district) return false;
       if (qParts.length) {
         var titleL = (item.title || '').toLowerCase();
@@ -540,12 +543,15 @@
   function getAreaCounts() {
     var url = (BASE || '') + '/api/areas/counts';
     return fetch(url).then(function (r) { return r.ok ? r.json() : Promise.reject(r); }).catch(function () {
-      var counts = { 'budapest-belvaros': 0, 'balaton': 0, 'budapest-agglomeracio': 0 };
+      var counts = { 'budapest-belvaros': 0, 'balaton': 0, 'budapest-agglomeracio': 0, 'surrounding-cities': 0 };
+      var locDist = function (it) { return (it.location || '') + ' ' + (it.district || ''); };
       getAllListings().forEach(function (item) {
         var loc = item.location || '';
-        if (loc.indexOf('V. kerület') !== -1 || loc.indexOf('VI. kerület') !== -1) counts['budapest-belvaros']++;
+        var ld = locDist(item);
+        if (loc.indexOf('V. kerület') !== -1 || loc.indexOf('VI. kerület') !== -1 || loc.indexOf('VII. kerület') !== -1) counts['budapest-belvaros']++;
         else if (loc.indexOf('Balaton') !== -1) counts['balaton']++;
-        else if (loc.indexOf('Budapest') !== -1) counts['budapest-agglomeracio']++;
+        else if (ld.indexOf('Debrecen') !== -1 || ld.indexOf('Szeged') !== -1 || ld.indexOf('Miskolc') !== -1) counts['surrounding-cities']++;
+        else if (loc.indexOf('Budapest') !== -1 && loc.indexOf('V. kerület') === -1 && loc.indexOf('VI. kerület') === -1 && loc.indexOf('VII. kerület') === -1) counts['budapest-agglomeracio']++;
       });
       return counts;
     });

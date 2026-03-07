@@ -11,7 +11,7 @@ html { scroll-behavior: smooth; }
   left: var(--space-4);
   z-index: 9999;
   padding: var(--space-3) var(--space-5);
-  background: var(--color-primary);
+  background: var(--gradient-green);
   color: white;
   font-weight: 500;
   border-radius: var(--radius-md);
@@ -24,7 +24,7 @@ body {
   font-family: var(--font-body);
   font-size: var(--text-base);
   color: var(--color-text);
-  background: var(--color-bg);
+  background: var(--gradient-green-soft);
   line-height: var(--leading-normal);
   -webkit-font-smoothing: antialiased;
 }
@@ -56,13 +56,13 @@ button { font-family: inherit; cursor: pointer; }
   transition: background var(--duration-normal) var(--ease-out), color var(--duration-normal) var(--ease-out), box-shadow var(--duration-normal) var(--ease-out), transform var(--duration-fast) var(--ease-out);
 }
 .btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--color-primary-focus); }
-.btn-primary { background: var(--color-primary); color: white; }
-.btn-primary:hover { background: var(--color-primary-hover); color: white; text-decoration: none; }
-.btn-accent { background: var(--color-accent); color: white; }
-.btn-accent:hover { background: var(--color-accent-hover); color: white; text-decoration: none; }
+.btn-primary { background: var(--gradient-green); color: white; }
+.btn-primary:hover { background: var(--gradient-green-hover); color: white; text-decoration: none; }
+.btn-accent { background: var(--gradient-green); color: white; }
+.btn-accent:hover { background: var(--gradient-green-hover); color: white; text-decoration: none; }
 .btn-accent:focus-visible { box-shadow: 0 0 0 3px var(--color-accent-focus); }
 .btn-outline { background: transparent; color: var(--color-primary); border: 2px solid var(--color-primary); }
-.btn-outline:hover { background: var(--color-primary); color: white; text-decoration: none; border-color: var(--color-primary); }
+.btn-outline:hover { background: var(--gradient-green); color: white; text-decoration: none; border-color: var(--color-primary); }
 .btn-ghost { background: transparent; color: var(--color-text); }
 .btn-ghost:hover { background: var(--color-border); text-decoration: none; }
 .btn-icon { padding: var(--space-3); border-radius: var(--radius-full); min-width: 44px; min-height: 44px; }
@@ -112,7 +112,7 @@ button { font-family: inherit; cursor: pointer; }
   top: 0;
   z-index: 100;
   height: var(--header-height);
-  background: var(--color-surface);
+  background: var(--gradient-green-soft);
   border-bottom: 1px solid var(--color-border);
   box-shadow: var(--shadow-sm);
   transition: box-shadow var(--duration-normal) var(--ease-out);
@@ -190,13 +190,13 @@ button { font-family: inherit; cursor: pointer; }
   cursor: pointer;
 }
 .lang-btn:hover { color: var(--color-primary); border-color: var(--color-primary); }
-.lang-btn.active { color: var(--color-primary); border-color: var(--color-primary); background: rgba(27, 61, 77, 0.08); }
+.lang-btn.active { color: var(--color-primary); border-color: var(--color-primary); background: linear-gradient(135deg, rgba(45, 140, 96, 0.12) 0%, rgba(26, 94, 61, 0.08) 100%); }
 
 /* Footer */
 .site-footer {
   margin-top: var(--space-16);
   padding: var(--space-12) 0 var(--space-8);
-  background: var(--color-primary);
+  background: var(--gradient-green);
   color: rgba(255,255,255,0.88);
 }
 .site-footer a { color: rgba(255,255,255,0.92); transition: color var(--duration-fast) var(--ease-out); }
@@ -222,7 +222,7 @@ button { font-family: inherit; cursor: pointer; }
   left: 0;
   right: 0;
   z-index: 1000;
-  background: var(--color-surface);
+  background: var(--gradient-green-soft);
   border-top: 1px solid var(--color-border);
   box-shadow: var(--shadow-lg);
   padding: var(--space-5) 0;

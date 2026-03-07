@@ -1,0 +1,20 @@
+# Render 一键部署：从 GitHub 连接仓库后可用此配置自动创建 Web Service
+# 文档：https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: ingatlan-platform
+    runtime: node
+    region: frankfurt  # 可选：新加坡 singapore / 俄勒冈 oregon / 法兰克福 frankfurt
+
+    # 仓库根目录即为项目根（含 server/ 与前端文件）
+    buildCommand: npm install
+    startCommand: npm start
+
+    # 环境变量请在 Render Dashboard → Environment 中配置，勿把密钥写进 YAML：
+    # NODE_ENV=production
+    # SESSION_SECRET=<用 openssl rand -hex 32 生成>
+    # DATABASE_URL=<从 Render PostgreSQL 的 Internal Database URL 复制>
+    envVars:
+      - key: NODE_ENV
+        value: production

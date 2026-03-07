@@ -2,9 +2,42 @@
 (function () {
   var form = document.getElementById('filters-form');
   var sortSelect = document.getElementById('sort');
-  var params = new URLSearchParams(window.location.search);
+  var SURROUNDING_CITIES = ['Debrecen', 'Szeged', 'Miskolc'];
+  var BUDAPEST_BELVAROS_DISTRICTS = ['V', 'VI', 'VII'];
+  var BUDAPEST_AGGLOMERACION_DISTRICTS = ['II', 'III', 'XIV', 'XVI'];
+
+  function isSurroundingCity(district) {
+    return district && SURROUNDING_CITIES.indexOf(district) !== -1;
+  }
+  function isBudapestBelvarosDistrict(district) {
+    return district && BUDAPEST_BELVAROS_DISTRICTS.indexOf(district) !== -1;
+  }
+  function isBudapestAggloDistrict(district) {
+    return district && BUDAPEST_AGGLOMERACION_DISTRICTS.indexOf(district) !== -1;
+  }
 
   function fillFormFromUrl() {
+    var params = new URLSearchParams(window.location.search);
+    var district = params.get('district') || '';
+    var area = params.get('area') || '';
+    if (isSurroundingCity(district) && area !== 'surrounding-cities') {
+      params.set('area', 'surrounding-cities');
+      params.set('page', '1');
+      window.location.search = params.toString();
+      return;
+    }
+    if (isBudapestBelvarosDistrict(district) && area !== 'budapest-belvaros') {
+      params.set('area', 'budapest-belvaros');
+      params.set('page', '1');
+      window.location.search = params.toString();
+      return;
+    }
+    if (isBudapestAggloDistrict(district) && area !== 'budapest-agglomeracio') {
+      params.set('area', 'budapest-agglomeracio');
+      params.set('page', '1');
+      window.location.search = params.toString();
+      return;
+    }
     if (!form) return;
     var names = ['district', 'price_min', 'price_max', 'area_min', 'area_max', 'rooms', 'building_type', 'condition', 'elevator', 'parking'];
     names.forEach(function (name) {
@@ -20,6 +53,36 @@
     });
     if (sortSelect && params.get('sort')) sortSelect.value = params.get('sort');
     var cat = params.get('category') || '';
+    var districtEl = form.querySelector('[name="district"]');
+    if (districtEl && !districtEl.dataset.surroundingBound) {
+      districtEl.dataset.surroundingBound = '1';
+      districtEl.addEventListener('change', function () {
+        var val = (districtEl.value || '').trim();
+        if (isSurroundingCity(val)) {
+          var url = new URL(window.location.href);
+          url.searchParams.set('area', 'surrounding-cities');
+          url.searchParams.set('district', val);
+          url.searchParams.set('page', '1');
+          window.location.search = url.searchParams.toString();
+          return;
+        }
+        if (isBudapestBelvarosDistrict(val)) {
+          var url = new URL(window.location.href);
+          url.searchParams.set('area', 'budapest-belvaros');
+          url.searchParams.set('district', val);
+          url.searchParams.set('page', '1');
+          window.location.search = url.searchParams.toString();
+          return;
+        }
+        if (isBudapestAggloDistrict(val)) {
+          var url = new URL(window.location.href);
+          url.searchParams.set('area', 'budapest-agglomeracio');
+          url.searchParams.set('district', val);
+          url.searchParams.set('page', '1');
+          window.location.search = url.searchParams.toString();
+        }
+      });
+    }
     document.querySelectorAll('.search-tab').forEach(function (tab) {
       tab.classList.toggle('active', (tab.getAttribute('data-category') || '') === cat);
     });
@@ -77,6 +140,10 @@
     url.searchParams.delete('balcony');
     url.searchParams.delete('listed_since');
     if (sortSelect && sortSelect.value) url.searchParams.set('sort', sortSelect.value);
+    var districtVal = form.querySelector('[name="district"]') && form.querySelector('[name="district"]').value;
+    if (isSurroundingCity(districtVal)) url.searchParams.set('area', 'surrounding-cities');
+    else if (isBudapestBelvarosDistrict(districtVal)) url.searchParams.set('area', 'budapest-belvaros');
+    else if (isBudapestAggloDistrict(districtVal)) url.searchParams.set('area', 'budapest-agglomeracio');
     window.location.search = url.searchParams.toString();
   }
 

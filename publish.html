@@ -77,6 +77,10 @@
         <label class="label" for="pub-area" data-i18n="filterArea">Alapterület (m²)</label>
         <input type="number" id="pub-area" name="area" class="input" required min="0" placeholder="72">
       </div>
+      <div class="form-group" id="pub-yard-area-wrap" style="display:none;">
+        <label class="label" for="pub-yard-area" data-i18n="publishYardArea">院子面积 (m²)</label>
+        <input type="number" id="pub-yard-area" name="yardArea" class="input" min="0" placeholder="200">
+      </div>
       <div class="form-group">
         <label class="label" for="pub-rooms" data-i18n="filterRooms">Szobák száma</label>
         <input type="number" id="pub-rooms" name="rooms" class="input" required min="0" placeholder="3">
@@ -106,21 +110,19 @@
         </select>
       </div>
       <div class="form-group">
-        <label class="label" for="pub-furnished" data-i18n="publishFurnished">Bútorozottság</label>
-        <select id="pub-furnished" name="furnished" class="select">
-          <option value="" data-i18n="filterAny">—</option>
-          <option value="fully" data-i18n="furnishedFully">Bútorozott</option>
-          <option value="partly" data-i18n="furnishedPartly">Részben bútorozott</option>
-          <option value="none" data-i18n="furnishedNone">Bútorozatlan</option>
-        </select>
+        <label class="checkbox-label"><input type="checkbox" id="pub-garage" name="garage" value="1"> <span data-i18n="publishGarage">车库</span></label>
       </div>
       <div class="form-group">
         <label class="label" for="pub-heating" data-i18n="publishHeating">Fűtés</label>
         <select id="pub-heating" name="heating" class="select">
           <option value="" data-i18n="filterAny">—</option>
-          <option value="gas" data-i18n="heatingGas">Gázfűtés</option>
+          <option value="gas_boiler" data-i18n="heatingGasBoiler">Gázkazán / Gáz cirkó</option>
           <option value="district" data-i18n="heatingDistrict">Távfűtés</option>
-          <option value="electric" data-i18n="heatingElectric">Villany</option>
+          <option value="electric" data-i18n="heatingElectric">Elektromos fűtés</option>
+          <option value="heat_pump" data-i18n="heatingHeatPump">Hőszivattyú</option>
+          <option value="mixed" data-i18n="heatingMixed">Vegyes tüzelés</option>
+          <option value="renewable_heat_pump" data-i18n="heatingRenewableHeatPump">Újenergiás hőszivattyú</option>
+          <option value="gas" data-i18n="heatingGas">Gázfűtés</option>
           <option value="other" data-i18n="heatingOther">Egyéb</option>
         </select>
       </div>
@@ -129,9 +131,12 @@
         <input type="text" id="pub-location" name="location" class="input" required data-i18n-placeholder="locationPlaceholder" placeholder="Budapest V. kerület, Belváros">
       </div>
       <div class="form-group">
-        <label class="label" for="pub-district" data-i18n="publishDistrict">区份</label>
+        <label class="label" for="pub-district" data-i18n="publishDistrictCity">区份/城市</label>
         <select id="pub-district" name="district" class="select">
           <option value="">—</option>
+          <option value="Debrecen" data-i18n="areaDebrecen">德布勒森</option>
+          <option value="Szeged" data-i18n="areaSzeged">塞格德</option>
+          <option value="Miskolc" data-i18n="areaMiskolc">米什科尔茨</option>
           <option value="I">I. kerület</option>
           <option value="II">II. kerület</option>
           <option value="III">III. kerület</option>
@@ -263,6 +268,16 @@
       }
       setFormEditable(false);
 
+      function toggleYardAreaVisibility() {
+        var wrap = document.getElementById('pub-yard-area-wrap');
+        var sel = document.getElementById('pub-property-type');
+        var type = sel && sel.value ? sel.value : '';
+        if (wrap) wrap.style.display = (type === 'house' || type === 'land') ? '' : 'none';
+      }
+      var propTypeSel = document.getElementById('pub-property-type');
+      if (propTypeSel) propTypeSel.addEventListener('change', toggleYardAreaVisibility);
+      toggleYardAreaVisibility();
+
       // 编辑模式：预填表单（服务器优先，服务器找不到则从本地存储找）
       function fillForm(data) {
         if (!data) return;
@@ -272,17 +287,19 @@
         if (f('pub-category'))    f('pub-category').value    = data.category || 'buy';
         if (f('pub-price'))       f('pub-price').value       = data.price    || '';
         if (f('pub-area'))        f('pub-area').value        = data.area     || '';
+        if (f('pub-yard-area'))   f('pub-yard-area').value   = (data.yardArea !== undefined && data.yardArea !== '') ? data.yardArea : '';
         if (f('pub-rooms'))       f('pub-rooms').value       = data.rooms    || '';
         if (f('pub-location'))    f('pub-location').value    = data.location || '';
         if (f('pub-district'))    f('pub-district').value    = data.district  || '';
         if (f('pub-description')) f('pub-description').value = data.description || '';
         prefillImages(data.images && data.images.length ? data.images : (data.image ? [data.image] : []));
         if (f('pub-property-type')) f('pub-property-type').value = data.propertyType || '';
+        toggleYardAreaVisibility();
         if (f('pub-floor'))         f('pub-floor').value         = data.floor !== undefined ? data.floor : '';
         if (f('pub-total-floors'))  f('pub-total-floors').value  = data.totalFloors !== undefined ? data.totalFloors : '';
         if (f('pub-year-built'))    f('pub-year-built').value    = data.yearBuilt  || '';
         if (f('pub-condition'))     f('pub-condition').value     = data.condition  || '';
-        if (f('pub-furnished'))     f('pub-furnished').value     = data.furnished  || '';
+        if (f('pub-garage'))        f('pub-garage').checked     = !!data.garage;
         if (f('pub-heating'))       f('pub-heating').value       = data.heating    || '';
         if (f('pub-balcony'))       f('pub-balcony').checked     = !!data.balcony;
         if (f('pub-parking'))       f('pub-parking').checked     = !!data.parking;
@@ -524,10 +541,11 @@
           totalFloors: g('pub-total-floors') ? (parseInt(g('pub-total-floors').value, 10) || '') : '',
           yearBuilt: g('pub-year-built') ? (parseInt(g('pub-year-built').value, 10) || '') : '',
           condition: (g('pub-condition') && g('pub-condition').value) || '',
-          furnished: (g('pub-furnished') && g('pub-furnished').value) || '',
+          garage: !!(g('pub-garage') && g('pub-garage').checked),
           heating: (g('pub-heating') && g('pub-heating').value) || '',
           location: location,
           district: (document.getElementById('pub-district') && document.getElementById('pub-district').value) || '',
+          yardArea: (g('pub-yard-area') && g('pub-yard-area').parentElement && g('pub-yard-area').parentElement.style.display !== 'none') ? (parseInt(g('pub-yard-area').value, 10) || '') : '',
           description: description,
           image: image,
           images: allImages,

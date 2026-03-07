@@ -287,12 +287,15 @@ app.get('/api/stats', async (req, res) => {
 // 区域数量（首页热门区域用）
 app.get('/api/areas/counts', async (req, res) => {
   const list = await store.loadListings();
-  const counts = { 'budapest-belvaros': 0, balaton: 0, 'budapest-agglomeracio': 0 };
+  const counts = { 'budapest-belvaros': 0, balaton: 0, 'budapest-agglomeracio': 0, 'surrounding-cities': 0 };
+  const locOrDist = (item) => (item.location || '') + ' ' + (item.district || '');
   list.forEach((item) => {
     const loc = item.location || '';
-    if (loc.indexOf('V. kerület') !== -1 || loc.indexOf('VI. kerület') !== -1) counts['budapest-belvaros']++;
+    const locDist = locOrDist(item);
+    if (loc.indexOf('V. kerület') !== -1 || loc.indexOf('VI. kerület') !== -1 || loc.indexOf('VII. kerület') !== -1) counts['budapest-belvaros']++;
     else if (loc.indexOf('Balaton') !== -1) counts.balaton++;
-    else if (loc.indexOf('Budapest') !== -1) counts['budapest-agglomeracio']++;
+    else if (locDist.indexOf('Debrecen') !== -1 || locDist.indexOf('Szeged') !== -1 || locDist.indexOf('Miskolc') !== -1) counts['surrounding-cities']++;
+    else if (loc.indexOf('Budapest') !== -1 && loc.indexOf('V. kerület') === -1 && loc.indexOf('VI. kerület') === -1 && loc.indexOf('VII. kerület') === -1) counts['budapest-agglomeracio']++;
   });
   res.json(counts);
 });
@@ -328,18 +331,18 @@ function normalizeCondition(raw) {
 
 function normalizeHeating(raw) {
   if (!raw) return '';
+  const s = String(raw).toLowerCase().replace(/\s+/g, '_');
   const map = {
-    'gaz_cirko': 'gas',
+    'gázkazán': 'gas_boiler', 'gazkazan': 'gas_boiler', 'gáz_cirkó': 'gas_boiler', 'gaz_cirko': 'gas_boiler', 'gas_boiler': 'gas_boiler',
     'gas': 'gas',
-    'tavfutes': 'district',
-    'district': 'district',
-    'electric': 'electric',
-    'villany': 'electric',
-    'hoszivattyu': 'other',
-    'egyeb': 'other',
-    'other': 'other'
+    'távfűtés': 'district', 'tavfutes': 'district', 'district': 'district',
+    'elektromos_fűtés': 'electric', 'electric': 'electric', 'villany': 'electric',
+    'hőszivattyú': 'heat_pump', 'hoszivattyu': 'heat_pump', 'heat_pump': 'heat_pump',
+    'vegyes_tüzelés': 'mixed', 'vegyes_tuzeles': 'mixed', 'mixed': 'mixed',
+    'újenergiás_hőszivattyú': 'renewable_heat_pump', 'renewable_heat_pump': 'renewable_heat_pump',
+    'egyeb': 'other', 'other': 'other'
   };
-  return map[String(raw).toLowerCase()] || String(raw).toLowerCase();
+  return map[s] || map[String(raw).toLowerCase()] || String(raw).toLowerCase();
 }
 
 function matchesBoolFilter(filterValue, actualValue) {
@@ -561,11 +564,12 @@ app.post('/api/listings', async (req, res) => {
     petFriendly: !!b.petFriendly,
     moveIn: !!b.moveIn,
     condition: (b.condition || '').trim(),
-    furnished: (b.furnished || '').trim(),
+    garage: !!b.garage,
     heating: (b.heating || '').trim(),
     yearBuilt: parseInt(b.yearBuilt, 10) || 0,
     totalFloors: parseInt(b.totalFloors, 10) || 0,
     district: (b.district || '').trim(),
+    yardArea: parseInt(b.yardArea, 10) || 0,
   };
   await store.addListing(item);
   res.json({ ok: true, id: item.id });
@@ -616,7 +620,8 @@ app.put('/api/listings/:id', async (req, res) => {
     petFriendly: b.petFriendly !== undefined ? !!b.petFriendly : old.petFriendly,
     moveIn: b.moveIn !== undefined ? !!b.moveIn : old.moveIn,
     condition: b.condition !== undefined ? (b.condition || '').trim() : (old.condition || ''),
-    furnished: b.furnished !== undefined ? (b.furnished || '').trim() : (old.furnished || ''),
+    garage: b.garage !== undefined ? !!b.garage : !!old.garage,
+    yardArea: b.yardArea !== undefined ? (parseInt(b.yardArea, 10) || 0) : (old.yardArea || 0),
     heating: b.heating !== undefined ? (b.heating || '').trim() : (old.heating || ''),
     yearBuilt: b.yearBuilt !== undefined ? (parseInt(b.yearBuilt, 10) || old.yearBuilt || 0) : (old.yearBuilt || 0),
     totalFloors: b.totalFloors !== undefined ? (parseInt(b.totalFloors, 10) || old.totalFloors || 0) : (old.totalFloors || 0),
@@ -651,6 +656,10 @@ app.get('*', (req, res, next) => {
 
 // 启动：有 DATABASE_URL 时先初始化表再监听
 async function start() {
+  if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) {
+    console.error('Fatal: NODE_ENV=production 时必须设置 SESSION_SECRET。请在 Render Dashboard → Environment 中添加 SESSION_SECRET（可用 openssl rand -hex 32 生成）。');
+    process.exit(1);
+  }
   if (store.isUsingDb()) {
     try {
       await store.initDbSchema();

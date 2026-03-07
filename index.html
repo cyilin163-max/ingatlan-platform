@@ -98,7 +98,7 @@
     <section class="stats-bar">
       <div class="container stats-inner">
         <div class="stat">
-          <span class="stat-value" id="stat-active-listings" data-count="6">6</span>
+          <span class="stat-value" id="stat-active-listings" data-count="0">0</span>
           <span class="stat-label" data-i18n="statActive">Aktív hirdetés</span>
         </div>
         <div class="stat">
@@ -114,23 +114,23 @@
         <h2 class="section-title" data-i18n="homePopularAreas">Népszerű régiók</h2>
         <div class="areas-grid">
           <a href="search.html?area=budapest-belvaros" class="area-card" data-area="budapest-belvaros">
-            <div class="area-card-img" style="background: linear-gradient(135deg, #1f6b49 0%, #2d8c60 100%);"></div>
+            <div class="area-card-img" style="background: url('https://images.unsplash.com/photo-1762529507311-cbec22174d48?w=800&q=80&auto=format&fit=crop') no-repeat center / cover;"></div>
             <div class="area-card-body">
               <h3 data-i18n="areaBudapest">Budapest belváros</h3>
               <p data-i18n="areaBudapestDesc">V. és VI. kerület kiválasztott ingatlanjai</p>
               <span class="area-count" id="area-count-belvaros">0</span><span class="area-count" data-i18n="areaListings"> hirdetés</span>
             </div>
           </a>
-          <a href="search.html?area=balaton" class="area-card" data-area="balaton">
-            <div class="area-card-img" style="background: linear-gradient(135deg, #2d8c60 0%, #67b77f 100%);"></div>
+          <a href="search.html?area=surrounding-cities" class="area-card" data-area="surrounding-cities">
+            <div class="area-card-img" style="background: url('assets/debrecen-surrounding.png') no-repeat center / cover;"></div>
             <div class="area-card-body">
-              <h3 data-i18n="areaBalaton">Balaton partvidék</h3>
-              <p data-i18n="areaBalatonDesc">Nyaraló, apartman, telek a tó körül</p>
-              <span class="area-count" id="area-count-balaton">0</span><span class="area-count" data-i18n="areaListings"> hirdetés</span>
+              <h3 data-i18n="areaSurroundingCities">周边城市</h3>
+              <p data-i18n="areaSurroundingCitiesDesc">德布勒森、塞格德、米什科尔茨等</p>
+              <span class="area-count" id="area-count-surrounding">0</span><span class="area-count" data-i18n="areaListings"> hirdetés</span>
             </div>
           </a>
           <a href="search.html?area=budapest-agglomeracio" class="area-card" data-area="budapest-agglomeracio">
-            <div class="area-card-img" style="background: linear-gradient(135deg, #2f6f4b 0%, #78b884 100%);"></div>
+            <div class="area-card-img" style="background: url('https://images.unsplash.com/photo-1748396690721-cfd9b7a03a41?w=800&q=80&auto=format&fit=crop') no-repeat center / cover;"></div>
             <div class="area-card-body">
               <h3 data-i18n="areaAgglo">Budapest agglomeráció</h3>
               <p data-i18n="areaAggloDesc">Családi házak, kertvárosi lehetőségek</p>
@@ -140,9 +140,10 @@
         </div>
         <div class="areas-quick">
           <a href="search.html?q=Pest" data-i18n="areaPest">Pest megye</a>
-          <a href="search.html?area=balaton" data-i18n="areaBalatonShort">Balaton</a>
           <a href="search.html?q=Debrecen" data-i18n="areaDebrecen">Debrecen</a>
           <a href="search.html?q=Szeged" data-i18n="areaSzeged">Szeged</a>
+          <a href="search.html?q=Miskolc" data-i18n="areaMiskolc">Miskolc</a>
+          <a href="search.html?area=surrounding-cities" data-i18n="areaSurroundingCities">周边城市</a>
         </div>
       </div>
     </section>
@@ -167,7 +168,13 @@
       </div>
       <div class="location-panel-inner">
         <div class="location-districts">
-          <p class="location-districts-label" data-i18n="locationSelectDistrict">Select a district</p>
+          <p class="location-districts-label" data-i18n="locationSelectCity">选择城市</p>
+          <div class="location-cities-list" id="location-cities">
+            <label class="location-city-item"><input type="radio" name="location-city" value="Debrecen"> <span data-i18n="areaDebrecen">德布勒森</span></label>
+            <label class="location-city-item"><input type="radio" name="location-city" value="Szeged"> <span data-i18n="areaSzeged">塞格德</span></label>
+            <label class="location-city-item"><input type="radio" name="location-city" value="Miskolc"> <span data-i18n="areaMiskolc">米什科尔茨</span></label>
+          </div>
+          <p class="location-districts-label" data-i18n="locationSelectDistrict">选择区份</p>
           <div class="location-districts-list" id="budapest-districts"></div>
         </div>
         <div class="location-map-wrap">

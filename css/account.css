@@ -12,7 +12,7 @@
 .account-nav {
   position: sticky;
   top: calc(var(--header-height) + var(--space-4));
-  background: var(--color-surface);
+  background: var(--gradient-green-soft);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: var(--space-3);
@@ -29,8 +29,8 @@
   font-size: var(--text-sm);
   transition: background var(--duration-fast), color var(--duration-fast);
 }
-.account-nav a:hover { background: var(--color-bg); text-decoration: none; color: var(--color-primary); }
-.account-nav a.active { background: var(--color-primary); color: white; }
+.account-nav a:hover { background: linear-gradient(135deg, rgba(45, 140, 96, 0.08) 0%, rgba(26, 94, 61, 0.05) 100%); text-decoration: none; color: var(--color-primary); }
+.account-nav a.active { background: var(--gradient-green); color: white; }
 .account-nav a.active:hover { color: white; }
 
 .account-panel { display: none; }
@@ -73,7 +73,7 @@
   gap: var(--space-4);
   align-items: center;
   padding: var(--space-5);
-  background: var(--color-surface);
+  background: var(--gradient-green-soft);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
@@ -146,7 +146,7 @@
   gap: var(--space-5);
   align-items: center;
   padding: var(--space-5);
-  background: var(--color-surface);
+  background: var(--gradient-green-soft);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   margin-bottom: var(--space-4);
@@ -175,7 +175,7 @@
   gap: var(--space-4);
 }
 .fav-card {
-  background: var(--color-surface);
+  background: var(--gradient-green-soft);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   overflow: hidden;

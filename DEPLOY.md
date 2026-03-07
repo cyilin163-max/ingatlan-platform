@@ -65,15 +65,21 @@
 
 ## 二、推荐部署方式
 
+**快速部署（Render + GitHub）**：项目根目录已包含 `render.yaml`。将本仓库推送到 GitHub 后，打开 [Render](https://render.com) → **New +** → **Blueprint**，连接该仓库，即可自动创建 Web Service。首次部署会因缺少 `SESSION_SECRET` 失败；在服务的 **Environment** 中添加 `SESSION_SECRET`（可用 `openssl rand -hex 32` 生成）并保存，重新部署即可。推荐同时添加 **PostgreSQL** 数据库，在 Environment 中设置 `DATABASE_URL`（见上文「使用 PostgreSQL 持久化数据」）。
+
 ### 方式 A：Railway / Render / 类似 PaaS（适合快速上线）
+
+**使用 Render 且仓库根目录有 `render.yaml` 时**：在 Render 选择 **New → Blueprint**，连接 GitHub 仓库，即可按 `render.yaml` 自动创建 Web Service；创建后在 **Environment** 里添加 `SESSION_SECRET` 和（推荐）`DATABASE_URL`，保存后自动重新部署。
+
+**手动创建时**：
 
 1. **把项目放进 Git 仓库**（GitHub / GitLab 等）。
 2. 在 Railway 或 Render 中 **从仓库创建新项目**，根目录选本仓库根目录（包含 `server` 和前端文件的那一层）。
 3. **构建与启动**：
-   - **Build Command**：`cd server && npm install`
-   - **Start Command**：`cd server && node server.js`
-   - 若无单独 Build，可在 Start 里写：`cd server && npm install && node server.js`
-4. 在平台里配置 **环境变量**：至少设置 `NODE_ENV=production`、`SESSION_SECRET`；**强烈建议**再添加 PostgreSQL 的 `DATABASE_URL`（见上文「使用 PostgreSQL 持久化数据」），否则每次部署后用户和房源会丢失。
+   - **Build Command**：`npm install`（根目录的 postinstall 会执行 `cd server && npm install`）
+   - **Start Command**：`npm start`（即 `node server/server.js`）
+   - 若平台只填一个命令，可写：`npm install && npm start`
+4. 在平台里配置 **环境变量**：至少设置 `NODE_ENV=production`、`SESSION_SECRET`（**未设置时生产环境会拒绝启动**）；**强烈建议**再添加 PostgreSQL 的 `DATABASE_URL`（见上文「使用 PostgreSQL 持久化数据」），否则每次部署后用户和房源会丢失。
 5. 平台会分配一个 HTTPS 域名，也可绑定自己的域名。
 
 注意：PaaS 的磁盘可能**不持久**，重启后 `server/data/` 和 `uploads/` 里的内容可能丢失。**请按上文「使用 PostgreSQL 持久化数据」设置 `DATABASE_URL`**，这样用户和房源会存在数据库中，不会因部署而丢失；图片仍会随部署丢失，若需持久化请用对象存储（如 S3）。

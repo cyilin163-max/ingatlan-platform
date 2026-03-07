@@ -23,14 +23,14 @@ body {
 .hero-bg {
   position: absolute;
   inset: 0;
-  background: linear-gradient(155deg, #12472f 0%, #1a5e3d 35%, #25774d 70%, #2d8c60 100%);
+  background: #6b8e9e url("../assets/hero-budapest.png") no-repeat center / cover;
   opacity: 1;
 }
 .hero-bg::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30z' fill='none' stroke='rgba(255,255,255,0.03)' stroke-width='1'/%3E%3C/svg%3E");
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.12) 50%, rgba(0, 0, 0, 0.35) 100%);
   pointer-events: none;
 }
 .hero-inner { position: relative; z-index: 1; text-align: center; width: 100%; }
@@ -42,10 +42,10 @@ body {
   margin: 0 0 var(--space-3);
   line-height: var(--leading-tight);
   letter-spacing: -0.02em;
-  text-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  text-shadow: 0 2px 12px rgba(0,0,0,0.2);
 }
 .hero-subtitle {
-  color: rgba(255,255,255,0.9);
+  color: rgba(255,255,255,0.92);
   font-size: var(--text-lg);
   margin: 0 0 var(--space-8);
   font-weight: 400;
@@ -55,7 +55,7 @@ body {
   max-width: 960px;
   width: 100%;
   margin: 0 auto;
-  background: var(--color-surface);
+  background: var(--gradient-green-soft);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-xl), 0 0 0 1px rgba(0,0,0,0.04);
   overflow: visible;
@@ -112,7 +112,7 @@ body {
   min-height: 38px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: var(--color-surface);
+  background: var(--gradient-green-soft);
   font-size: var(--text-sm);
   padding: 0 var(--space-3);
   min-width: 5rem;
@@ -180,7 +180,7 @@ body {
   height: 38px;
   padding: 0 var(--space-6);
   border-radius: var(--radius-md);
-  background: var(--color-accent);
+  background: var(--gradient-green);
   color: white;
   border: none;
   font-weight: 600;
@@ -189,7 +189,7 @@ body {
   white-space: nowrap;
   transition: background var(--duration-normal) var(--ease-out), transform var(--duration-fast) var(--ease-out);
 }
-.search-submit:hover { background: var(--color-accent-hover); color: white; }
+.search-submit:hover { background: var(--gradient-green-hover); color: white; }
 .search-submit:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--color-accent-focus); }
 
 .hero-tabs {
@@ -201,18 +201,18 @@ body {
 }
 .hero-tab {
   padding: var(--space-2) var(--space-6);
-  background: rgba(255,255,255,0.12);
+  background: linear-gradient(135deg, rgba(45, 140, 96, 0.4) 0%, rgba(26, 94, 61, 0.35) 100%);
   color: white;
   border-radius: var(--radius-full);
   font-weight: 600;
   font-size: var(--text-sm);
   transition: background var(--duration-normal) var(--ease-out);
 }
-.hero-tab:hover { background: rgba(255,255,255,0.28); color: white; text-decoration: none; }
+.hero-tab:hover { background: linear-gradient(135deg, rgba(45, 140, 96, 0.55) 0%, rgba(26, 94, 61, 0.5) 100%); color: white; text-decoration: none; }
 
 /* Stats bar */
 .stats-bar {
-  background: linear-gradient(180deg, rgba(45, 140, 96, 0.06) 0%, var(--color-surface) 78%);
+  background: linear-gradient(180deg, rgba(45, 140, 96, 0.12) 0%, rgba(45, 140, 96, 0.04) 50%, var(--gradient-green-soft) 100%);
   border-bottom: 1px solid var(--home-green-border);
   padding: var(--space-8) 0;
   box-shadow: var(--shadow-sm);
@@ -252,7 +252,7 @@ body {
   gap: var(--space-6);
 }
 .area-card {
-  background: var(--color-surface);
+  background: var(--gradient-green-soft);
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-md);
@@ -298,7 +298,7 @@ body {
   margin-bottom: var(--space-6);
 }
 .latest-section .property-card {
-  background: var(--color-surface);
+  background: var(--gradient-green-soft);
   border-radius: var(--radius-lg);
   overflow: hidden;
   border: 1px solid var(--color-border);
@@ -352,7 +352,7 @@ body {
 }
 
 /* App promo */
-.app-promo { background: var(--color-primary); color: white; }
+.app-promo { background: var(--gradient-green); color: white; }
 .app-promo-inner {
   display: flex;
   flex-wrap: wrap;
@@ -367,7 +367,7 @@ body {
 .app-promo-inner .btn-primary:hover { background: rgba(255,255,255,0.92); color: var(--color-primary); }
 
 /* Newsletter */
-.newsletter-section { background: var(--color-bg); border-top: 1px solid var(--color-border); padding: var(--space-12) 0; }
+.newsletter-section { background: var(--gradient-green-soft); border-top: 1px solid var(--color-border); padding: var(--space-12) 0; }
 .newsletter-inner { text-align: center; max-width: 520px; margin: 0 auto; }
 .newsletter-title { margin: 0 0 var(--space-2); font-size: var(--text-xl); font-weight: 700; color: var(--color-primary); }
 .newsletter-desc { margin: 0 0 var(--space-5); font-size: var(--text-sm); color: var(--color-text-muted); line-height: var(--leading-relaxed); }
@@ -381,7 +381,7 @@ body {
   gap: var(--space-6);
 }
 .service-card {
-  background: var(--color-surface);
+  background: var(--gradient-green-soft);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: var(--space-8);
@@ -405,7 +405,7 @@ body {
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: rgba(18, 71, 47, 0.5);
+  background: linear-gradient(180deg, rgba(18, 71, 47, 0.6) 0%, rgba(26, 94, 61, 0.5) 100%);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   display: flex;
@@ -415,7 +415,7 @@ body {
 }
 .location-modal-overlay[hidden] { display: none; }
 .location-modal {
-  background: var(--color-surface);
+  background: var(--gradient-green-soft);
   border-radius: 20px;
   box-shadow: 0 32px 64px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.06);
   max-width: 920px;
@@ -428,7 +428,7 @@ body {
 }
 .location-modal-header {
   padding: var(--space-6) var(--space-6) var(--space-4);
-  background: linear-gradient(to bottom, var(--color-surface) 0%, var(--color-bg) 100%);
+  background: linear-gradient(to bottom, var(--gradient-green-soft) 0%, rgba(45, 140, 96, 0.04) 100%);
   border-bottom: 1px solid var(--color-border);
 }
 .location-modal-title {
@@ -447,7 +447,7 @@ body {
   border: 1px solid var(--color-border);
   font-size: var(--text-base);
   transition: border-color var(--duration-normal), box-shadow var(--duration-normal);
-  background: var(--color-surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23555550' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat 14px center;
+  background: var(--gradient-green-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23555550' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat 14px center;
   background-size: 20px 20px;
 }
 .location-modal-input::placeholder { color: var(--color-text-soft); }
@@ -488,7 +488,7 @@ body {
   flex-direction: column;
   min-height: 0;
   min-width: 0;
-  background: #ffffff;
+  background: var(--gradient-green-soft);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
   border: 1px solid var(--color-border);
@@ -500,6 +500,39 @@ body {
   color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  flex-shrink: 0;
+}
+.location-cities-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+.location-city-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  transition: background var(--duration-fast), color var(--duration-fast);
+  color: var(--color-text);
+}
+.location-city-item:hover {
+  background: var(--home-green-soft);
+}
+.location-city-item:has(input:checked) {
+  background: var(--home-green-soft-strong);
+  color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--home-green-border);
+}
+.location-city-item input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
   flex-shrink: 0;
 }
 .location-districts-list {
@@ -555,7 +588,7 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  background: #ffffff;
+  background: var(--gradient-green-soft);
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-border);
   box-sizing: border-box;
@@ -569,7 +602,7 @@ body {
   display: flex;
   align-items: stretch;
   justify-content: stretch;
-  background: #ffffff;
+  background: var(--gradient-green-soft);
   border: none;
 }
 .location-map-inner {
@@ -581,7 +614,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  background: #ffffff;
+  background: var(--gradient-green-soft);
   border: none;
 }
 .location-map-inner .budapest-map-img {
@@ -619,7 +652,7 @@ body {
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-5) var(--space-6);
-  background: var(--color-surface);
+  background: var(--gradient-green-soft);
   border-top: 1px solid var(--color-border);
   flex-shrink: 0;
 }
@@ -634,7 +667,7 @@ body {
   padding: var(--space-3) var(--space-6);
   min-height: 48px;
   border: 2px solid var(--color-border-strong);
-  background: var(--color-surface);
+  background: var(--gradient-green-soft);
   color: var(--color-text);
   font-weight: 600;
   border-radius: var(--radius-md);
@@ -642,24 +675,24 @@ body {
   transition: background var(--duration-normal), color var(--duration-normal), border-color var(--duration-normal);
 }
 .btn-location-cancel:hover {
-  background: var(--color-bg);
+  background: linear-gradient(135deg, rgba(45, 140, 96, 0.08) 0%, rgba(26, 94, 61, 0.06) 100%);
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
 .btn-location-ok {
   padding: var(--space-3) var(--space-8);
   min-height: 48px;
-  background: var(--color-accent);
+  background: var(--gradient-green);
   color: white;
-  border: 2px solid var(--color-accent);
+  border: 2px solid transparent;
   font-weight: 600;
   border-radius: var(--radius-md);
   font-size: var(--text-base);
   transition: background var(--duration-normal), border-color var(--duration-normal), box-shadow var(--duration-normal);
 }
 .btn-location-ok:hover {
-  background: var(--color-accent-hover);
-  border-color: var(--color-accent-hover);
+  background: var(--gradient-green-hover);
+  border-color: transparent;
   color: white;
 }
 .btn-location-ok:focus-visible {

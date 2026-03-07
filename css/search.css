@@ -10,14 +10,14 @@
   border-radius: var(--radius-full);
   font-weight: 500;
   font-size: var(--text-sm);
-  background: var(--color-bg);
+  background: var(--gradient-green-soft);
   color: var(--color-text);
   border: 1px solid var(--color-border);
   transition: background var(--duration-fast), color var(--duration-fast), border-color var(--duration-fast);
 }
 .search-tab:hover { text-decoration: none; color: var(--color-primary); border-color: var(--color-primary); }
 .search-tab.active {
-  background: var(--color-primary);
+  background: var(--gradient-green);
   color: white;
   border-color: var(--color-primary);
 }
@@ -35,7 +35,7 @@
 .filters-sidebar {
   position: sticky;
   top: calc(var(--header-height) + var(--space-4));
-  background: var(--color-surface);
+  background: var(--gradient-green-soft);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
@@ -86,7 +86,7 @@
   height: 44px;
   padding: 0;
   border: 1px solid var(--color-border);
-  background: var(--color-surface);
+  background: var(--gradient-green-soft);
   color: var(--color-text-muted);
   font-size: 1.25rem;
   border-radius: var(--radius-md);
@@ -96,7 +96,7 @@
 .view-btn:hover { border-color: var(--color-primary); color: var(--color-primary); }
 .view-btn.active,
 .view-btn[aria-pressed="true"] {
-  background: var(--color-primary);
+  background: var(--gradient-green);
   color: white;
   border-color: var(--color-primary);
 }
@@ -142,7 +142,7 @@
   gap: var(--space-6);
 }
 .property-card {
-  background: var(--color-surface);
+  background: var(--gradient-green-soft);
   border-radius: var(--radius-lg);
   overflow: hidden;
   border: 1px solid var(--color-border);
@@ -197,7 +197,7 @@
   transition: background var(--duration-fast), transform var(--duration-fast) var(--ease-out);
 }
 .card-action-btn:hover { background: white; transform: scale(1.08); }
-.card-action-btn.active { background: var(--color-accent); color: white; }
+.card-action-btn.active { background: var(--gradient-green); color: white; }
 .card-body { padding: var(--space-4); flex: 1; display: flex; flex-direction: column; }
 .card-type {
   font-size: var(--text-xs);
@@ -247,13 +247,13 @@
   font-size: var(--text-sm);
   font-weight: 500;
   border: 1px solid var(--color-border);
-  background: var(--color-surface);
+  background: var(--gradient-green-soft);
   color: var(--color-text);
   transition: border-color var(--duration-fast), color var(--duration-fast), background var(--duration-fast);
 }
 .pagination a:hover { border-color: var(--color-primary); color: var(--color-primary); text-decoration: none; }
 .pagination .current {
-  background: var(--color-primary);
+  background: var(--gradient-green);
   border-color: var(--color-primary);
   color: white;
 }
@@ -265,7 +265,7 @@
   left: 0;
   right: 0;
   z-index: 90;
-  background: var(--color-surface);
+  background: var(--gradient-green-soft);
   border-top: 1px solid var(--color-border);
   box-shadow: var(--shadow-lg);
   padding: var(--space-4) 0;
@@ -277,7 +277,7 @@
   width: 64px;
   height: 48px;
   border-radius: var(--radius-md);
-  background: var(--color-bg);
+  background: var(--gradient-green-soft);
   border: 1px dashed var(--color-border);
   overflow: hidden;
   flex-shrink: 0;
