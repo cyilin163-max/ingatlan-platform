@@ -1,0 +1,48 @@
+---
+description: Ingatlan 部署步骤与约定，任何对话下都要按此执行或回答部署相关问题
+alwaysApply: true
+---
+
+# Ingatlan 平台部署（必须记住）
+
+## 发布/更新到线上（日常操作）
+
+项目已部署在 **Render**，仓库：`https://github.com/cyilin163-max/ingatlan-platform.git`，分支 `main`。
+
+**发布步骤（每次改完代码要上线时）：**
+
+1. 在项目根目录执行：
+   - `git add .`（或只 add 需要提交的文件，不要 add `server/node_modules`）
+   - `git commit -m "简短说明"`
+   - `git push origin main`
+2. Render 若已开启自动部署，推送后会自动重新部署；否则到 Render Dashboard 该 Web Service 里点 **Manual Deploy → Deploy latest commit**。
+
+**不要**提交 `server/node_modules`；可建 `.gitignore` 含 `node_modules`。其他项目文件（含 `render.yaml`、`server/server.js`、前端、`DEPLOY.md`）按需提交。
+
+## 构建与启动（与 Render / 文档一致）
+
+- **仓库根目录**即项目根（包含 `server/`、`css/`、`js/`、`index.html` 等）。
+- **Build**：`npm install`（根目录 postinstall 会执行 `cd server && npm install`）。
+- **Start**：`npm start`（即 `node server/server.js`）。
+
+## 环境变量（生产必配）
+
+在 Render → Web Service → **Environment** 中必须配置：
+
+| 变量 | 必填 | 说明 |
+|------|------|------|
+| `NODE_ENV` | 是 | 设为 `production`（render.yaml 已含） |
+| `SESSION_SECRET` | 是 | 未设置时服务会拒绝启动；可用 `openssl rand -hex 32` 生成 |
+| `DATABASE_URL` | 强烈推荐 | PostgreSQL 连接串（Render 里新建 PostgreSQL，复制 Internal Database URL），否则每次部署用户/房源会丢 |
+
+可选：`ALLOWED_ORIGINS`（前后端不同域名时）、`APP_URL`、`SECURE_COOKIES=1`（HTTPS 时）。
+
+## 首次从零在 Render 部署
+
+1. 代码已推送到 GitHub 上述仓库。
+2. Render → **New +** → **Blueprint**，连接该 GitHub 仓库，用根目录的 `render.yaml` 创建 Web Service。
+3. 在服务的 **Environment** 添加 `SESSION_SECRET`（及推荐 `DATABASE_URL`），保存后重新部署。
+
+## 详细说明
+
+完整步骤、PostgreSQL 添加方式、数据导入、VPS 方式、常见问题见项目根目录 **DEPLOY.md**。回答部署相关问题或执行部署相关操作时，以 DEPLOY.md 与本规则为准。

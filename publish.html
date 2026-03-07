@@ -96,8 +96,12 @@
         </div>
       </div>
       <div class="form-group">
-        <label class="label" for="pub-year-built" data-i18n="publishYearBuilt">Építés éve</label>
-        <input type="number" id="pub-year-built" name="yearBuilt" class="input" min="1800" max="2030" placeholder="2005">
+        <label class="label" for="pub-garage" data-i18n="publishGarage">车库</label>
+        <select id="pub-garage" name="garage" class="select">
+          <option value="" data-i18n="filterAny">不限</option>
+          <option value="1" data-i18n="filterYes">有</option>
+          <option value="0" data-i18n="filterNo">无</option>
+        </select>
       </div>
       <div class="form-group">
         <label class="label" for="pub-condition" data-i18n="publishCondition">Állapot</label>
@@ -108,9 +112,6 @@
           <option value="good" data-i18n="conditionGood">Jó állapotú</option>
           <option value="needs_renovation" data-i18n="conditionNeedsRenovation">Felújításra szorul</option>
         </select>
-      </div>
-      <div class="form-group">
-        <label class="checkbox-label"><input type="checkbox" id="pub-garage" name="garage" value="1"> <span data-i18n="publishGarage">车库</span></label>
       </div>
       <div class="form-group">
         <label class="label" for="pub-heating" data-i18n="publishHeating">Fűtés</label>
@@ -297,9 +298,8 @@
         toggleYardAreaVisibility();
         if (f('pub-floor'))         f('pub-floor').value         = data.floor !== undefined ? data.floor : '';
         if (f('pub-total-floors'))  f('pub-total-floors').value  = data.totalFloors !== undefined ? data.totalFloors : '';
-        if (f('pub-year-built'))    f('pub-year-built').value    = data.yearBuilt  || '';
         if (f('pub-condition'))     f('pub-condition').value     = data.condition  || '';
-        if (f('pub-garage'))        f('pub-garage').checked     = !!data.garage;
+        if (f('pub-garage'))       f('pub-garage').value        = data.garage === true ? '1' : (data.garage === false ? '0' : '');
         if (f('pub-heating'))       f('pub-heating').value       = data.heating    || '';
         if (f('pub-balcony'))       f('pub-balcony').checked     = !!data.balcony;
         if (f('pub-parking'))       f('pub-parking').checked     = !!data.parking;
@@ -539,9 +539,8 @@
           rooms: rooms,
           floor: g('pub-floor') ? (parseInt(g('pub-floor').value, 10) || '') : '',
           totalFloors: g('pub-total-floors') ? (parseInt(g('pub-total-floors').value, 10) || '') : '',
-          yearBuilt: g('pub-year-built') ? (parseInt(g('pub-year-built').value, 10) || '') : '',
           condition: (g('pub-condition') && g('pub-condition').value) || '',
-          garage: !!(g('pub-garage') && g('pub-garage').checked),
+          garage: g('pub-garage') && g('pub-garage').value === '1',
           heating: (g('pub-heating') && g('pub-heating').value) || '',
           location: location,
           district: (document.getElementById('pub-district') && document.getElementById('pub-district').value) || '',
