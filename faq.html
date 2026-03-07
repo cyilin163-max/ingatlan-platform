@@ -3,17 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GYIK | Ingatlan</title>
-  <meta name="description" content="Gyakran ismételt kérdések az Ingatlan.hu használatáról.">
+  <title>常见问题 | 匈牙利房产</title>
+  <meta name="description" content="布达佩斯租房与匈牙利买房常见问题：租房注意事项、购房流程、税费与贷款指南。">
   <base href="./">
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/common.css">
+  <style>
+    .faq-page { padding: 2rem 0 4rem; max-width: 720px; margin: 0 auto; }
+    .faq-page .page-title { font-size: 1.75rem; margin-bottom: 0.5rem; }
+    .faq-page .page-subtitle { font-size: 1rem; margin-bottom: 2rem; color: var(--color-text-muted); }
+    .faq-section { background: var(--color-surface); border-radius: 12px; padding: 1.75rem 1.5rem; margin-bottom: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,.06); border: 1px solid var(--color-border); }
+    .faq-section h2 { font-family: var(--font-heading); font-size: 1.35rem; color: var(--color-primary); margin: 0 0 1rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--color-border); }
+    .faq-section .intro { color: var(--color-text); line-height: 1.7; margin-bottom: 1.25rem; }
+    .faq-list { list-style: none; padding: 0; margin: 0; }
+    .faq-list li { position: relative; padding: 0.6rem 0 0.6rem 2.25rem; border-bottom: 1px solid var(--color-border); line-height: 1.65; }
+    .faq-list li:last-child { border-bottom: none; }
+    .faq-list .num { position: absolute; left: 0; top: 0.5rem; font-weight: 700; color: var(--color-primary); font-size: 0.9rem; }
+    .faq-list .q { font-weight: 600; color: var(--color-text); }
+    .faq-list .a { color: var(--color-text-muted); margin-top: 0.2rem; }
+    .faq-steps { padding-left: 1.25rem; margin: 0.75rem 0 1rem; }
+    .faq-steps li { margin-bottom: 0.4rem; line-height: 1.6; }
+    .faq-meta { background: rgba(27, 61, 77, 0.06); border-radius: 8px; padding: 0.75rem 1rem; margin: 1rem 0; font-size: 0.95rem; color: var(--color-primary-muted); }
+    .faq-checklist { margin: 0.5rem 0 1rem; padding-left: 1.25rem; }
+    .faq-checklist li { margin-bottom: 0.35rem; line-height: 1.6; }
+    .faq-divider { height: 1px; background: var(--color-border); margin: 1.5rem 0; }
+    .faq-back { margin-top: 2rem; }
+  </style>
 </head>
 <body>
   <a href="#main" class="skip-link" data-i18n="skipToContent">Ugrás a tartalomra</a>
   <header class="site-header">
     <div class="container">
-      <a href="index.html" class="logo">Ingatlan.hu</a>
+      <a href="index.html" class="logo">匈牙利房产</a>
       <button type="button" class="nav-toggle" aria-label="Menü" aria-expanded="false">☰</button>
       <nav class="nav-main">
         <a href="search.html" data-i18n="navSearch">Keresés</a>
@@ -29,29 +50,83 @@
     </div>
   </header>
 
-  <main id="main" class="container" style="padding: 3rem 1.5rem;">
-    <h1 class="page-title" data-i18n="footerFaq">GYIK</h1>
-    <p class="page-subtitle">Gyakran ismételt kérdések. A teljes lista később kerül feltöltésre.</p>
-    <p><a href="index.html" class="btn btn-outline">Vissza a főoldalra</a></p>
+  <main id="main" class="container faq-page">
+    <h1 class="page-title">常见问题</h1>
+    <p class="page-subtitle">布达佩斯租房与匈牙利买房实用指南</p>
+
+    <section class="faq-section" aria-labelledby="faq-rent">
+      <h2 id="faq-rent">小白租房需要注意哪些？｜布达佩斯租房</h2>
+      <p class="intro">很多第一次在布达佩斯租房的小伙伴，都会忽略一些细节。看房时建议提前了解这些问题：</p>
+      <ol class="faq-list">
+        <li><span class="num">1.</span><span class="q">是否需要看房费或中介费</span><br><span class="a">有些房源会收管理费或中介费，需要提前确认。</span></li>
+        <li><span class="num">2.</span><span class="q">押金是多少</span><br><span class="a">一般为：押一付一 / 押二付一。</span></li>
+        <li><span class="num">3.</span><span class="q">水电费是民用还是商用</span><br><span class="a">商用费用会比民用高。</span></li>
+        <li><span class="num">4.</span><span class="q">是否可以养宠物</span><br><span class="a">有些房东明确禁止养宠物。</span></li>
+        <li><span class="num">5.</span><span class="q">跟谁签合同</span><br><span class="a">房东 / 中介 / 租客转租。最好确认房产证明或授权委托。</span></li>
+        <li><span class="num">6.</span><span class="q">是否允许转租</span><br><span class="a">如果需要转租，流程和费用要提前了解。</span></li>
+        <li><span class="num">7.</span><span class="q">退租规则</span><br><span class="a">正常磨损是否会扣押金？提前退租是否有违约金？</span></li>
+        <li><span class="num">8.</span><span class="q">房屋家具家电包含哪些</span><br><span class="a">例如：洗衣机、冰箱、炉灶、床、桌椅等。</span></li>
+        <li><span class="num">9.</span><span class="q">家具家电坏了谁维修</span><br><span class="a">维修费用由房东还是租客承担。</span></li>
+        <li><span class="num">10.</span><span class="q">周边生活配套</span><br><span class="a">附近是否有：超市、商场、药店、地铁、公交站等。</span></li>
+        <li><span class="num">11.</span><span class="q">每月大概费用</span><br><span class="a">租金 + 物业费 + 水电煤 + 网络费。</span></li>
+        <li><span class="num">12.</span><span class="q">押金是否可以随时退</span><br><span class="a">确认押金退还时间。</span></li>
+        <li><span class="num">13.</span><span class="q">钥匙数量</span><br><span class="a">房东是否保留钥匙，需要确认。</span></li>
+        <li><span class="num">14.</span><span class="q">暖气和热水系统</span><br><span class="a">锅炉供暖还是热水器，需要了解如何使用。</span></li>
+        <li><span class="num">15.</span><span class="q">网络和电视费用</span><br><span class="a">是否包含在租金中。</span></li>
+      </ol>
+    </section>
+
+    <section class="faq-section" aria-labelledby="faq-buy">
+      <h2 id="faq-buy">匈牙利买房流程｜布达佩斯买房攻略</h2>
+      <p class="intro">很多朋友问：外国人可以在匈牙利买房吗？流程是什么？费用多少？简单整理了一份实用指南：</p>
+
+      <h3 style="font-size:1.1rem; margin:1rem 0 0.5rem; color: var(--color-primary);">购房流程（标准步骤）</h3>
+      <ol class="faq-steps">
+        <li>选房 & 签意向协议</li>
+        <li>支付定金（通常约 10%）</li>
+        <li>律师审查房屋产权</li>
+        <li>申请外国人购房许可</li>
+        <li>签正式购房合同并付款</li>
+        <li>土地登记处办理过户</li>
+      </ol>
+      <div class="faq-meta">⏱ 时间周期：约 1–3 个月完成交房；3–6 个月完成正式过户，并收到房产税通知。</div>
+
+      <h3 style="font-size:1.1rem; margin:1.25rem 0 0.5rem; color: var(--color-primary);">税费 & 成本</h3>
+      <p class="intro" style="margin-bottom:0.5rem;">主要费用包括：</p>
+      <ul class="faq-checklist">
+        <li>房产转让税：4%</li>
+        <li>律师费：约 0.5%</li>
+        <li>中介费：约 2–3%（一般由卖方承担，具体可协商）</li>
+        <li>登记费用：约 100–200€（包括房契费、土地登记费等）</li>
+      </ul>
+
+      <h3 style="font-size:1.1rem; margin:1.25rem 0 0.5rem; color: var(--color-primary);">贷款情况</h3>
+      <ul class="faq-checklist">
+        <li>有本地收入可以申请贷款</li>
+        <li>外国人需要长期居留身份</li>
+        <li>贷款利率约 5%–8%（根据市场变化）</li>
+      </ul>
+
+      <h3 style="font-size:1.1rem; margin:1.25rem 0 0.5rem; color: var(--color-primary);">租赁市场</h3>
+      <ul class="faq-checklist">
+        <li>布达佩斯市中心租房需求较高</li>
+        <li>学生和年轻人租房市场活跃</li>
+        <li>很多投资者会购买翻新房用于出租</li>
+      </ul>
+    </section>
+
+    <p class="faq-back"><a href="index.html" class="btn btn-outline">返回首页</a></p>
   </main>
 
   <footer class="site-footer">
     <div class="container">
       <div class="footer-grid footer-grid-wide">
         <div>
-          <div class="footer-title">Ingatlan.hu</div>
+          <div class="footer-title">匈牙利房产</div>
           <ul class="footer-links">
             <li><a href="about.html" data-i18n="footerAbout">Rólunk</a></li>
             <li><a href="contact.html" data-i18n="footerContact">Kapcsolat</a></li>
             <li><a href="faq.html" data-i18n="footerFaq">GYIK</a></li>
-          </ul>
-        </div>
-        <div>
-          <div class="footer-title" data-i18n="footerUseful">Hasznos</div>
-          <ul class="footer-links">
-            <li><a href="calculator.html" data-i18n="serviceLoan">Hitelkalkulátor</a></li>
-            <li><a href="moving.html" data-i18n="serviceMove">Költöztetés</a></li>
-            <li><a href="renovation.html" data-i18n="serviceRenovate">Felújítás</a></li>
           </ul>
         </div>
         <div>
