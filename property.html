@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lakás Budapest V. kerület | Ingatlan</title>
+  <meta name="description" content="Ingatlan részletek: cím, ár, alapterület, leírás. Kapcsolat a hirdetővel.">
+  <link rel="canonical" href="https://ingatlan.example.com/property.html">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Lakás Budapest V. kerület | Ingatlan">
+  <meta property="og:description" content="Ingatlan részletek: cím, ár, alapterület, leírás.">
+  <meta property="og:url" content="https://ingatlan.example.com/property.html">
+  <base href="./">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/property.css">
+</head>
+<body>
+  <a href="#main" class="skip-link" data-i18n="skipToContent">Ugrás a tartalomra</a>
+  <header class="site-header">
+    <div class="container">
+      <a href="index.html" class="logo">Ingatlan.hu</a>
+      <button type="button" class="nav-toggle" aria-label="Menü" aria-expanded="false">☰</button>
+      <nav class="nav-main">
+        <a href="search.html" data-i18n="navSearch">Keresés</a>
+        <a href="account.html" data-i18n="navMyAccount">Fiókom</a>
+      </nav>
+      <div class="nav-actions">
+        <div class="lang-switcher" aria-label="Language"></div>
+        <a href="account.html#publish" class="btn btn-outline" data-i18n="navPostAd">Hirdetés feladása</a>
+        <a href="account.html" class="btn btn-outline" data-auth="user" data-i18n="navMyAccount" style="display:none">Fiókom</a>
+        <button type="button" class="btn btn-ghost" id="header-logout-btn" data-auth="user" data-i18n="navLogout" style="display:none">Kijelentkezés</button>
+        <a href="login.html" class="btn btn-primary" data-auth="guest" data-i18n="navLogin">Bejelentkezés</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="container">
+    <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+    <div id="property-404" class="property-404" hidden>
+      <h2 data-i18n="propNotFound">Az ingatlan nem található</h2>
+      <p data-i18n="propNotFoundDesc">A kért hirdetés lejárt vagy nem létezik.</p>
+      <a href="search.html" class="btn btn-primary" data-i18n="navSearch">Keresés</a>
+    </div>
+    <div id="property-root" class="property-content-wrap">
+    <div class="page-header">
+      <h1 class="page-title" id="prop-title" data-i18n="propDetailTitle">Belvárosi lakás, teljesen felújítva</h1>
+      <p class="page-subtitle" id="prop-subtitle" data-i18n="propDetailSubtitle">Budapest V. kerület, Belváros · 72 m² · 3 szoba</p>
+      <div class="prop-top-meta" id="prop-top-meta"></div>
+    </div>
+
+    <div class="property-hero">
+      <div class="gallery-wrap">
+        <div class="gallery-main" id="gallery-main" role="button" tabindex="0" data-i18n-aria-label="propGalleryZoom" aria-label="Nagyítás">
+          <img id="gallery-img" src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&h=750&fit=crop" alt="Lakás főképe" loading="lazy">
+          <span class="gallery-watermark">© Ingatlan.hu</span>
+          <div class="gallery-badges" id="gallery-badges"></div>
+          <div class="gallery-meta" id="gallery-meta"></div>
+        </div>
+        <div class="gallery-thumbs" id="gallery-thumbs">
+          <!-- Filled by property.js -->
+        </div>
+      </div>
+
+      <aside class="detail-sidebar">
+        <div class="detail-price-block" id="detail-price-block">
+          <div class="detail-price" id="detail-price">89 500 000 Ft</div>
+          <div class="detail-price-unit" id="detail-price-unit">598 000 Ft/m²</div>
+          <div class="detail-quick-specs" id="detail-quick-specs">
+            <span>72 m²</span>
+            <span>3 szoba</span>
+            <span>2. emelet</span>
+            <span>Lift: Igen</span>
+          </div>
+          <div class="detail-highlights" id="detail-highlights" hidden></div>
+          <div class="detail-actions">
+            <button type="button" class="btn btn-accent" id="detail-primary-contact" data-i18n="propShowPhone">Telefon megjelenítése</button>
+            <button type="button" class="btn btn-outline" data-i18n="propAddFavorite">♡ Kedvencekhez</button>
+          </div>
+        </div>
+        <div class="contact-block" id="contact-block">
+          <div class="publisher">
+            <div class="publisher-logo">🏢</div>
+            <div>
+              <div class="publisher-name" id="publisher-name">Duna Ingatlan Kft.</div>
+              <div class="publisher-id"><span data-i18n="publisherId">Nyilvántartási szám: </span><span id="publisher-id">12345</span></div>
+            </div>
+          </div>
+          <div class="contact-inline-meta" id="contact-inline-meta" hidden></div>
+          <div class="contact-reveal">
+            <button type="button" class="btn btn-primary" id="reveal-phone" data-i18n="propRevealPhone">Telefonszám megjelenítése</button>
+            <p class="contact-hint" id="contact-hint" hidden></p>
+            <p class="phone-revealed" id="phone-revealed" hidden></p>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Specs table -->
+    <section class="specs-section" id="specs-section">
+      <h2 data-i18n="propDataSheet">Ingatlan adatlap</h2>
+      <table class="specs-table" id="specs-table">
+        <tbody>
+          <tr><th data-i18n="propBasicInfo">Alapadatok</th><td></td></tr>
+          <tr><th data-i18n="propYearBuilt">Építés éve</th><td>1898 (2022)</td></tr>
+          <tr><th data-i18n="propOrientation">Irány</th><td>Délkelet</td></tr>
+          <tr><th data-i18n="propCeilingHeight">Belmagasság</th><td>2,85 m</td></tr>
+          <tr><th data-i18n="propCommonCost">Közös költség</th><td>25 000 Ft/hó</td></tr>
+          <tr><th data-i18n="propFacilities">Felszereltség</th><td></td></tr>
+          <tr><th data-i18n="propAC">Légkondicionáló</th><td>Igen</td></tr>
+          <tr><th data-i18n="propElevator">Lift</th><td>Igen</td></tr>
+          <tr><th data-i18n="propAlarm">Riasztó</th><td>Igen</td></tr>
+          <tr><th data-i18n="propGarden">Kertkapcsolatos</th><td>Nem</td></tr>
+          <tr><th data-i18n="propEnergy">Energia & közüzemi</th><td></td></tr>
+          <tr><th data-i18n="propEnergyCert">Energia tanúsítvány</th><td>C</td></tr>
+          <tr><th data-i18n="propUtilities">Víz, gáz, áram</th><td>~15 000 Ft/hó</td></tr>
+          <tr><th data-i18n="propInternet">Internet</th><td>Elérhető</td></tr>
+          <tr><th data-i18n="propLegal">Jogi állapot</th><td></td></tr>
+          <tr><th data-i18n="propMortgage">Zálog / jelzálog</th><td>Nincs</td></tr>
+          <tr><th data-i18n="propMoveIn">Azonnali beköltözés</th><td>Igen</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Summary + Description -->
+    <section class="description-section" id="description-section">
+      <h2 data-i18n="propDescription">Leírás</h2>
+      <p class="prop-summary" id="prop-summary"></p>
+      <div class="prose" id="prop-description"></div>
+    </section>
+
+    <!-- Floor plan -->
+    <section class="specs-section" id="floor-plan-section">
+      <h2 data-i18n="propFloorPlanSection">Alaprajz</h2>
+      <div class="floor-plan-wrap" id="floor-plan-wrap">
+        <img id="floor-plan-img" class="floor-plan-img" alt="" loading="lazy">
+      </div>
+    </section>
+
+    <!-- Map -->
+    <section class="map-section" id="map-section">
+      <h2 data-i18n="propMap">Környék (hozzávetőleges hely)</h2>
+      <p class="map-district" id="map-district" hidden></p>
+      <p class="map-address" id="map-address"></p>
+      <div class="map-embed-wrap" id="map-embed-wrap">
+        <iframe id="map-iframe" class="map-iframe" title="Térkép" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+      <p class="map-note" id="map-precision-note" hidden></p>
+      <p class="map-note" data-i18n="propMapNote">A pontos címet a hirdetővel való kapcsolatfelvétel után tudjuk megosztani.</p>
+    </section>
+
+
+
+    <!-- Contact form -->
+    <section class="contact-form-section">
+      <h2 data-i18n="propSendMessage">Küldjön üzenetet</h2>
+      <form class="contact-form" id="contact-form">
+        <div class="form-grid">
+          <div>
+            <label class="label" for="name" data-i18n="propYourName">Név</label>
+            <input type="text" id="name" name="name" class="input" required>
+          </div>
+          <div>
+            <label class="label" for="email" data-i18n="propYourEmail">E-mail</label>
+            <input type="email" id="email" name="email" class="input" required>
+          </div>
+          <div class="full">
+            <label class="label" for="message" data-i18n="propMessage">Üzenet</label>
+            <textarea id="message" name="message" class="textarea" rows="4" data-i18n-placeholder="propMessagePlaceholder" placeholder="Kérdése..."></textarea>
+          </div>
+        </div>
+        <div style="margin-top: var(--space-4);">
+          <button type="submit" class="btn btn-primary" data-i18n="propSend">Üzenet küldése</button>
+        </div>
+      </form>
+    </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid footer-grid-wide">
+        <div>
+          <div class="footer-title">Ingatlan.hu</div>
+          <ul class="footer-links">
+            <li><a href="about.html" data-i18n="footerAbout">Rólunk</a></li>
+            <li><a href="contact.html" data-i18n="footerContact">Kapcsolat</a></li>
+            <li><a href="faq.html" data-i18n="footerFaq">GYIK</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerUseful">Hasznos</div>
+          <ul class="footer-links">
+            <li><a href="calculator.html" data-i18n="serviceLoan">Hitelkalkulátor</a></li>
+            <li><a href="moving.html" data-i18n="serviceMove">Költöztetés</a></li>
+            <li><a href="renovation.html" data-i18n="serviceRenovate">Felújítás</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerForAdvertisers">Hirdetőnek</div>
+          <ul class="footer-links">
+            <li><a href="account.html#publish" data-i18n="navPostAd">Hirdetés feladása</a></li>
+            <li><a href="for-agents.html" data-i18n="footerForAgents">Ingatlanosoknak</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerLegal">Jogi</div>
+          <ul class="footer-links">
+            <li><a href="privacy.html" data-i18n="footerPrivacy">Adatvédelem</a></li>
+            <li><a href="terms.html" data-i18n="footerTerms">Felhasználási feltételek</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerApp">App</div>
+          <ul class="footer-links footer-app-badges">
+            <li><a href="#" class="app-badge" aria-label="App Store">App Store</a></li>
+            <li><a href="#" class="app-badge" aria-label="Google Play">Google Play</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <div class="cookie-consent" id="cookie-consent" hidden>
+    <div class="cookie-consent-inner container">
+      <p class="cookie-consent-text" data-i18n="cookieText">A weboldal cookie-kat használ a megfelelő működéshez és a felhasználói élmény javításához.</p>
+      <div class="cookie-consent-actions">
+        <button type="button" class="btn btn-ghost" id="cookie-settings" data-i18n="cookieSettings">Beállítások</button>
+        <button type="button" class="btn btn-primary" id="cookie-accept" data-i18n="cookieAccept">Rendben</button>
+      </div>
+    </div>
+  </div>
+  <script src="js/translations.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/cookie-consent.js"></script>
+  <script src="js/header.js"></script>
+  <script src="js/auth-header.js"></script>
+  <script src="js/property.js"></script>
+</body>
+</html>

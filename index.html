@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>匈牙利房产平台 | Ingatlan</title>
+  <meta name="description" content="匈牙利房产平台，提供房屋买卖、租赁、搜索、发布与房产管理服务。">
+  <link rel="canonical" href="https://ingatlan.example.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="匈牙利房产平台 | Ingatlan">
+  <meta property="og:description" content="匈牙利房产平台，提供房屋买卖、租赁、搜索、发布与房产管理服务。">
+  <meta property="og:url" content="https://ingatlan.example.com/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="匈牙利房产平台 | Ingatlan">
+  <meta name="twitter:description" content="匈牙利房产平台，提供房屋买卖、租赁、搜索、发布与房产管理服务。">
+  <base href="./">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/home.css">
+  <style>
+    /* 后备：直接打开文件时也能看到基本样式 */
+    body { margin: 0; font-family: system-ui, sans-serif; background: #f8f6f2; color: #2c2c28; }
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; }
+    a { color: #1f6b49; }
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip-link" data-i18n="skipToContent">Ugrás a tartalomra</a>
+  <header class="site-header">
+    <div class="container">
+      <a href="index.html" class="logo">Ingatlan.hu</a>
+      <button type="button" class="nav-toggle" aria-label="Menü" aria-expanded="false">☰</button>
+      <nav class="nav-main">
+        <a href="search.html" data-i18n="navSearch">Keresés</a>
+        <a href="account.html" data-i18n="navMyAccount">Fiókom</a>
+      </nav>
+      <div class="nav-actions">
+        <div class="lang-switcher" aria-label="Language"></div>
+        <a href="account.html#publish" class="btn btn-outline" data-i18n="navPostAd">Hirdetés feladása</a>
+        <a href="account.html" class="btn btn-outline" data-auth="user" data-i18n="navMyAccount" style="display:none">Fiókom</a>
+        <button type="button" class="btn btn-ghost" id="header-logout-btn" data-auth="user" data-i18n="navLogout" style="display:none">Kijelentkezés</button>
+        <a href="login.html" class="btn btn-primary" data-auth="guest" data-i18n="navLogin">Bejelentkezés</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- Hero + Global Search -->
+    <section class="hero">
+      <div class="hero-bg"></div>
+      <div class="container hero-inner">
+        <h1 class="hero-title" data-i18n="homeHeroTitle">Találd meg álmaid otthonát</h1>
+        <p class="hero-subtitle" data-i18n="homeHeroSubtitle">Keresés város, kerület, utca vagy akár projektszám alapján</p>
+        
+        <form class="search-global" action="search.html" method="get" role="search" id="hero-search-form">
+          <div class="search-input-wrap">
+            <span class="search-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            </span>
+            <input type="text" name="q" id="hero-search-input" class="input search-input" data-i18n-placeholder="homeSearchPlaceholder" placeholder="Város, kerület, utca" autocomplete="off">
+          </div>
+          <div class="search-options search-options--multi">
+            <select name="category" class="select search-select" data-i18n-aria-label="homeCategoryAria" aria-label="Eladó / Kiadó" title="Kategória: eladó vagy kiadó">
+              <option value="" data-i18n="searchTabAll">Mind</option>
+              <option value="buy" data-i18n="homeTabBuy">Eladó</option>
+              <option value="rent" data-i18n="homeTabRent">Kiadó</option>
+            </select>
+            <div class="search-price-row" role="group" aria-labelledby="hero-price-label">
+              <span id="hero-price-label" class="search-row-label" data-i18n="homeLabelPrice">Ár</span>
+              <input type="number" name="price_min_mio" id="hero-price-min" class="input search-input-num" placeholder="–" min="0" step="1">
+              <input type="number" name="price_max_mio" id="hero-price-max" class="input search-input-num" placeholder="–" min="0" step="1">
+              <span class="search-unit" data-i18n="homePriceUnit" title="Millió forint">millió Ft</span>
+            </div>
+            <div class="search-area-row" role="group" aria-labelledby="hero-area-label">
+              <span id="hero-area-label" class="search-row-label" data-i18n="homeLabelArea">Alapterület</span>
+              <input type="number" name="area_min" class="input search-input-num" placeholder="–" min="0" step="1">
+              <input type="number" name="area_max" class="input search-input-num" placeholder="–" min="0" step="1">
+              <span class="search-unit">m²</span>
+            </div>
+            <select name="rooms" class="select search-select" data-i18n-aria-label="filterRooms" aria-label="Szobaszám">
+              <option value="" data-i18n="filterAny">Bármelyik</option>
+              <option value="1">1+</option>
+              <option value="2">2+</option>
+              <option value="3">3+</option>
+              <option value="4">4+</option>
+            </select>
+            <button type="submit" class="btn search-submit" data-i18n="homeSearchBtn">Keres</button>
+          </div>
+        </form>
+        <div class="hero-tabs">
+          <a href="search.html?category=buy" class="hero-tab" data-i18n="homeTabBuy">Eladó</a>
+          <a href="search.html?category=rent" class="hero-tab" data-i18n="homeTabRent">Kiadó</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Live stats (在售房源、今日新增由 API 实时更新) -->
+    <section class="stats-bar">
+      <div class="container stats-inner">
+        <div class="stat">
+          <span class="stat-value" id="stat-active-listings" data-count="6">6</span>
+          <span class="stat-label" data-i18n="statActive">Aktív hirdetés</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="stat-new-today">0</span>
+          <span class="stat-label" data-i18n="statNewToday">Ma új</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Hot / Recommended areas -->
+    <section class="section areas-section">
+      <div class="container">
+        <h2 class="section-title" data-i18n="homePopularAreas">Népszerű régiók</h2>
+        <div class="areas-grid">
+          <a href="search.html?area=budapest-belvaros" class="area-card" data-area="budapest-belvaros">
+            <div class="area-card-img" style="background: linear-gradient(135deg, #1f6b49 0%, #2d8c60 100%);"></div>
+            <div class="area-card-body">
+              <h3 data-i18n="areaBudapest">Budapest belváros</h3>
+              <p data-i18n="areaBudapestDesc">V. és VI. kerület kiválasztott ingatlanjai</p>
+              <span class="area-count" id="area-count-belvaros">0</span><span class="area-count" data-i18n="areaListings"> hirdetés</span>
+            </div>
+          </a>
+          <a href="search.html?area=balaton" class="area-card" data-area="balaton">
+            <div class="area-card-img" style="background: linear-gradient(135deg, #2d8c60 0%, #67b77f 100%);"></div>
+            <div class="area-card-body">
+              <h3 data-i18n="areaBalaton">Balaton partvidék</h3>
+              <p data-i18n="areaBalatonDesc">Nyaraló, apartman, telek a tó körül</p>
+              <span class="area-count" id="area-count-balaton">0</span><span class="area-count" data-i18n="areaListings"> hirdetés</span>
+            </div>
+          </a>
+          <a href="search.html?area=budapest-agglomeracio" class="area-card" data-area="budapest-agglomeracio">
+            <div class="area-card-img" style="background: linear-gradient(135deg, #2f6f4b 0%, #78b884 100%);"></div>
+            <div class="area-card-body">
+              <h3 data-i18n="areaAgglo">Budapest agglomeráció</h3>
+              <p data-i18n="areaAggloDesc">Családi házak, kertvárosi lehetőségek</p>
+              <span class="area-count" id="area-count-agglomeracio">0</span><span class="area-count" data-i18n="areaListings"> hirdetés</span>
+            </div>
+          </a>
+        </div>
+        <div class="areas-quick">
+          <a href="search.html?q=Pest" data-i18n="areaPest">Pest megye</a>
+          <a href="search.html?area=balaton" data-i18n="areaBalatonShort">Balaton</a>
+          <a href="search.html?q=Debrecen" data-i18n="areaDebrecen">Debrecen</a>
+          <a href="search.html?q=Szeged" data-i18n="areaSzeged">Szeged</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Latest listings -->
+    <section class="section latest-section" id="latest-section">
+      <div class="container">
+        <h2 class="section-title" data-i18n="homeLatest">Legújabb hirdetések</h2>
+        <div class="latest-grid cards-grid" id="latest-grid"></div>
+        <p class="latest-more"><a href="search.html" class="btn btn-outline" data-i18n="homeViewAll">Összes megtekintése</a></p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Location picker modal (Budapest only, opens when search box is clicked) -->
+  <div class="location-modal-overlay" id="location-modal" role="dialog" aria-modal="true" aria-labelledby="location-modal-title" hidden>
+    <div class="location-modal">
+      <div class="location-modal-header">
+        <h2 class="location-modal-title" id="location-modal-title" data-i18n="locationEnterCity">Enter city or location</h2>
+        <input type="text" class="input location-modal-input" data-i18n-placeholder="locationPlaceholder" placeholder="e.g.: District V. or Szeged Ősz street" autocomplete="off">
+      </div>
+      <div class="location-panel-inner">
+        <div class="location-districts">
+          <p class="location-districts-label" data-i18n="locationSelectDistrict">Select a district</p>
+          <div class="location-districts-list" id="budapest-districts"></div>
+        </div>
+        <div class="location-map-wrap">
+          <div class="location-map" id="budapest-map" aria-label="Budapest district map">
+            <div class="location-map-inner">
+              <img src="assets/budapest-districts.png" alt="Budapest districts I.–XXIII." class="budapest-map-img">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="location-modal-actions">
+        <button type="button" class="btn btn-location-cancel" id="location-modal-cancel" data-i18n="locationCancel">Cancel</button>
+        <button type="button" class="btn btn-location-ok" id="location-modal-ok" data-i18n="locationOk">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid footer-grid-wide">
+        <div>
+          <div class="footer-title">Ingatlan.hu</div>
+          <ul class="footer-links">
+            <li><a href="about.html" data-i18n="footerAbout">Rólunk</a></li>
+            <li><a href="contact.html" data-i18n="footerContact">Kapcsolat</a></li>
+            <li><a href="faq.html" data-i18n="footerFaq">GYIK</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerUseful">Hasznos</div>
+          <ul class="footer-links">
+            <li><a href="calculator.html" data-i18n="serviceLoan">Hitelkalkulátor</a></li>
+            <li><a href="moving.html" data-i18n="serviceMove">Költöztetés</a></li>
+            <li><a href="renovation.html" data-i18n="serviceRenovate">Felújítás</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerForAdvertisers">Hirdetőnek</div>
+          <ul class="footer-links">
+            <li><a href="account.html#publish" data-i18n="navPostAd">Hirdetés feladása</a></li>
+            <li><a href="for-agents.html" data-i18n="footerForAgents">Ingatlanosoknak</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerLegal">Jogi</div>
+          <ul class="footer-links">
+            <li><a href="privacy.html" data-i18n="footerPrivacy">Adatvédelem</a></li>
+            <li><a href="terms.html" data-i18n="footerTerms">Felhasználási feltételek</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerApp">App</div>
+          <ul class="footer-links footer-app-badges">
+            <li><a href="#" class="app-badge" aria-label="App Store">App Store</a></li>
+            <li><a href="#" class="app-badge" aria-label="Google Play">Google Play</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <div class="cookie-consent" id="cookie-consent" hidden>
+    <div class="cookie-consent-inner container">
+      <p class="cookie-consent-text" data-i18n="cookieText">A weboldal cookie-kat használ a megfelelő működéshez és a felhasználói élmény javításához.</p>
+      <div class="cookie-consent-actions">
+        <button type="button" class="btn btn-ghost" id="cookie-settings" data-i18n="cookieSettings">Beállítások</button>
+        <button type="button" class="btn btn-primary" id="cookie-accept" data-i18n="cookieAccept">Rendben</button>
+      </div>
+    </div>
+  </div>
+  <script src="js/translations.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/cookie-consent.js"></script>
+  <script src="js/header.js"></script>
+  <script src="js/auth-header.js"></script>
+  <script src="js/home.js"></script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="serviceMove">Költöztetés | Ingatlan</title>
+  <meta name="description" content="Költöztető cégek ajánlatai.">
+  <base href="./">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/common.css">
+</head>
+<body>
+  <a href="#main" class="skip-link" data-i18n="skipToContent">Ugrás a tartalomra</a>
+  <header class="site-header">
+    <div class="container">
+      <a href="index.html" class="logo">Ingatlan.hu</a>
+      <button type="button" class="nav-toggle" aria-label="Menü" aria-expanded="false">☰</button>
+      <nav class="nav-main">
+        <a href="search.html" data-i18n="navSearch">Keresés</a>
+        <a href="account.html" data-i18n="navMyAccount">Fiókom</a>
+      </nav>
+      <div class="nav-actions">
+        <div class="lang-switcher" aria-label="Language"></div>
+        <a href="account.html#publish" class="btn btn-outline" data-i18n="navPostAd">Hirdetés feladása</a>
+        <a href="account.html" class="btn btn-outline" data-auth="user" data-i18n="navMyAccount" style="display:none">Fiókom</a>
+        <button type="button" class="btn btn-ghost" id="header-logout-btn" data-auth="user" data-i18n="navLogout" style="display:none">Kijelentkezés</button>
+        <a href="login.html" class="btn btn-primary" data-auth="guest" data-i18n="navLogin">Bejelentkezés</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="container" style="padding: 3rem 1.5rem;">
+    <h1 class="page-title" data-i18n="serviceMove">Költöztetés</h1>
+    <p class="page-subtitle" data-i18n="serviceMoveDesc">Költöztető cégek ajánlatai. Ez egy helykitöltő oldal; a szolgáltatói lista később kerül megvalósításra.</p>
+    <p><a href="index.html" class="btn btn-outline">Vissza a főoldalra</a></p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid footer-grid-wide">
+        <div>
+          <div class="footer-title">Ingatlan.hu</div>
+          <ul class="footer-links">
+            <li><a href="about.html" data-i18n="footerAbout">Rólunk</a></li>
+            <li><a href="contact.html" data-i18n="footerContact">Kapcsolat</a></li>
+            <li><a href="faq.html" data-i18n="footerFaq">GYIK</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerUseful">Hasznos</div>
+          <ul class="footer-links">
+            <li><a href="calculator.html" data-i18n="serviceLoan">Hitelkalkulátor</a></li>
+            <li><a href="moving.html" data-i18n="serviceMove">Költöztetés</a></li>
+            <li><a href="renovation.html" data-i18n="serviceRenovate">Felújítás</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerForAdvertisers">Hirdetőnek</div>
+          <ul class="footer-links">
+            <li><a href="account.html#publish" data-i18n="navPostAd">Hirdetés feladása</a></li>
+            <li><a href="for-agents.html" data-i18n="footerForAgents">Ingatlanosoknak</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerLegal">Jogi</div>
+          <ul class="footer-links">
+            <li><a href="privacy.html" data-i18n="footerPrivacy">Adatvédelem</a></li>
+            <li><a href="terms.html" data-i18n="footerTerms">Felhasználási feltételek</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerApp">App</div>
+          <ul class="footer-links footer-app-badges">
+            <li><a href="#" class="app-badge" aria-label="App Store">App Store</a></li>
+            <li><a href="#" class="app-badge" aria-label="Google Play">Google Play</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <div class="cookie-consent" id="cookie-consent" hidden>
+    <div class="cookie-consent-inner container">
+      <p class="cookie-consent-text" data-i18n="cookieText">A weboldal cookie-kat használ a megfelelő működéshez és a felhasználói élmény javításához.</p>
+      <div class="cookie-consent-actions">
+        <button type="button" class="btn btn-ghost" id="cookie-settings" data-i18n="cookieSettings">Beállítások</button>
+        <button type="button" class="btn btn-primary" id="cookie-accept" data-i18n="cookieAccept">Rendben</button>
+      </div>
+    </div>
+  </div>
+  <script src="js/translations.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/cookie-consent.js"></script>
+  <script src="js/header.js"></script>
+  <script src="js/auth-header.js"></script>
+</body>
+</html>

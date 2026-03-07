@@ -1,0 +1,20 @@
+[
+  {
+    "id": "1772467361246-tf8wuo",
+    "email": "yilin_1024@hotmail.com",
+    "name": "chen yilin",
+    "passwordHash": "$2a$10$cAIWHuiahvojf4R75iIlLu9xmYSY6jmVdiH2Wjajvl1G/Zao7Gbfy",
+    "isAdmin": true,
+    "canPublish": true,
+    "createdAt": "2026-03-01T00:00:00.000Z"
+  },
+  {
+    "id": "1772841940941-s80z8c",
+    "email": "yilin_1025@hotmail.com",
+    "name": "chen yilin",
+    "passwordHash": "$2a$10$4JEqUMmAfWNO1WXF1z7hFO6eNz2NTSZqNTEV.6n1qPmido2u1PiRy",
+    "isAdmin": false,
+    "canPublish": true,
+    "createdAt": "2026-03-07T00:05:41.012Z"
+  }
+]

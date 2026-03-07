@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fiókom | Ingatlan</title>
+  <meta name="description" content="Fiókom: hirdetéseim, kedvencek, mentett keresések és beállítások.">
+  <link rel="canonical" href="https://ingatlan.example.com/account.html">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Fiókom | Ingatlan">
+  <meta property="og:url" content="https://ingatlan.example.com/account.html">
+  <base href="./">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/account.css">
+</head>
+<body>
+  <a href="#main" class="skip-link" data-i18n="skipToContent">Ugrás a tartalomra</a>
+  <header class="site-header">
+    <div class="container">
+      <a href="index.html" class="logo">Ingatlan.hu</a>
+      <button type="button" class="nav-toggle" aria-label="Menü" aria-expanded="false">☰</button>
+      <nav class="nav-main">
+        <a href="search.html" data-i18n="navSearch">Keresés</a>
+        <a href="account.html" data-i18n="navMyAccount">Fiókom</a>
+      </nav>
+      <div class="nav-actions">
+        <div class="lang-switcher" aria-label="Language"></div>
+        <a href="publish.html" class="btn btn-accent" data-i18n="navPostAd">Hirdetés feladása</a>
+        <a href="account.html" class="btn btn-outline" data-auth="user" data-i18n="navMyAccount">Fiókom</a>
+        <button type="button" class="btn btn-ghost" id="header-logout-btn" data-auth="user" data-i18n="navLogout">Kijelentkezés</button>
+        <a href="login.html" class="btn btn-primary" data-auth="guest" data-i18n="navLogin" style="display:none">Bejelentkezés</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="container">
+    <div class="page-header">
+      <h1 class="page-title" data-i18n="accountTitle">Fiókom</h1>
+      <p class="page-subtitle"><span id="account-user-greeting"></span><span data-i18n="accountSubtitle">Hirdetéseid, kedvenceid és kereséseid kezelése</span></p>
+    </div>
+
+    <div class="account-layout">
+      <nav class="account-nav" aria-label="Account menu">
+        <a href="account.html#listings" class="active" data-i18n="accountMyListings">Hirdetéseim</a>
+        <a href="account.html#favorites" data-i18n="accountFavorites">Kedvencek</a>
+        <a href="account.html#admin" id="account-admin-nav-link" data-admin-only hidden data-i18n="accountAdminPanel">审批状态</a>
+      </nav>
+
+      <div class="account-content">
+        <!-- My listings -->
+        <section id="listings" class="account-panel active">
+          <h2 class="panel-title" data-i18n="accountMyListings">Hirdetéseim</h2>
+          <p style="color: var(--color-text-muted); margin-bottom: var(--space-6);" data-i18n="accountListingsIntro">Itt láthatod a saját hirdetéseid megtekintéseit és érdeklődéseket.</p>
+          <div id="account-approval-banner" class="approval-banner" hidden></div>
+        </section>
+
+        <!-- Favorites -->
+        <section id="favorites" class="account-panel">
+          <h2 class="panel-title" data-i18n="accountFavorites">Kedvencek</h2>
+          <p style="color: var(--color-text-muted); margin-bottom: var(--space-6);" data-i18n="accountFavIntro">Kedvenc ingatlanok árváltozásáról e-mailben értesítünk.</p>
+          <div class="fav-grid" id="favorites-grid"></div>
+        </section>
+
+        <section id="admin" class="account-panel" data-admin-only hidden>
+          <h2 class="panel-title" data-i18n="accountAdminPanel">审批状态</h2>
+          <p class="admin-panel-intro" data-i18n="accountAdminPanelIntro">在这里查看待审批和已通过的发布账号。</p>
+          <div class="admin-status-section">
+            <h3 class="admin-status-title" data-i18n="accountPendingSection">待审批</h3>
+            <div id="admin-users-pending" class="admin-users-list"></div>
+            <p id="admin-users-pending-empty" class="results-empty" data-i18n="accountPendingEmpty" hidden>当前没有待审批账号。</p>
+          </div>
+          <div class="admin-status-section">
+            <h3 class="admin-status-title" data-i18n="accountApprovedSection">已通过</h3>
+            <div id="admin-users-approved" class="admin-users-list"></div>
+            <p id="admin-users-approved-empty" class="results-empty" data-i18n="accountApprovedEmpty" hidden>当前没有已通过账号。</p>
+          </div>
+        </section>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid footer-grid-wide">
+        <div>
+          <div class="footer-title">Ingatlan.hu</div>
+          <ul class="footer-links">
+            <li><a href="about.html" data-i18n="footerAbout">Rólunk</a></li>
+            <li><a href="contact.html" data-i18n="footerContact">Kapcsolat</a></li>
+            <li><a href="faq.html" data-i18n="footerFaq">GYIK</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerUseful">Hasznos</div>
+          <ul class="footer-links">
+            <li><a href="calculator.html" data-i18n="serviceLoan">Hitelkalkulátor</a></li>
+            <li><a href="moving.html" data-i18n="serviceMove">Költöztetés</a></li>
+            <li><a href="renovation.html" data-i18n="serviceRenovate">Felújítás</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerForAdvertisers">Hirdetőnek</div>
+          <ul class="footer-links">
+            <li><a href="account.html#publish" data-i18n="navPostAd">Hirdetés feladása</a></li>
+            <li><a href="for-agents.html" data-i18n="footerForAgents">Ingatlanosoknak</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerLegal">Jogi</div>
+          <ul class="footer-links">
+            <li><a href="privacy.html" data-i18n="footerPrivacy">Adatvédelem</a></li>
+            <li><a href="terms.html" data-i18n="footerTerms">Felhasználási feltételek</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerApp">App</div>
+          <ul class="footer-links footer-app-badges">
+            <li><a href="#" class="app-badge" aria-label="App Store">App Store</a></li>
+            <li><a href="#" class="app-badge" aria-label="Google Play">Google Play</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <div class="cookie-consent" id="cookie-consent" hidden>
+    <div class="cookie-consent-inner container">
+      <p class="cookie-consent-text" data-i18n="cookieText">A weboldal cookie-kat használ a megfelelő működéshez és a felhasználói élmény javításához.</p>
+      <div class="cookie-consent-actions">
+        <button type="button" class="btn btn-ghost" id="cookie-settings" data-i18n="cookieSettings">Beállítások</button>
+        <button type="button" class="btn btn-primary" id="cookie-accept" data-i18n="cookieAccept">Rendben</button>
+      </div>
+    </div>
+  </div>
+  <script src="js/translations.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/cookie-consent.js"></script>
+  <script src="js/header.js"></script>
+  <script src="js/auth-header.js"></script>
+  <script src="js/account.js"></script>
+  <script>
+    (function () {
+      var apiBase = (window.location.protocol === 'file:' || (window.location.port && window.location.port !== '3000')) ? 'http://localhost:3000' : '';
+      function t(key, fallback) {
+        return (window.i18n && window.i18n.t) ? window.i18n.t(key) : (fallback || key);
+      }
+      function showAdminUi(show) {
+        document.querySelectorAll('[data-admin-only]').forEach(function (el) {
+          el.hidden = !show;
+        });
+      }
+      function setApprovalBanner(user) {
+        var banner = document.getElementById('account-approval-banner');
+        if (!banner) return;
+        if (!user || user.isAdmin || user.canPublish) {
+          banner.hidden = true;
+          return;
+        }
+        banner.textContent = t('accountApprovalPending', '你的账号已注册，等待管理员批准后才能发布房源。');
+        banner.hidden = false;
+      }
+      function renderAdminUsers(items) {
+        var pendingListEl = document.getElementById('admin-users-pending');
+        var approvedListEl = document.getElementById('admin-users-approved');
+        var pendingEmptyEl = document.getElementById('admin-users-pending-empty');
+        var approvedEmptyEl = document.getElementById('admin-users-approved-empty');
+        if (!pendingListEl || !approvedListEl || !pendingEmptyEl || !approvedEmptyEl) return;
+
+        pendingListEl.innerHTML = '';
+        approvedListEl.innerHTML = '';
+
+        var pendingItems = (items || []).filter(function (item) { return !item.isAdmin && !item.canPublish; });
+        var approvedItems = (items || []).filter(function (item) { return !item.isAdmin && item.canPublish; });
+
+        function renderUserCard(item, targetEl) {
+          var row = document.createElement('div');
+          row.className = 'admin-user-row';
+          var statusText = item.canPublish ? t('accountApprovalApprovedStatus', '已通过') : t('accountApprovalPendingStatus', '待审批');
+          var statusClass = item.canPublish ? 'status-pill status-pill--approved' : 'status-pill status-pill--pending';
+          row.innerHTML =
+            '<div class="admin-user-main">' +
+              '<h3 class="admin-user-name">' + (item.name || item.email || '').replace(/</g, '&lt;') + '</h3>' +
+              '<p class="admin-user-email">' + (item.email || '').replace(/</g, '&lt;') + '</p>' +
+              '<div class="admin-user-meta">' +
+                '<span class="' + statusClass + '">' + statusText + '</span>' +
+              '</div>' +
+            '</div>' +
+            '<div class="admin-user-actions">' +
+              '<button type="button" class="btn btn-outline approval-toggle" data-id="' + encodeURIComponent(item.id) + '" data-approved="' + (item.canPublish ? '1' : '0') + '">' + (item.canPublish ? t('accountRevokePublish', '改为待审批') : t('accountApprovePublish', '通过审批')) + '</button>' +
+            '</div>';
+          targetEl.appendChild(row);
+          var btn = row.querySelector('.approval-toggle');
+          if (btn) {
+            btn.addEventListener('click', function () {
+              var approved = btn.getAttribute('data-approved') !== '1';
+              btn.disabled = true;
+              fetch((apiBase || '') + '/api/admin/users/' + encodeURIComponent(item.id) + '/publish-approval', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ approved: approved })
+              }).then(function (r) {
+                return r.ok ? r.json() : Promise.reject(r);
+              }).then(function () {
+                refreshAdminUsers();
+              }).catch(function () {
+                btn.disabled = false;
+                alert(t('accountApprovalActionFailed', '操作失败，请重试。'));
+              });
+            });
+          }
+        }
+
+        pendingItems.forEach(function (item) { renderUserCard(item, pendingListEl); });
+        approvedItems.forEach(function (item) { renderUserCard(item, approvedListEl); });
+
+        pendingEmptyEl.hidden = pendingItems.length > 0;
+        approvedEmptyEl.hidden = approvedItems.length > 0;
+      }
+      function refreshAdminUsers() {
+        fetch((apiBase || '') + '/api/admin/users', { credentials: 'include' })
+          .then(function (r) { return r.ok ? r.json() : Promise.reject(r); })
+          .then(function (res) { renderAdminUsers(res.items || []); })
+          .catch(function () {});
+      }
+      fetch(apiBase + '/api/me', { credentials: 'include' })
+        .then(function (r) {
+          if (r.status === 401) {
+            window.location.href = (apiBase || '') + '/login.html?from=account';
+            return;
+          }
+          return r.json();
+        })
+        .then(function (data) {
+          if (data && data.user) {
+            var api = window.INGATLAN_API;
+            if (api && api.setCurrentUser) api.setCurrentUser(data.user);
+            showAdminUi(!!data.user.isAdmin);
+            setApprovalBanner(data.user);
+            if (!data.user.isAdmin && window.location.hash.slice(1) === 'admin') {
+              window.location.hash = 'listings';
+            }
+            var el = document.getElementById('account-user-greeting');
+            if (el) el.textContent = (data.user.name || data.user.email) + ' – ';
+            var ctaText = document.getElementById('publish-cta-text');
+            var ctaBtn = document.getElementById('publish-cta-btn');
+            if (ctaText) ctaText.textContent = (window.i18n && window.i18n.t('accountPublishLoggedIn')) || 'Bejelentkezve. Itt adhatod fel az ingatlanhirdetésed.';
+            if (ctaBtn) { ctaBtn.href = 'publish.html'; ctaBtn.textContent = (window.i18n && window.i18n.t('accountPublishGo')) || 'Hirdetés feladása'; }
+            if (data.user.isAdmin) refreshAdminUsers();
+            if (api && api.getMyListingsByUser) {
+              var section = document.getElementById('listings');
+              if (!section) return;
+              var userId = data.user.id;
+              var accountDeleteLabel = (window.i18n && window.i18n.t('accountDelete')) || '删除';
+              var renderMyListings = function (myListings) {
+                section.querySelectorAll('.listing-row').forEach(function (r) { r.remove(); });
+                var emptyEl = section.querySelector('.listing-empty-msg');
+                if (emptyEl) emptyEl.remove();
+                if (myListings.length === 0) {
+                  var p = document.createElement('p');
+                  p.className = 'listing-empty-msg results-empty';
+                  p.style.cssText = 'color:var(--color-text-muted);padding:var(--space-4);';
+                  p.setAttribute('data-i18n', 'accountListingsEmpty');
+                  p.textContent = (window.i18n && window.i18n.t('accountListingsEmpty')) || 'Még nincs hirdetésed.';
+                  section.appendChild(p);
+                } else {
+                  var unitRooms = (window.i18n && window.i18n.t('unitRooms')) || 'szoba';
+                  var accountViewsLabel = (window.i18n && window.i18n.t('accountViews')) || ' megtekintés';
+                  var accountEditLabel = (window.i18n && window.i18n.t('accountEdit')) || '编辑';
+                  myListings.forEach(function (item) {
+                    var isLocal = item.ownerId !== undefined;
+                    var priceStr = api.formatPrice(item.price);
+                    var row = document.createElement('div');
+                    row.className = 'listing-row';
+                    row.setAttribute('data-id', item.id);
+                    if (isLocal) row.setAttribute('data-is-local', '1');
+                    var viewHref = (apiBase || '') + '/property.html?id=' + encodeURIComponent(item.id);
+                    var editHref = (apiBase || '') + '/publish.html?edit=' + encodeURIComponent(item.id);
+                    row.innerHTML = '<div class="listing-thumb"><img src="' + (item.image || (item.images && item.images[0]) || '').replace(/"/g, '&quot;') + '" alt=""></div>' +
+                      '<div class="listing-info"><h3>' + (item.title || '').replace(/</g, '&lt;') + '</h3><p>' + (item.area || '') + ' m² · ' + (item.rooms || '') + ' ' + unitRooms + ' · ' + priceStr + '</p>' +
+                      '<div class="listing-stats"><span>👁 0</span><span>' + accountViewsLabel + '</span></div></div>' +
+                      '<div class="listing-actions">' +
+                        '<a href="' + viewHref + '" class="btn btn-outline" data-i18n="accountView">查看</a> ' +
+                        '<a href="' + editHref + '" class="btn btn-ghost" data-i18n="accountEdit">编辑</a> ' +
+                        '<button type="button" class="btn btn-ghost listing-delete" data-i18n="accountDelete">' + accountDeleteLabel + '</button>' +
+                      '</div>';
+                    section.appendChild(row);
+                    row.querySelector('.listing-delete').addEventListener('click', function () {
+                      if (!confirm((window.i18n && window.i18n.t('accountDeleteConfirm')) || '确定要删除这条房源吗？')) return;
+                      var id = row.getAttribute('data-id');
+                      var fromLocal = row.getAttribute('data-is-local') === '1';
+                      var done = function () {
+                        refreshMyListings();
+                      };
+                      if (fromLocal && api.removeMyListing) {
+                        api.removeMyListing(userId, id);
+                        done();
+                      } else {
+                        fetch((apiBase || '') + '/api/listings/' + encodeURIComponent(id), { method: 'DELETE', credentials: 'include' })
+                          .then(function (r) { return r.ok ? r.json() : Promise.reject(r); })
+                          .then(done)
+                          .catch(function () { alert((window.i18n && window.i18n.t('publishError')) || '删除失败，请重试。'); });
+                      }
+                    });
+                  });
+                  if (window.i18n && window.i18n.apply) window.i18n.apply();
+                }
+              };
+              var refreshMyListings = function () {
+                var localList = api.getMyListingsByUser(userId);
+                var serverBase = apiBase || '';
+                fetch(serverBase + '/api/my-listings', { credentials: 'include' })
+                  .then(function (r) { return r.ok ? r.json() : Promise.reject(r); })
+                  .then(function (res) {
+                    var serverIds = (res.items || []).map(function (i) { return String(i.id); });
+                    var localOnly = localList.filter(function (l) { return serverIds.indexOf(String(l.id)) === -1; });
+                    var combined = (res.items || []).concat(localOnly);
+                    renderMyListings(combined);
+                  })
+                  .catch(function () { renderMyListings(localList); });
+              };
+              refreshMyListings();
+            }
+          }
+          var favApi = window.INGATLAN_API;
+          if (data && data.user && favApi && favApi.getFavorites && favApi.getListingById) {
+            var accountUserId = data.user.id;
+            var favGrid = document.getElementById('favorites-grid');
+            var renderEmptyFavorites = function () {
+              if (!favGrid) return;
+              favGrid.innerHTML = '<p class="results-empty" style="grid-column:1/-1;color:var(--color-text-muted);padding:var(--space-4);" data-i18n="accountFavEmpty">Nincs kedvenc ingatlanod.</p>';
+              if (window.i18n && window.i18n.apply) window.i18n.apply();
+            };
+            var renderFavorites = function () {
+              if (!favGrid) return;
+              var favIds = favApi.getFavorites(accountUserId);
+              favGrid.innerHTML = '';
+              if (!favIds.length) {
+                renderEmptyFavorites();
+                return;
+              }
+              Promise.all(favIds.map(function (fid) {
+                return favApi.getListingById(fid).catch(function () { return null; });
+              })).then(function (items) {
+                var visibleItems = items.filter(Boolean);
+                if (!visibleItems.length) {
+                  renderEmptyFavorites();
+                  return;
+                }
+                var unitRooms = (window.i18n && window.i18n.t('unitRooms')) || 'szoba';
+                visibleItems.forEach(function (item) {
+                  var priceStr = favApi.formatPrice(item.price);
+                  var card = document.createElement('div');
+                  card.className = 'fav-card';
+                  card.innerHTML = '<div class="card-media"><img src="' + (item.image || '').replace(/"/g, '&quot;') + '" alt=""></div>' +
+                    '<div class="card-body"><div class="card-price">' + priceStr + '</div><div class="card-specs">' + (item.area || '') + ' m² · ' + (item.rooms || '') + ' ' + unitRooms + ' · ' + (item.location || '').replace(/</g, '&lt;') + '</div>' +
+                    '<div class="card-actions"><a href="property.html?id=' + encodeURIComponent(item.id) + '" class="btn btn-primary" data-i18n="accountView">Megtekintés</a> ' +
+                    '<button type="button" class="btn btn-ghost fav-remove" data-id="' + encodeURIComponent(item.id) + '" data-i18n="accountRemove">Eltávolítás</button></div></div>';
+                  favGrid.appendChild(card);
+                  card.querySelector('.fav-remove').addEventListener('click', function () {
+                    var list = favApi.getFavorites(accountUserId).filter(function (x) { return String(x) !== String(item.id); });
+                    favApi.setFavorites(list, accountUserId);
+                    renderFavorites();
+                  });
+                });
+                if (window.i18n && window.i18n.apply) window.i18n.apply();
+              }).catch(function () {
+                renderEmptyFavorites();
+              });
+            };
+            renderFavorites();
+          }
+        })
+        .catch(function () {});
+    })();
+  </script>
+</body>
+</html>

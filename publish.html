@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hirdetés feladása | Ingatlan</title>
+  <meta name="description" content="Ingatlan hirdetés feladása az Ingatlan.hu-n.">
+  <base href="./">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/common.css">
+  <style>
+    .publish-form { max-width: 560px; margin: 0 auto; padding: 3rem 1.5rem; }
+    .publish-form .form-group { margin-bottom: var(--space-4); }
+    .publish-form .label { display: block; margin-bottom: var(--space-1); }
+    .publish-form .input, .publish-form .select, .publish-form .textarea { width: 100%; padding: var(--space-3); }
+    .publish-form .textarea { min-height: 120px; resize: vertical; }
+    .publish-form .btn { margin-top: var(--space-2); }
+    .publish-form .auth-prompt { margin-bottom: var(--space-6); padding: var(--space-4); background: var(--color-bg); border-radius: var(--radius-lg); }
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip-link" data-i18n="skipToContent">Ugrás a tartalomra</a>
+  <header class="site-header">
+    <div class="container">
+      <a href="index.html" class="logo">Ingatlan.hu</a>
+      <button type="button" class="nav-toggle" aria-label="Menü" aria-expanded="false">☰</button>
+      <nav class="nav-main">
+        <a href="search.html" data-i18n="navSearch">Keresés</a>
+        <a href="account.html" data-i18n="navMyAccount">Fiókom</a>
+      </nav>
+      <div class="nav-actions">
+        <div class="lang-switcher" aria-label="Language"></div>
+        <a href="publish.html" class="btn btn-outline" data-i18n="navPostAd">Hirdetés feladása</a>
+        <a href="account.html" class="btn btn-outline" data-auth="user" data-i18n="navMyAccount" style="display:none">Fiókom</a>
+        <button type="button" class="btn btn-ghost" id="header-logout-btn" data-auth="user" data-i18n="navLogout" style="display:none">Kijelentkezés</button>
+        <a href="login.html" class="btn btn-primary" data-auth="guest" data-i18n="navLogin">Bejelentkezés</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <form class="publish-form" id="publish-form">
+      <h1 class="page-title" id="publish-page-title" data-i18n="accountPublishTitle">Hirdetés feladása</h1>
+      <p id="publish-subtitle" class="page-subtitle" data-i18n="accountPublishIntro">Töltsd ki az alábbi mezőket. Bejelentkezés szükséges.</p>
+      <p id="publish-auth-prompt" class="auth-prompt"><a href="login.html" class="btn btn-outline" data-i18n="accountPublishBtn">Hirdetés feladása (bejelentkezés)</a></p>
+      <div class="form-group">
+        <label class="label" for="pub-title" data-i18n="publishTitleLabel">标题</label>
+        <input type="text" id="pub-title" name="title" class="input" required data-i18n-placeholder="pubTitlePlaceholder" placeholder="pl. Belvárosi lakás, felújítva">
+      </div>
+      <div class="form-group">
+        <label class="label" for="pub-summary" data-i18n="publishSummaryLabel">简介</label>
+        <textarea id="pub-summary" name="summary" class="textarea" rows="3" style="min-height:80px" data-i18n-placeholder="pubSummaryPlaceholder" placeholder="一两句话简单介绍房源…"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="label" for="pub-category" data-i18n="publishCategory">Kategória</label>
+        <select id="pub-category" name="category" class="select" required>
+          <option value="buy" data-i18n="homeTabBuy">Eladó</option>
+          <option value="rent" data-i18n="homeTabRent">Kiadó</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="label" for="pub-property-type" data-i18n="publishPropertyType">Ingatlan típusa</label>
+        <select id="pub-property-type" name="propertyType" class="select">
+          <option value="" data-i18n="filterAny">—</option>
+          <option value="flat" data-i18n="propertyTypeFlat">公寓</option>
+          <option value="house" data-i18n="propertyTypeHouse">独栋别墅</option>
+          <option value="studio" data-i18n="propertyTypeStudio">工作室</option>
+          <option value="office" data-i18n="propertyTypeOffice">商业用房</option>
+          <option value="land" data-i18n="propertyTypeLand">地块</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="label" for="pub-price" data-i18n="filterPrice">Ár (Ft)</label>
+        <input type="number" id="pub-price" name="price" class="input" required min="0" step="100000" placeholder="89500000">
+      </div>
+      <div class="form-group">
+        <label class="label" for="pub-area" data-i18n="filterArea">Alapterület (m²)</label>
+        <input type="number" id="pub-area" name="area" class="input" required min="0" placeholder="72">
+      </div>
+      <div class="form-group">
+        <label class="label" for="pub-rooms" data-i18n="filterRooms">Szobák száma</label>
+        <input type="number" id="pub-rooms" name="rooms" class="input" required min="0" placeholder="3">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="label" for="pub-floor" data-i18n="publishFloor">Emelet</label>
+          <input type="number" id="pub-floor" name="floor" class="input" min="0" max="99" placeholder="2">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="label" for="pub-total-floors" data-i18n="publishTotalFloors">Összes szint</label>
+          <input type="number" id="pub-total-floors" name="totalFloors" class="input" min="1" max="99" placeholder="6">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="label" for="pub-year-built" data-i18n="publishYearBuilt">Építés éve</label>
+        <input type="number" id="pub-year-built" name="yearBuilt" class="input" min="1800" max="2030" placeholder="2005">
+      </div>
+      <div class="form-group">
+        <label class="label" for="pub-condition" data-i18n="publishCondition">Állapot</label>
+        <select id="pub-condition" name="condition" class="select">
+          <option value="" data-i18n="filterAny">—</option>
+          <option value="new" data-i18n="conditionNew">Új építésű</option>
+          <option value="renovated" data-i18n="conditionRenovated">Felújított</option>
+          <option value="good" data-i18n="conditionGood">Jó állapotú</option>
+          <option value="needs_renovation" data-i18n="conditionNeedsRenovation">Felújításra szorul</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="label" for="pub-furnished" data-i18n="publishFurnished">Bútorozottság</label>
+        <select id="pub-furnished" name="furnished" class="select">
+          <option value="" data-i18n="filterAny">—</option>
+          <option value="fully" data-i18n="furnishedFully">Bútorozott</option>
+          <option value="partly" data-i18n="furnishedPartly">Részben bútorozott</option>
+          <option value="none" data-i18n="furnishedNone">Bútorozatlan</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="label" for="pub-heating" data-i18n="publishHeating">Fűtés</label>
+        <select id="pub-heating" name="heating" class="select">
+          <option value="" data-i18n="filterAny">—</option>
+          <option value="gas" data-i18n="heatingGas">Gázfűtés</option>
+          <option value="district" data-i18n="heatingDistrict">Távfűtés</option>
+          <option value="electric" data-i18n="heatingElectric">Villany</option>
+          <option value="other" data-i18n="heatingOther">Egyéb</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="label" for="pub-location" data-i18n="publishLocation">Helyszín</label>
+        <input type="text" id="pub-location" name="location" class="input" required data-i18n-placeholder="locationPlaceholder" placeholder="Budapest V. kerület, Belváros">
+      </div>
+      <div class="form-group">
+        <label class="label" for="pub-district" data-i18n="publishDistrict">区份</label>
+        <select id="pub-district" name="district" class="select">
+          <option value="">—</option>
+          <option value="I">I. kerület</option>
+          <option value="II">II. kerület</option>
+          <option value="III">III. kerület</option>
+          <option value="IV">IV. kerület</option>
+          <option value="V">V. kerület</option>
+          <option value="VI">VI. kerület</option>
+          <option value="VII">VII. kerület</option>
+          <option value="VIII">VIII. kerület</option>
+          <option value="IX">IX. kerület</option>
+          <option value="X">X. kerület</option>
+          <option value="XI">XI. kerület</option>
+          <option value="XII">XII. kerület</option>
+          <option value="XIII">XIII. kerület</option>
+          <option value="XIV">XIV. kerület</option>
+          <option value="XV">XV. kerület</option>
+          <option value="XVI">XVI. kerület</option>
+          <option value="XVII">XVII. kerület</option>
+          <option value="XVIII">XVIII. kerület</option>
+          <option value="XIX">XIX. kerület</option>
+          <option value="XX">XX. kerület</option>
+          <option value="XXI">XXI. kerület</option>
+          <option value="XXII">XXII. kerület</option>
+          <option value="XXIII">XXIII. kerület</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <span class="label" data-i18n="publishFacilities">设施</span>
+        <div class="publish-checkboxes" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:var(--space-2);margin-top:var(--space-2);">
+          <label class="checkbox-label"><input type="checkbox" id="pub-ac" name="ac" value="1"> <span data-i18n="propAC">空调</span></label>
+          <label class="checkbox-label"><input type="checkbox" id="pub-elevator" name="elevator" value="1"> <span data-i18n="propElevator">电梯</span></label>
+          <label class="checkbox-label"><input type="checkbox" id="pub-alarm" name="alarm" value="1"> <span data-i18n="propAlarm">警报器</span></label>
+          <label class="checkbox-label"><input type="checkbox" id="pub-garden" name="garden" value="1"> <span data-i18n="propGarden">花园连接</span></label>
+          <label class="checkbox-label"><input type="checkbox" id="pub-balcony" name="balcony" value="1"> <span data-i18n="filterBalcony">阳台</span></label>
+          <label class="checkbox-label"><input type="checkbox" id="pub-parking" name="parking" value="1"> <span data-i18n="filterParking">停车</span></label>
+          <label class="checkbox-label"><input type="checkbox" id="pub-cellar" name="cellar" value="1"> <span data-i18n="propCellar">储藏室</span></label>
+          <label class="checkbox-label"><input type="checkbox" id="pub-fireplace" name="fireplace" value="1"> <span data-i18n="propFireplace">壁炉</span></label>
+          <label class="checkbox-label"><input type="checkbox" id="pub-pet" name="petFriendly" value="1"> <span data-i18n="propPetFriendly">允许宠物</span></label>
+          <label class="checkbox-label"><input type="checkbox" id="pub-movein" name="moveIn" value="1"> <span data-i18n="propMoveIn">可立即入住</span></label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="label">房源照片（最多10张，第一张为封面）</label>
+        <div id="photo-upload-area" style="border:2px dashed var(--color-border);border-radius:var(--radius-md);padding:var(--space-4);text-align:center;cursor:pointer;transition:border-color 0.2s;" onclick="document.getElementById('pub-image-file').click()">
+          <div style="font-size:2rem;margin-bottom:var(--space-2)">📷</div>
+          <div style="color:var(--color-text-muted);font-size:var(--text-sm)">点击或拖拽上传照片（支持 JPG、PNG，每张最大 8MB）</div>
+        </div>
+        <input type="file" id="pub-image-file" name="imageFile" accept="image/*" multiple style="display:none">
+        <div id="pub-photo-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:var(--space-2);margin-top:var(--space-3);"></div>
+        <p id="pub-photo-status" style="font-size:var(--text-sm);color:var(--color-text-muted);margin-top:var(--space-2);"></p>
+      </div>
+      <div class="form-group">
+        <label class="label" for="pub-description" data-i18n="publishDescLabel">详细描述</label>
+        <textarea id="pub-description" name="description" class="textarea" data-i18n-placeholder="pubDescPlaceholder" placeholder="Részletes leírás..."></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary" data-i18n="publishSubmit">Hirdetés beküldése</button>
+    </form>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid footer-grid-wide">
+        <div>
+          <div class="footer-title">Ingatlan.hu</div>
+          <ul class="footer-links">
+            <li><a href="about.html" data-i18n="footerAbout">Rólunk</a></li>
+            <li><a href="contact.html" data-i18n="footerContact">Kapcsolat</a></li>
+            <li><a href="faq.html" data-i18n="footerFaq">GYIK</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerUseful">Hasznos</div>
+          <ul class="footer-links">
+            <li><a href="calculator.html" data-i18n="serviceLoan">Hitelkalkulátor</a></li>
+            <li><a href="moving.html" data-i18n="serviceMove">Költöztetés</a></li>
+            <li><a href="renovation.html" data-i18n="serviceRenovate">Felújítás</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerForAdvertisers">Hirdetőnek</div>
+          <ul class="footer-links">
+            <li><a href="publish.html" data-i18n="navPostAd">Hirdetés feladása</a></li>
+            <li><a href="for-agents.html" data-i18n="footerForAgents">Ingatlanosoknak</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerLegal">Jogi</div>
+          <ul class="footer-links">
+            <li><a href="privacy.html" data-i18n="footerPrivacy">Adatvédelem</a></li>
+            <li><a href="terms.html" data-i18n="footerTerms">Felhasználási feltételek</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerApp">App</div>
+          <ul class="footer-links footer-app-badges">
+            <li><a href="#" class="app-badge" aria-label="App Store">App Store</a></li>
+            <li><a href="#" class="app-badge" aria-label="Google Play">Google Play</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <div class="cookie-consent" id="cookie-consent" hidden>
+    <div class="cookie-consent-inner container">
+      <p class="cookie-consent-text" data-i18n="cookieText">A weboldal cookie-kat használ a megfelelő működéshez és a felhasználói élmény javításához.</p>
+      <div class="cookie-consent-actions">
+        <button type="button" class="btn btn-ghost" id="cookie-settings" data-i18n="cookieSettings">Beállítások</button>
+        <button type="button" class="btn btn-primary" id="cookie-accept" data-i18n="cookieAccept">Rendben</button>
+      </div>
+    </div>
+  </div>
+  <script src="js/translations.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/cookie-consent.js"></script>
+  <script src="js/header.js"></script>
+  <script src="js/auth-header.js"></script>
+  <script>
+    (function () {
+      var apiBase = (window.location.protocol === 'file:' || (window.location.port && window.location.port !== '3000')) ? 'http://localhost:3000' : '';
+      var editId = new URLSearchParams(window.location.search).get('edit') || '';
+      var currentUser = null;
+      var authPrompt = document.getElementById('publish-auth-prompt');
+      var subtitleEl = document.getElementById('publish-subtitle');
+      var uploadArea = document.getElementById('photo-upload-area');
+      var submitBtn = document.querySelector('#publish-form button[type="submit"]');
+      function t(key, fallback) {
+        return (window.i18n && window.i18n.t) ? window.i18n.t(key) : (fallback || key);
+      }
+      function setFormEditable(enabled) {
+        document.querySelectorAll('#publish-form input, #publish-form select, #publish-form textarea, #publish-form button[type="submit"]').forEach(function (el) {
+          el.disabled = !enabled;
+        });
+        if (uploadArea) {
+          uploadArea.style.opacity = enabled ? '1' : '0.6';
+          uploadArea.style.pointerEvents = enabled ? '' : 'none';
+        }
+      }
+      setFormEditable(false);
+
+      // 编辑模式：预填表单（服务器优先，服务器找不到则从本地存储找）
+      function fillForm(data) {
+        if (!data) return;
+        var f = function (id) { return document.getElementById(id); };
+        if (f('pub-title'))       f('pub-title').value       = data.title    || '';
+        if (f('pub-summary'))     f('pub-summary').value     = data.summary  || '';
+        if (f('pub-category'))    f('pub-category').value    = data.category || 'buy';
+        if (f('pub-price'))       f('pub-price').value       = data.price    || '';
+        if (f('pub-area'))        f('pub-area').value        = data.area     || '';
+        if (f('pub-rooms'))       f('pub-rooms').value       = data.rooms    || '';
+        if (f('pub-location'))    f('pub-location').value    = data.location || '';
+        if (f('pub-district'))    f('pub-district').value    = data.district  || '';
+        if (f('pub-description')) f('pub-description').value = data.description || '';
+        prefillImages(data.images && data.images.length ? data.images : (data.image ? [data.image] : []));
+        if (f('pub-property-type')) f('pub-property-type').value = data.propertyType || '';
+        if (f('pub-floor'))         f('pub-floor').value         = data.floor !== undefined ? data.floor : '';
+        if (f('pub-total-floors'))  f('pub-total-floors').value  = data.totalFloors !== undefined ? data.totalFloors : '';
+        if (f('pub-year-built'))    f('pub-year-built').value    = data.yearBuilt  || '';
+        if (f('pub-condition'))     f('pub-condition').value     = data.condition  || '';
+        if (f('pub-furnished'))     f('pub-furnished').value     = data.furnished  || '';
+        if (f('pub-heating'))       f('pub-heating').value       = data.heating    || '';
+        if (f('pub-balcony'))       f('pub-balcony').checked     = !!data.balcony;
+        if (f('pub-parking'))       f('pub-parking').checked     = !!data.parking;
+        if (f('pub-ac'))            f('pub-ac').checked          = !!data.ac;
+        if (f('pub-elevator'))      f('pub-elevator').checked    = !!data.elevator;
+        if (f('pub-alarm'))         f('pub-alarm').checked       = !!data.alarm;
+        if (f('pub-garden'))        f('pub-garden').checked      = !!data.garden;
+        if (f('pub-cellar'))        f('pub-cellar').checked      = !!data.cellar;
+        if (f('pub-fireplace'))     f('pub-fireplace').checked   = !!data.fireplace;
+        if (f('pub-pet'))           f('pub-pet').checked         = !!data.petFriendly;
+        if (f('pub-movein'))        f('pub-movein').checked      = !!data.moveIn;
+      }
+
+      if (editId) {
+        var titleEl = document.getElementById('publish-page-title');
+        if (titleEl) titleEl.textContent = (window.i18n && window.i18n.t('accountEditListing')) || '编辑房源';
+        if (submitBtn) submitBtn.textContent = (window.i18n && window.i18n.t('publishUpdate')) || '保存修改';
+        // 用 api.getListingById：先查服务器，404 或网络失败时自动从本地存储找
+        var apiBridge = window.INGATLAN_API;
+        if (apiBridge && apiBridge.getListingById) {
+          apiBridge.getListingById(editId).then(fillForm).catch(function () {});
+        }
+      }
+
+      fetch(apiBase + '/api/me', { credentials: 'include' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+          if (data && data.user) {
+            currentUser = data.user;
+            if (data.user.canPublish) {
+              setFormEditable(true);
+              if (subtitleEl) subtitleEl.textContent = t('publishIntroLoggedIn', '请填写以下字段以发布房源。');
+              if (authPrompt) authPrompt.hidden = true;
+            } else {
+              setFormEditable(false);
+              if (submitBtn) submitBtn.textContent = t('navPostAdPending', '等待审批');
+              if (subtitleEl) subtitleEl.textContent = t('publishPendingSubtitle', '你的账号已注册，等待管理员批准后才能发布房源。');
+              if (authPrompt) {
+                authPrompt.textContent = t('publishApprovalRequired', '你的账号已注册，等待管理员批准后才能发布房源。');
+                authPrompt.hidden = false;
+              }
+            }
+          } else {
+            setFormEditable(false);
+            if (submitBtn) submitBtn.textContent = t('accountPublishBtn', '发布房源（登录）');
+            if (authPrompt) {
+              authPrompt.innerHTML = '<a href="login.html" class="btn btn-outline" data-i18n="accountPublishBtn">' + t('accountPublishBtn', '发布房源（登录）') + '</a>';
+              authPrompt.hidden = false;
+            }
+          }
+        })
+        .catch(function () {
+          setFormEditable(false);
+          if (submitBtn) submitBtn.textContent = t('publishServerRequired', '请先确认后端已运行，再进行发布。');
+          if (authPrompt) {
+            authPrompt.textContent = t('publishServerRequired', '请先确认后端已运行，再进行发布。');
+            authPrompt.hidden = false;
+          }
+        });
+
+      // ── 多图上传管理 ──────────────────────────────────────
+      // photos: [{previewUrl, serverUrl, uploading, failed}]
+      // previewUrl = 本地 dataURL 或已有服务器 URL（立即可显示）
+      // serverUrl  = 服务器保存后的 URL（null 表示还未完成）
+      var photos = [];
+
+      var fileInput = document.getElementById('pub-image-file');
+      var photoGrid = document.getElementById('pub-photo-grid');
+      var photoStatus = document.getElementById('pub-photo-status');
+
+      function uploadingCount() {
+        return photos.filter(function (p) { return p.uploading; }).length;
+      }
+
+      function updateStatus() {
+        var ing = uploadingCount();
+        if (ing > 0) {
+          photoStatus.textContent = '上传中… 还有 ' + ing + ' 张';
+          photoStatus.style.color = 'var(--color-text-muted)';
+        } else if (photos.length > 0) {
+          var failed = photos.filter(function (p) { return p.failed; }).length;
+          if (failed > 0) {
+            photoStatus.textContent = '⚠ ' + failed + ' 张上传失败，其余 ' + (photos.length - failed) + ' 张已就绪';
+            photoStatus.style.color = 'orange';
+          } else {
+            photoStatus.textContent = '✓ 共 ' + photos.length + ' 张照片，第一张为封面';
+            photoStatus.style.color = 'green';
+          }
+        } else {
+          photoStatus.textContent = '';
+        }
+      }
+
+      function renderPhotoGrid() {
+        photoGrid.innerHTML = '';
+        photos.forEach(function (photo, idx) {
+          var cell = document.createElement('div');
+          cell.style.cssText = 'position:relative;border-radius:var(--radius-md);overflow:hidden;background:#f0f0f0;height:100px;';
+          var img = document.createElement('img');
+          img.src = photo.previewUrl;
+          img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;' + (photo.uploading ? 'opacity:0.5;' : '');
+          var badge = document.createElement('span');
+          badge.style.cssText = 'position:absolute;top:4px;left:4px;background:rgba(0,0,0,0.6);color:#fff;font-size:11px;padding:2px 6px;border-radius:4px;';
+          badge.textContent = photo.uploading ? '⏳' : photo.failed ? '⚠' : (idx === 0 ? '封面' : (idx + 1));
+          var delBtn = document.createElement('button');
+          delBtn.type = 'button';
+          delBtn.innerHTML = '✕';
+          delBtn.title = '删除';
+          delBtn.style.cssText = 'position:absolute;top:4px;right:4px;background:rgba(180,0,0,0.8);color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:12px;line-height:1;padding:0;';
+          (function (i) {
+            delBtn.addEventListener('click', function () {
+              photos.splice(i, 1);
+              renderPhotoGrid();
+              updateStatus();
+            });
+          })(idx);
+          cell.appendChild(img);
+          cell.appendChild(badge);
+          cell.appendChild(delBtn);
+          photoGrid.appendChild(cell);
+        });
+        // 添加更多按钮（未满10张时显示）
+        if (photos.length < 10) {
+          var addCell = document.createElement('div');
+          addCell.style.cssText = 'border:2px dashed var(--color-border);border-radius:var(--radius-md);height:100px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--color-text-muted);font-size:2rem;';
+          addCell.innerHTML = '+';
+          addCell.title = '继续添加照片';
+          addCell.addEventListener('click', function () { fileInput.click(); });
+          photoGrid.appendChild(addCell);
+        }
+      }
+
+      function uploadFile(file) {
+        if (!currentUser || !currentUser.canPublish) {
+          alert(t('publishApprovalRequired', '你的账号已注册，等待管理员批准后才能发布房源。'));
+          return;
+        }
+        if (!file.type.match(/^image\//)) return;
+        if (photos.length >= 10) { alert('最多上传10张照片'); return; }
+        var reader = new FileReader();
+        reader.onload = function () {
+          var dataUrl = reader.result;
+          var photo = { previewUrl: dataUrl, serverUrl: null, uploading: true, failed: false };
+          photos.push(photo);
+          renderPhotoGrid();
+          updateStatus();
+          fetch((apiBase || '') + '/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ dataUrl: dataUrl })
+          }).then(function (r) { return r.json(); })
+            .then(function (data) {
+              photo.uploading = false;
+              if (data.ok && data.url) {
+                photo.serverUrl = (apiBase || 'http://localhost:3000') + data.url;
+                photo.previewUrl = photo.serverUrl;
+              } else {
+                if (data.error === 'not_approved') {
+                  alert(t('publishApprovalRequired', '你的账号已注册，等待管理员批准后才能发布房源。'));
+                }
+                photo.failed = true;
+              }
+              renderPhotoGrid();
+              updateStatus();
+            })
+            .catch(function () {
+              photo.uploading = false;
+              photo.failed = true;
+              renderPhotoGrid();
+              updateStatus();
+            });
+        };
+        reader.readAsDataURL(file);
+      }
+
+      if (fileInput) {
+        fileInput.addEventListener('change', function () {
+          var files = Array.prototype.slice.call(fileInput.files || []);
+          files.forEach(uploadFile);
+          fileInput.value = '';
+        });
+      }
+
+      // 拖拽上传
+      if (uploadArea) {
+        uploadArea.addEventListener('dragover', function (e) { e.preventDefault(); uploadArea.style.borderColor = 'var(--color-accent)'; });
+        uploadArea.addEventListener('dragleave', function () { uploadArea.style.borderColor = 'var(--color-border)'; });
+        uploadArea.addEventListener('drop', function (e) {
+          e.preventDefault();
+          uploadArea.style.borderColor = 'var(--color-border)';
+          var files = Array.prototype.slice.call(e.dataTransfer.files || []);
+          files.forEach(uploadFile);
+        });
+      }
+
+      // 编辑时预填图片（已有服务器图片，直接放入 photos 数组）
+      function prefillImages(existingImages) {
+        if (!existingImages || !existingImages.length) return;
+        photos = existingImages.slice(0, 10).map(function (url) {
+          return { previewUrl: url, serverUrl: url, uploading: false, failed: false };
+        });
+        renderPhotoGrid();
+        updateStatus();
+      }
+
+      document.getElementById('publish-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (!currentUser) {
+          window.location.href = (apiBase || '') + '/login.html?from=publish';
+          return;
+        }
+        if (!currentUser.canPublish) {
+          alert(t('publishApprovalRequired', '你的账号已注册，等待管理员批准后才能发布房源。'));
+          return;
+        }
+        var title = document.getElementById('pub-title').value.trim();
+        var summary = (document.getElementById('pub-summary') && document.getElementById('pub-summary').value.trim()) || '';
+        var category = document.getElementById('pub-category').value || 'buy';
+        var price = parseInt(document.getElementById('pub-price').value, 10) || 0;
+        var area = parseInt(document.getElementById('pub-area').value, 10) || 0;
+        var rooms = parseInt(document.getElementById('pub-rooms').value, 10) || 0;
+        var location = document.getElementById('pub-location').value.trim();
+        var description = (document.getElementById('pub-description') && document.getElementById('pub-description').value) || '';
+        if (uploadingCount() > 0) { alert('照片还在上传中，请稍候再提交。'); return; }
+        var readyPhotos = photos.filter(function (p) { return p.serverUrl && !p.failed; }).map(function (p) { return p.serverUrl; });
+        var image = readyPhotos.length > 0 ? readyPhotos[0] : 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600&h=450&fit=crop';
+        var allImages = readyPhotos.length > 0 ? readyPhotos : [image];
+        var g = function (id) { return document.getElementById(id); };
+        var payload = {
+          title: title,
+          summary: summary,
+          category: category,
+          propertyType: (g('pub-property-type') && g('pub-property-type').value) || '',
+          price: price,
+          area: area,
+          rooms: rooms,
+          floor: g('pub-floor') ? (parseInt(g('pub-floor').value, 10) || '') : '',
+          totalFloors: g('pub-total-floors') ? (parseInt(g('pub-total-floors').value, 10) || '') : '',
+          yearBuilt: g('pub-year-built') ? (parseInt(g('pub-year-built').value, 10) || '') : '',
+          condition: (g('pub-condition') && g('pub-condition').value) || '',
+          furnished: (g('pub-furnished') && g('pub-furnished').value) || '',
+          heating: (g('pub-heating') && g('pub-heating').value) || '',
+          location: location,
+          district: (document.getElementById('pub-district') && document.getElementById('pub-district').value) || '',
+          description: description,
+          image: image,
+          images: allImages,
+          ac: !!(g('pub-ac') && g('pub-ac').checked),
+          elevator: !!(g('pub-elevator') && g('pub-elevator').checked),
+          alarm: !!(g('pub-alarm') && g('pub-alarm').checked),
+          garden: !!(g('pub-garden') && g('pub-garden').checked),
+          balcony: !!(g('pub-balcony') && g('pub-balcony').checked),
+          parking: !!(g('pub-parking') && g('pub-parking').checked),
+          cellar: !!(g('pub-cellar') && g('pub-cellar').checked),
+          fireplace: !!(g('pub-fireplace') && g('pub-fireplace').checked),
+          petFriendly: !!(g('pub-pet') && g('pub-pet').checked),
+          moveIn: !!(g('pub-movein') && g('pub-movein').checked)
+        };
+        var isEdit = !!editId;
+        var msg = isEdit
+          ? ((window.i18n && window.i18n.t('publishUpdateSuccess')) || '修改已保存。')
+          : ((window.i18n && window.i18n.t('publishSuccess')) || '发布成功，已保存到服务器。');
+        var serverUrl = (apiBase || '') + '/api/listings' + (isEdit ? '/' + encodeURIComponent(editId) : '');
+        var method = isEdit ? 'PUT' : 'POST';
+        fetch(serverUrl, {
+          method: method,
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(payload)
+        }).then(function (r) {
+          return r.json().catch(function () { return {}; }).then(function (data) {
+            if (r.ok && data.ok && data.id) {
+              alert(msg);
+              window.location.href = (apiBase || '') + '/property.html?id=' + encodeURIComponent(data.id);
+            } else {
+              var err = new Error(data.error || 'save_failed');
+              err.code = data.error || 'save_failed';
+              err.status = r.status;
+              return Promise.reject(err);
+            }
+          });
+        }).catch(function (err) {
+          var code = err && err.code;
+          var status = err && err.status;
+          if (code === 'not_approved') {
+            alert(t('publishApprovalRequired', '你的账号已注册，等待管理员批准后才能发布房源。'));
+            return;
+          }
+          var apiLib = window.INGATLAN_API;
+          if (isEdit) {
+            // 服务器找不到该房源（可能存在 localStorage）时，直接在本地更新
+            if ((code === 'not_found' || !status) && apiLib && apiLib.getMyListingsFromStorage) {
+              var localList = apiLib.getMyListingsFromStorage();
+              var localIdx = -1;
+              for (var i = 0; i < localList.length; i++) {
+                if (String(localList[i].id) === String(editId)) { localIdx = i; break; }
+              }
+              if (localIdx !== -1) {
+                localList[localIdx] = Object.assign({}, localList[localIdx], payload, {
+                  image: image, images: allImages
+                });
+                try { localStorage.setItem('ingatlan_my_listings', JSON.stringify(localList)); } catch (e) {}
+                alert(msg);
+                window.location.href = (apiBase ? apiBase + '/property.html?id=' : 'property.html?id=') + encodeURIComponent(editId);
+                return;
+              }
+            }
+            alert((window.i18n && window.i18n.t('publishError')) || '保存失败，请重试。');
+            return;
+          }
+          // 服务器不可用时降级到本地存储（仅新建）
+          if (!status && apiLib && apiLib.saveMyListing) {
+            apiLib.saveMyListing(currentUser.id, Object.assign({}, payload, { image: image, images: allImages, listedAt: new Date().toISOString().slice(0, 10) }));
+            alert(msg);
+            window.location.href = (apiBase ? apiBase + '/account.html' : 'account.html');
+          } else {
+            alert((window.i18n && window.i18n.t('publishError')) || '保存失败，请重试。');
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

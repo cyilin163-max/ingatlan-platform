@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Regisztráció | Ingatlan</title>
+  <meta name="description" content="Regisztrálj az Ingatlan.hu-n.">
+  <base href="./">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/common.css">
+  <style>
+    .auth-form { max-width: 400px; margin: 0 auto; padding: 3rem 1.5rem; }
+    .auth-form .form-group { margin-bottom: var(--space-4); }
+    .auth-form .label { display: block; margin-bottom: var(--space-1); }
+    .auth-form .input { width: 100%; padding: var(--space-3); }
+    .auth-form .btn { width: 100%; margin-top: var(--space-2); }
+    .auth-form .auth-link { margin-top: var(--space-4); text-align: center; font-size: var(--text-sm); }
+    .auth-form .error { font-size: var(--text-sm); color: var(--color-danger); margin-top: var(--space-1); }
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip-link" data-i18n="skipToContent">Ugrás a tartalomra</a>
+  <header class="site-header">
+    <div class="container">
+      <a href="index.html" class="logo">Ingatlan.hu</a>
+      <button type="button" class="nav-toggle" aria-label="Menü" aria-expanded="false">☰</button>
+      <nav class="nav-main">
+        <a href="search.html" data-i18n="navSearch">Keresés</a>
+        <a href="account.html" data-i18n="navMyAccount">Fiókom</a>
+      </nav>
+      <div class="nav-actions">
+        <div class="lang-switcher" aria-label="Language"></div>
+        <a href="account.html#publish" class="btn btn-outline" data-i18n="navPostAd">Hirdetés feladása</a>
+        <a href="account.html" class="btn btn-outline" data-auth="user" data-i18n="navMyAccount" style="display:none">Fiókom</a>
+        <button type="button" class="btn btn-ghost" id="header-logout-btn" data-auth="user" data-i18n="navLogout" style="display:none">Kijelentkezés</button>
+        <a href="login.html" class="btn btn-primary" data-auth="guest" data-i18n="navLogin">Bejelentkezés</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <form class="auth-form" id="register-form">
+      <h1 class="page-title" data-i18n="registerTitle">Regisztráció</h1>
+      <p class="page-subtitle" data-i18n="registerSubtitle">Új fiók létrehozása</p>
+      <div class="form-group">
+        <label class="label" for="reg-name" data-i18n="registerName">Név</label>
+        <input type="text" id="reg-name" name="name" class="input" required autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label class="label" for="reg-email" data-i18n="loginEmail">E-mail</label>
+        <input type="email" id="reg-email" name="email" class="input" required autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="label" for="reg-password" data-i18n="loginPassword">Jelszó</label>
+        <input type="password" id="reg-password" name="password" class="input" required autocomplete="new-password" minlength="6">
+      </div>
+      <div class="form-group">
+        <label class="label" for="reg-password2" data-i18n="registerPassword2">Jelszó újra</label>
+        <input type="password" id="reg-password2" name="password2" class="input" required autocomplete="new-password">
+        <p class="error" id="register-password-error" hidden></p>
+      </div>
+      <button type="submit" class="btn btn-primary" data-i18n="registerSubmit">Regisztráció</button>
+      <p class="auth-link"><a href="login.html" data-i18n="loginLink">Már van fiókod? Bejelentkezés</a></p>
+    </form>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid footer-grid-wide">
+        <div>
+          <div class="footer-title">Ingatlan.hu</div>
+          <ul class="footer-links">
+            <li><a href="about.html" data-i18n="footerAbout">Rólunk</a></li>
+            <li><a href="contact.html" data-i18n="footerContact">Kapcsolat</a></li>
+            <li><a href="faq.html" data-i18n="footerFaq">GYIK</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerUseful">Hasznos</div>
+          <ul class="footer-links">
+            <li><a href="calculator.html" data-i18n="serviceLoan">Hitelkalkulátor</a></li>
+            <li><a href="moving.html" data-i18n="serviceMove">Költöztetés</a></li>
+            <li><a href="renovation.html" data-i18n="serviceRenovate">Felújítás</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerForAdvertisers">Hirdetőnek</div>
+          <ul class="footer-links">
+            <li><a href="account.html#publish" data-i18n="navPostAd">Hirdetés feladása</a></li>
+            <li><a href="for-agents.html" data-i18n="footerForAgents">Ingatlanosoknak</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerLegal">Jogi</div>
+          <ul class="footer-links">
+            <li><a href="privacy.html" data-i18n="footerPrivacy">Adatvédelem</a></li>
+            <li><a href="terms.html" data-i18n="footerTerms">Felhasználási feltételek</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerApp">App</div>
+          <ul class="footer-links footer-app-badges">
+            <li><a href="#" class="app-badge" aria-label="App Store">App Store</a></li>
+            <li><a href="#" class="app-badge" aria-label="Google Play">Google Play</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <div class="cookie-consent" id="cookie-consent" hidden>
+    <div class="cookie-consent-inner container">
+      <p class="cookie-consent-text" data-i18n="cookieText">A weboldal cookie-kat használ a megfelelő működéshez és a felhasználói élmény javításához.</p>
+      <div class="cookie-consent-actions">
+        <button type="button" class="btn btn-ghost" id="cookie-settings" data-i18n="cookieSettings">Beállítások</button>
+        <button type="button" class="btn btn-primary" id="cookie-accept" data-i18n="cookieAccept">Rendben</button>
+      </div>
+    </div>
+  </div>
+  <script src="js/translations.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/cookie-consent.js"></script>
+  <script src="js/header.js"></script>
+  <script src="js/auth-header.js"></script>
+  <script>
+    (function () {
+      var form = document.getElementById('register-form');
+      var errEl = document.getElementById('register-password-error');
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var p1 = document.getElementById('reg-password').value;
+        var p2 = document.getElementById('reg-password2').value;
+        if (p1 !== p2) {
+          errEl.textContent = (window.i18n && window.i18n.t('registerPasswordMismatch')) || 'A két jelszó nem egyezik.';
+          errEl.hidden = false;
+          return;
+        }
+        errEl.hidden = true;
+        var email = document.getElementById('reg-email').value.trim();
+        var name = document.getElementById('reg-name').value.trim();
+        if (!email || !name || !p1) {
+          errEl.textContent = (window.i18n && window.i18n.t('loginErrorFields')) || 'Kérjük, töltsd ki az összes mezőt.';
+          errEl.hidden = false;
+          return;
+        }
+        if (p1.length < 6) {
+          errEl.textContent = (window.i18n && window.i18n.t('registerPasswordShort')) || 'A jelszó legalább 6 karakter legyen.';
+          errEl.hidden = false;
+          return;
+        }
+        var btn = form.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        var apiBase = (window.location.protocol === 'file:' || (window.location.port && window.location.port !== '3000')) ? 'http://localhost:3000' : '';
+        fetch(apiBase + '/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email: email, password: p1, name: name })
+        }).then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+          .then(function (result) {
+            btn.disabled = false;
+            if (result.ok) {
+              if (window.INGATLAN_API && window.INGATLAN_API.setCurrentUser && result.data && result.data.user) {
+                window.INGATLAN_API.setCurrentUser(result.data.user);
+              }
+              window.location.href = apiBase ? (apiBase + '/account.html') : 'account.html';
+              return;
+            }
+            if (result.data.error === 'email_exists') {
+              errEl.textContent = (window.i18n && window.i18n.t('registerErrorEmailExists')) || 'Ez az e-mail már regisztrálva van.';
+            } else {
+              errEl.textContent = (window.i18n && window.i18n.t('loginErrorGeneric')) || 'Regisztráció sikertelen.';
+            }
+            errEl.hidden = false;
+          })
+          .catch(function () {
+            btn.disabled = false;
+            errEl.textContent = (window.i18n && window.i18n.t('loginErrorNetwork')) || 'Hálózati hiba. Futtatod a szervert? (cd server && npm start)';
+            errEl.hidden = false;
+          });
+      });
+    })();
+  </script>
+</body>
+</html>

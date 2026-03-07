@@ -1,0 +1,29 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "打开首页 (index.html)",
+      "file": "${workspaceFolder}/index.html"
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "打开搜索页 (search.html)",
+      "file": "${workspaceFolder}/search.html"
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "打开房源详情 (property.html)",
+      "file": "${workspaceFolder}/property.html"
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "打开 Debug 测试页",
+      "file": "${workspaceFolder}/debug/index.html"
+    }
+  ]
+}

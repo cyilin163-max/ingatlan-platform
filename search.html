@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>搜索房源 | Ingatlan</title>
+  <meta name="description" content="搜索匈牙利房源，按区份、价格、面积、房屋类型与装修状态筛选结果。">
+  <link rel="canonical" href="https://ingatlan.example.com/search.html">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="搜索房源 | Ingatlan">
+  <meta property="og:description" content="搜索匈牙利房源，按区份、价格、面积、房屋类型与装修状态筛选结果。">
+  <meta property="og:url" content="https://ingatlan.example.com/search.html">
+  <base href="./">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/search.css">
+</head>
+<body>
+  <a href="#main" class="skip-link" data-i18n="skipToContent">Ugrás a tartalomra</a>
+  <header class="site-header">
+    <div class="container">
+      <a href="index.html" class="logo">Ingatlan.hu</a>
+      <button type="button" class="nav-toggle" aria-label="Menü" aria-expanded="false">☰</button>
+      <nav class="nav-main">
+        <a href="search.html" data-i18n="navSearch">Keresés</a>
+        <a href="account.html" data-i18n="navMyAccount">Fiókom</a>
+      </nav>
+      <div class="nav-actions">
+        <div class="lang-switcher" aria-label="Language"></div>
+        <a href="account.html#publish" class="btn btn-outline" data-i18n="navPostAd">Hirdetés feladása</a>
+        <a href="account.html" class="btn btn-outline" data-auth="user" data-i18n="navMyAccount" style="display:none">Fiókom</a>
+        <button type="button" class="btn btn-ghost" id="header-logout-btn" data-auth="user" data-i18n="navLogout" style="display:none">Kijelentkezés</button>
+        <a href="login.html" class="btn btn-primary" data-auth="guest" data-i18n="navLogin">Bejelentkezés</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="container">
+    <div class="page-header">
+      <h1 class="page-title" data-i18n="searchPageTitle">Ingatlanok</h1>
+      <p class="page-subtitle" id="search-subtitle" data-i18n-subtitle="searchPageSubtitle">–</p>
+      <div class="search-tabs" role="tablist" data-i18n-aria-label="homeCategoryAria" aria-label="类型">
+        <a href="search.html" class="search-tab" role="tab" data-category="" id="tab-all" data-i18n="searchTabAll">Mind</a>
+        <a href="search.html?category=buy" class="search-tab" role="tab" data-category="buy" id="tab-buy" data-i18n="homeTabBuy">Eladó</a>
+        <a href="search.html?category=rent" class="search-tab" role="tab" data-category="rent" id="tab-rent" data-i18n="homeTabRent">Kiadó</a>
+      </div>
+    </div>
+
+    <div class="search-layout">
+      <!-- Filters -->
+      <aside class="filters-sidebar">
+        <h2 class="filters-title" data-i18n="filtersDetailedSearch">Részletes kereső</h2>
+        <form id="filters-form" class="filters-form">
+          <div class="filter-group">
+            <label class="label" data-i18n="filterDistrict">区份</label>
+            <select name="district" class="select">
+              <option value="" data-i18n="filterAny">–</option>
+              <option value="I">I. kerület</option>
+              <option value="II">II. kerület</option>
+              <option value="III">III. kerület</option>
+              <option value="IV">IV. kerület</option>
+              <option value="V">V. kerület</option>
+              <option value="VI">VI. kerület</option>
+              <option value="VII">VII. kerület</option>
+              <option value="VIII">VIII. kerület</option>
+              <option value="IX">IX. kerület</option>
+              <option value="X">X. kerület</option>
+              <option value="XI">XI. kerület</option>
+              <option value="XII">XII. kerület</option>
+              <option value="XIII">XIII. kerület</option>
+              <option value="XIV">XIV. kerület</option>
+              <option value="XV">XV. kerület</option>
+              <option value="XVI">XVI. kerület</option>
+              <option value="XVII">XVII. kerület</option>
+              <option value="XVIII">XVIII. kerület</option>
+              <option value="XIX">XIX. kerület</option>
+              <option value="XX">XX. kerület</option>
+              <option value="XXI">XXI. kerület</option>
+              <option value="XXII">XXII. kerület</option>
+              <option value="XXIII">XXIII. kerület</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="label" data-i18n="filterPriceMillion">价格（百万 Ft）</label>
+            <div class="filter-row">
+              <input type="number" name="price_min" class="input" data-i18n-placeholder="filterMin" placeholder="最小" min="0" step="1" data-unit="million" data-i18n-title="filterPriceUnitMillion" title="百万 Ft">
+              <span>–</span>
+              <input type="number" name="price_max" class="input" data-i18n-placeholder="filterMax" placeholder="最大" min="0" step="1" data-unit="million" data-i18n-title="filterPriceUnitMillion" title="百万 Ft">
+            </div>
+          </div>
+          <div class="filter-group">
+            <label class="label" data-i18n="filterArea">面积 (m²)</label>
+            <div class="filter-row">
+              <input type="number" name="area_min" class="input" data-i18n-placeholder="filterMin" placeholder="最小" min="0">
+              <span>–</span>
+              <input type="number" name="area_max" class="input" data-i18n-placeholder="filterMax" placeholder="最大" min="0">
+            </div>
+          </div>
+          <div class="filter-group">
+            <label class="label" data-i18n="filterRooms">房间数</label>
+            <select name="rooms" class="select">
+              <option value="" data-i18n="filterAny">不限</option>
+              <option value="1">1+</option>
+              <option value="2">2+</option>
+              <option value="3">3+</option>
+              <option value="4">4+</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="label" data-i18n="publishPropertyType">房屋类型</label>
+            <select name="building_type" class="select">
+              <option value="" data-i18n="filterAny">不限</option>
+              <option value="flat" data-i18n="propertyTypeFlat">公寓</option>
+              <option value="house" data-i18n="propertyTypeHouse">独栋别墅</option>
+              <option value="studio" data-i18n="propertyTypeStudio">工作室</option>
+              <option value="office" data-i18n="propertyTypeOffice">商业用房</option>
+              <option value="land" data-i18n="propertyTypeLand">地块</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="label" data-i18n="publishCondition">装修状态</label>
+            <select name="condition" class="select">
+              <option value="" data-i18n="filterAny">不限</option>
+              <option value="new" data-i18n="conditionNew">全新</option>
+              <option value="renovated" data-i18n="conditionRenovated">精装翻新</option>
+              <option value="good" data-i18n="conditionGood">状况良好</option>
+              <option value="needs_renovation" data-i18n="conditionNeedsRenovation">需要翻新</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="label" data-i18n="filterElevator">电梯</label>
+            <select name="elevator" class="select">
+              <option value="">–</option>
+              <option value="1" data-i18n="filterYes">有</option>
+              <option value="0" data-i18n="filterNo">无</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="label" data-i18n="filterParking">停车</label>
+            <select name="parking" class="select">
+              <option value="" data-i18n="filterAny">不限</option>
+              <option value="1" data-i18n="filterYes">有</option>
+              <option value="0" data-i18n="filterNo">无</option>
+            </select>
+          </div>
+          <div class="filter-actions">
+            <button type="submit" class="btn btn-primary" data-i18n="filterApply">应用</button>
+            <button type="reset" class="btn btn-ghost" data-i18n="filterReset">清除</button>
+          </div>
+        </form>
+      </aside>
+
+      <!-- Results -->
+      <div class="results-main">
+        <div class="results-header">
+          <span class="results-count" id="results-total">0</span><span class="results-count" data-i18n="resultsCount"> 套房源</span>
+          <div class="results-toolbar">
+            <div class="view-toggle" role="group" data-i18n-aria-label="resultsView" aria-label="查看方式">
+              <button type="button" class="view-btn view-grid active" id="view-grid" aria-pressed="true" data-i18n-aria-label="resultsViewGrid" aria-label="网格视图">▦</button>
+              <button type="button" class="view-btn view-list" id="view-list" aria-pressed="false" data-i18n-aria-label="resultsViewList" aria-label="列表视图">☰</button>
+            </div>
+            <div class="results-sort">
+              <label class="label" for="sort" data-i18n="sortBy">排序</label>
+              <select id="sort" name="sort" class="select">
+                <option value="newest" data-i18n="searchSortNewest">最新发布</option>
+                <option value="price_asc" data-i18n="searchSortPriceAsc">价格从低到高</option>
+                <option value="price_desc" data-i18n="searchSortPriceDesc">价格从高到低</option>
+                <option value="area_desc" data-i18n="searchSortAreaDesc">面积从大到小</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="cards-grid" id="cards-grid">
+          <!-- Filled by search.js from API -->
+        </div>
+
+        <nav class="pagination" id="pagination" data-i18n-aria-label="paginationLabel" aria-label="分页"></nav>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid footer-grid-wide">
+        <div>
+          <div class="footer-title">Ingatlan.hu</div>
+          <ul class="footer-links">
+            <li><a href="about.html" data-i18n="footerAbout">Rólunk</a></li>
+            <li><a href="contact.html" data-i18n="footerContact">Kapcsolat</a></li>
+            <li><a href="faq.html" data-i18n="footerFaq">GYIK</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerUseful">Hasznos</div>
+          <ul class="footer-links">
+            <li><a href="calculator.html" data-i18n="serviceLoan">Hitelkalkulátor</a></li>
+            <li><a href="moving.html" data-i18n="serviceMove">Költöztetés</a></li>
+            <li><a href="renovation.html" data-i18n="serviceRenovate">Felújítás</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerForAdvertisers">Hirdetőnek</div>
+          <ul class="footer-links">
+            <li><a href="account.html#publish" data-i18n="navPostAd">Hirdetés feladása</a></li>
+            <li><a href="for-agents.html" data-i18n="footerForAgents">Ingatlanosoknak</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerLegal">Jogi</div>
+          <ul class="footer-links">
+            <li><a href="privacy.html" data-i18n="footerPrivacy">Adatvédelem</a></li>
+            <li><a href="terms.html" data-i18n="footerTerms">Felhasználási feltételek</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title" data-i18n="footerApp">App</div>
+          <ul class="footer-links footer-app-badges">
+            <li><a href="#" class="app-badge" aria-label="App Store">App Store</a></li>
+            <li><a href="#" class="app-badge" aria-label="Google Play">Google Play</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <div class="cookie-consent" id="cookie-consent" hidden>
+    <div class="cookie-consent-inner container">
+      <p class="cookie-consent-text" data-i18n="cookieText">A weboldal cookie-kat használ a megfelelő működéshez és a felhasználói élmény javításához.</p>
+      <div class="cookie-consent-actions">
+        <button type="button" class="btn btn-ghost" id="cookie-settings" data-i18n="cookieSettings">Beállítások</button>
+        <button type="button" class="btn btn-primary" id="cookie-accept" data-i18n="cookieAccept">Rendben</button>
+      </div>
+    </div>
+  </div>
+  <script src="js/translations.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/cookie-consent.js"></script>
+  <script src="js/header.js"></script>
+  <script src="js/auth-header.js"></script>
+  <script src="js/search.js"></script>
+</body>
+</html>
