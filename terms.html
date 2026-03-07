@@ -32,9 +32,10 @@
   <main id="main" class="container" style="padding: 3rem 1.5rem 4rem;">
     <div style="max-width: 920px; margin: 0 auto;">
       <h1 class="page-title" data-i18n="footerTerms">使用条款</h1>
-      <p class="page-subtitle">最后更新：2026-03-03。本条款适用于本平台的浏览、注册、发布房源、上传图片和账户使用行为。</p>
+      <p class="page-subtitle" data-i18n="termsSubtitle">最后更新：2026-03-03。本条款适用于本平台的浏览、注册、发布房源、上传图片和账户使用行为。</p>
 
-      <div style="display:grid;gap:1.5rem;line-height:1.85;margin-top:2rem;">
+      <div id="terms-doc-body" style="display:grid;gap:1.5rem;line-height:1.85;margin-top:2rem;"></div>
+      <div style="display:none" aria-hidden="true">
         <section>
           <h2>1. 接受条款</h2>
           <p>访问、注册或使用本平台，即表示您同意遵守本使用条款及平台相关规则。如果您不同意本条款，请停止使用本平台。</p>
@@ -137,7 +138,7 @@
         </section>
       </div>
 
-      <p style="margin-top:2rem;"><a href="index.html" class="btn btn-outline">返回首页</a></p>
+      <p style="margin-top:2rem;"><a href="index.html" class="btn btn-outline" data-i18n="backToHome">返回首页</a></p>
     </div>
   </main>
 
@@ -160,10 +161,10 @@
           </ul>
         </div>
         <div>
-          <div class="footer-title" data-i18n="footerLegal">Jogi</div>
+          <div class="footer-title" data-i18n="footerLegal">法律</div>
           <ul class="footer-links">
-            <li><a href="privacy.html" data-i18n="footerPrivacy">Adatvédelem</a></li>
-            <li><a href="terms.html" data-i18n="footerTerms">Felhasználási feltételek</a></li>
+            <li><a href="privacy.html" data-i18n="footerPrivacy">隐私政策</a></li>
+            <li><a href="terms.html" data-i18n="footerTerms">使用条款</a></li>
           </ul>
         </div>
         <div>
@@ -186,9 +187,17 @@
     </div>
   </div>
   <script src="js/translations.js"></script>
+  <script src="js/legal-pages.js"></script>
   <script src="js/i18n.js"></script>
   <script src="js/cookie-consent.js"></script>
   <script src="js/header.js"></script>
   <script src="js/auth-header.js"></script>
+  <script>
+    (function(){
+      function inject(){ var c=document.getElementById('terms-doc-body'), L=window.LEGAL_PAGES; if(!c||!L||!L.terms) return; var lang=(window.i18n&&window.i18n.getLang ? window.i18n.getLang() : (window.__ingatlanLang||'zh')); c.innerHTML=L.terms[lang]||L.terms.zh; }
+      if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',inject); else inject();
+      window.addEventListener('ingatlan-lang-change',inject);
+    })();
+  </script>
 </body>
 </html>

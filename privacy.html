@@ -32,32 +32,15 @@
   <main id="main" class="container" style="padding: 3rem 1.5rem 4rem;">
     <div style="max-width: 920px; margin: 0 auto;">
       <h1 class="page-title" data-i18n="footerPrivacy">隐私政策</h1>
-      <p class="page-subtitle">最后更新：2026-03-03。本政策说明本平台如何收集、使用、展示、存储和保护用户信息。</p>
+      <p class="page-subtitle" data-i18n="privacySubtitle">最后更新：2026-03-03。本政策说明本平台如何收集、使用、展示、存储和保护用户信息。</p>
 
-      <div style="display:grid;gap:1.5rem;line-height:1.85;margin-top:2rem;">
-        <section>
-          <h2>1. 适用范围</h2>
-          <p>本隐私政策适用于本网站及相关功能，包括房源浏览、账户注册与登录、发布和编辑房源、图片上传、收藏、搜索筛选以及联系页面等。访问或使用本平台，即表示您理解本政策所描述的数据处理方式。</p>
-        </section>
+      <div id="privacy-doc-body" style="display:grid;gap:1.5rem;line-height:1.85;margin-top:2rem;"></div>
 
-        <section>
-          <h2>2. 我们会收集哪些信息</h2>
-          <p>为了提供房产平台服务，我们可能会收集以下信息：</p>
-          <ul>
-            <li>账户信息：例如姓名、邮箱、登录凭证等。密码不会以明文方式保存。</li>
-            <li>房源信息：例如标题、简介、详细描述、区份、位置、价格、面积、房屋类型、配套信息、图片以及您主动填写的其他内容。</li>
-            <li>设备和访问数据：例如浏览器类型、访问时间、请求日志、页面操作记录等基础技术信息，用于安全与稳定运行。</li>
-            <li>本地设备数据：例如语言选择、收藏记录、部分页面状态或临时房源数据，这些内容可能保存在您的浏览器本地存储中。</li>
-            <li>会话信息：为保持登录状态与账户安全，平台可能使用会话 Cookie 或类似技术。</li>
-          </ul>
-        </section>
-
+      <!-- 正文由 js/legal-pages.js 按当前语言注入 -->
+      <div style="display:none" aria-hidden="true">
         <section>
           <h2>3. 哪些信息会公开显示</h2>
-          <p>当您发布房源时，您提交的部分内容会向其他访客公开展示，包括但不限于房源标题、价格、区域、位置描述、房屋参数、配套信息、图片和房源正文。请勿在公开字段中填写身份证号、银行卡信息、精确隐私住址、密码或其他敏感个人信息。</p>
-        </section>
-
-        <section>
+          <section>
           <h2>4. 我们如何使用这些信息</h2>
           <ul>
             <li>创建和管理用户账户，支持登录、退出、身份识别与安全校验。</li>
@@ -134,7 +117,7 @@
         </section>
       </div>
 
-      <p style="margin-top:2rem;"><a href="index.html" class="btn btn-outline">返回首页</a></p>
+      <p style="margin-top:2rem;"><a href="index.html" class="btn btn-outline" data-i18n="backToHome">返回首页</a></p>
     </div>
   </main>
 
@@ -157,10 +140,10 @@
           </ul>
         </div>
         <div>
-          <div class="footer-title" data-i18n="footerLegal">Jogi</div>
+          <div class="footer-title" data-i18n="footerLegal">法律</div>
           <ul class="footer-links">
-            <li><a href="privacy.html" data-i18n="footerPrivacy">Adatvédelem</a></li>
-            <li><a href="terms.html" data-i18n="footerTerms">Felhasználási feltételek</a></li>
+            <li><a href="privacy.html" data-i18n="footerPrivacy">隐私政策</a></li>
+            <li><a href="terms.html" data-i18n="footerTerms">使用条款</a></li>
           </ul>
         </div>
         <div>
@@ -183,9 +166,17 @@
     </div>
   </div>
   <script src="js/translations.js"></script>
+  <script src="js/legal-pages.js"></script>
   <script src="js/i18n.js"></script>
   <script src="js/cookie-consent.js"></script>
   <script src="js/header.js"></script>
   <script src="js/auth-header.js"></script>
+  <script>
+    (function(){
+      function inject(){ var c=document.getElementById('privacy-doc-body'), L=window.LEGAL_PAGES; if(!c||!L||!L.privacy) return; var lang=(window.i18n&&window.i18n.getLang ? window.i18n.getLang() : (window.__ingatlanLang||'zh')); c.innerHTML=L.privacy[lang]||L.privacy.zh; }
+      if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',inject); else inject();
+      window.addEventListener('ingatlan-lang-change',inject);
+    })();
+  </script>
 </body>
 </html>

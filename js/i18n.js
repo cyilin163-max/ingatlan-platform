@@ -14,6 +14,7 @@
     window.__ingatlanLang = lang;
     applyTranslations();
     if (document.documentElement) document.documentElement.lang = lang === 'zh' ? 'zh-CN' : (lang === 'hu' ? 'hu' : 'en');
+    try { window.dispatchEvent(new CustomEvent('ingatlan-lang-change', { detail: { lang: lang } })); } catch (e) {}
   }
 
   function t(key, params) {

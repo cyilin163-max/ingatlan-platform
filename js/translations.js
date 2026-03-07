@@ -314,7 +314,10 @@ window.TRANSLATIONS = {
     "propGalleryAlt": "房源图片",
     "propBreadcrumbHome": "首页",
     "propBreadcrumbSearch": "搜索",
-    "publisherIdLabel": "编号"
+    "publisherIdLabel": "编号",
+    "backToHome": "返回首页",
+    "privacySubtitle": "最后更新：2026-03-03。本政策说明本平台如何收集、使用、展示、存储和保护用户信息。",
+    "termsSubtitle": "最后更新：2026-03-03。本条款适用于本平台的浏览、注册、发布房源、上传图片和账户使用行为。"
   },
   "en": {
     "langName": "English",
@@ -630,7 +633,10 @@ window.TRANSLATIONS = {
     "propGalleryAlt": "Property image",
     "propBreadcrumbHome": "Home",
     "propBreadcrumbSearch": "Search",
-    "publisherIdLabel": "ID"
+    "publisherIdLabel": "ID",
+    "backToHome": "Back to home",
+    "privacySubtitle": "Last updated: 2026-03-03. This policy describes how we collect, use, display, store and protect user information.",
+    "termsSubtitle": "Last updated: 2026-03-03. These terms apply to browsing, registration, listing, image upload and account use on this platform."
   },
   "hu": {
     "langName": "Magyar",
@@ -946,6 +952,9 @@ window.TRANSLATIONS = {
     "propGalleryAlt": "Ingatlan képe",
     "propBreadcrumbHome": "Főoldal",
     "propBreadcrumbSearch": "Keresés",
-    "publisherIdLabel": "Nyilvántartási szám"
+    "publisherIdLabel": "Nyilvántartási szám",
+    "backToHome": "Vissza a főoldalra",
+    "privacySubtitle": "Utoljára frissítve: 2026-03-03. Ez a szabályzat leírja, hogyan gyűjtjük, használjuk, megjelenítjük, tároljuk és védjük a felhasználói adatokat.",
+    "termsSubtitle": "Utoljára frissítve: 2026-03-03. Ezek a feltételek a platform böngészésére, regisztrációjára, hirdetésfeladására, képfeltöltésére és fiókhasználatára vonatkoznak."
   }
 };
