@@ -438,7 +438,7 @@
             .then(function (data) {
               photo.uploading = false;
               if (data.ok && data.url) {
-                photo.serverUrl = (apiBase || 'http://localhost:3000') + data.url;
+                photo.serverUrl = apiBase ? (apiBase + data.url) : data.url;
                 photo.previewUrl = photo.serverUrl;
               } else {
                 if (data.error === 'not_approved') {
