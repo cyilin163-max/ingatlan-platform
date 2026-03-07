@@ -405,7 +405,7 @@ body {
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: linear-gradient(180deg, rgba(18, 71, 47, 0.6) 0%, rgba(26, 94, 61, 0.5) 100%);
+  background: var(--gradient-green);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   display: flex;

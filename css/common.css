@@ -112,15 +112,32 @@ button { font-family: inherit; cursor: pointer; }
   top: 0;
   z-index: 100;
   height: var(--header-height);
-  background: var(--gradient-green-soft);
-  border-bottom: 1px solid var(--color-border);
+  background: var(--gradient-green);
+  border-bottom: 1px solid rgba(255,255,255,0.15);
   box-shadow: var(--shadow-sm);
   transition: box-shadow var(--duration-normal) var(--ease-out);
 }
 .site-header .container { display: flex; align-items: center; justify-content: space-between; height: 100%; }
+.site-header .logo { color: white; }
+.site-header .logo:hover { text-decoration: none; color: rgba(255,255,255,0.92); }
 .logo { font-family: var(--font-heading); font-size: var(--text-xl); font-weight: 700; color: var(--color-primary); letter-spacing: -0.02em; }
 .logo:hover { text-decoration: none; color: var(--color-primary); }
+.site-header .nav-main a { color: rgba(255,255,255,0.9); }
+.site-header .nav-main a:hover { color: white; }
+.site-header .nav-actions .btn-outline { color: white; border-color: rgba(255,255,255,0.6); }
+.site-header .nav-actions .btn-outline:hover { color: white; border-color: white; background: rgba(255,255,255,0.15); }
+.site-header .nav-actions .btn-ghost { color: rgba(255,255,255,0.9); }
+.site-header .nav-actions .btn-ghost:hover { color: white; background: rgba(255,255,255,0.12); }
+.site-header .nav-actions .btn-primary { background: rgba(255,255,255,0.95); color: var(--color-primary); border-color: transparent; }
+.site-header .nav-actions .btn-primary:hover { background: white; color: var(--color-primary-hover); }
+.site-header .lang-btn { color: rgba(255,255,255,0.8); border-color: rgba(255,255,255,0.4); }
+.site-header .lang-btn:hover { color: white; border-color: rgba(255,255,255,0.7); }
+.site-header .lang-btn.active { color: white; border-color: white; background: rgba(255,255,255,0.2); }
+.site-header .nav-toggle { color: white; }
+.site-header .nav-toggle:hover { color: white; background: rgba(255,255,255,0.1); }
+.site-header .nav-toggle[aria-expanded="true"] { color: white; }
 .nav-main { display: flex; align-items: center; gap: var(--space-6); }
+.nav-main:empty { display: none; }
 .nav-main a { font-weight: 500; color: var(--color-text); padding: var(--space-2) 0; }
 .nav-main a:hover { color: var(--color-primary); }
 .nav-main a:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 4px; border-radius: var(--radius-sm); }

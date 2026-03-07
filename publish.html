@@ -8,26 +8,15 @@
   <base href="./">
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/common.css">
-  <style>
-    .publish-form { max-width: 560px; margin: 0 auto; padding: 3rem 1.5rem; }
-    .publish-form .form-group { margin-bottom: var(--space-4); }
-    .publish-form .label { display: block; margin-bottom: var(--space-1); }
-    .publish-form .input, .publish-form .select, .publish-form .textarea { width: 100%; padding: var(--space-3); }
-    .publish-form .textarea { min-height: 120px; resize: vertical; }
-    .publish-form .btn { margin-top: var(--space-2); }
-    .publish-form .auth-prompt { margin-bottom: var(--space-6); padding: var(--space-4); background: var(--color-bg); border-radius: var(--radius-lg); }
-  </style>
+  <link rel="stylesheet" href="css/publish.css">
 </head>
-<body>
+<body class="publish-page">
   <a href="#main" class="skip-link" data-i18n="skipToContent">Ugrás a tartalomra</a>
   <header class="site-header">
     <div class="container">
       <a href="index.html" class="logo">匈牙利房产</a>
       <button type="button" class="nav-toggle" aria-label="Menü" aria-expanded="false">☰</button>
-      <nav class="nav-main">
-        <a href="search.html" data-i18n="navSearch">Keresés</a>
-        <a href="account.html" data-i18n="navMyAccount">Fiókom</a>
-      </nav>
+      <nav class="nav-main"></nav>
       <div class="nav-actions">
         <div class="lang-switcher" aria-label="Language"></div>
         <a href="publish.html" class="btn btn-outline" data-i18n="navPostAd">Hirdetés feladása</a>
@@ -51,31 +40,35 @@
         <label class="label" for="pub-summary" data-i18n="publishSummaryLabel">简介</label>
         <textarea id="pub-summary" name="summary" class="textarea" rows="3" style="min-height:80px" data-i18n-placeholder="pubSummaryPlaceholder" placeholder="一两句话简单介绍房源…"></textarea>
       </div>
-      <div class="form-group">
-        <label class="label" for="pub-category" data-i18n="publishCategory">Kategória</label>
-        <select id="pub-category" name="category" class="select" required>
-          <option value="buy" data-i18n="homeTabBuy">Eladó</option>
-          <option value="rent" data-i18n="homeTabRent">Kiadó</option>
-        </select>
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="label" for="pub-category" data-i18n="publishCategory">Kategória</label>
+          <select id="pub-category" name="category" class="select" required>
+            <option value="buy" data-i18n="homeTabBuy">Eladó</option>
+            <option value="rent" data-i18n="homeTabRent">Kiadó</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="label" for="pub-property-type" data-i18n="publishPropertyType">Ingatlan típusa</label>
+          <select id="pub-property-type" name="propertyType" class="select">
+            <option value="" data-i18n="filterAny">—</option>
+            <option value="flat" data-i18n="propertyTypeFlat">公寓</option>
+            <option value="house" data-i18n="propertyTypeHouse">独栋别墅</option>
+            <option value="studio" data-i18n="propertyTypeStudio">工作室</option>
+            <option value="office" data-i18n="propertyTypeOffice">商业用房</option>
+            <option value="land" data-i18n="propertyTypeLand">地块</option>
+          </select>
+        </div>
       </div>
-      <div class="form-group">
-        <label class="label" for="pub-property-type" data-i18n="publishPropertyType">Ingatlan típusa</label>
-        <select id="pub-property-type" name="propertyType" class="select">
-          <option value="" data-i18n="filterAny">—</option>
-          <option value="flat" data-i18n="propertyTypeFlat">公寓</option>
-          <option value="house" data-i18n="propertyTypeHouse">独栋别墅</option>
-          <option value="studio" data-i18n="propertyTypeStudio">工作室</option>
-          <option value="office" data-i18n="propertyTypeOffice">商业用房</option>
-          <option value="land" data-i18n="propertyTypeLand">地块</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="label" for="pub-price" data-i18n="filterPrice">Ár (Ft)</label>
-        <input type="number" id="pub-price" name="price" class="input" required min="0" step="100000" placeholder="89500000">
-      </div>
-      <div class="form-group">
-        <label class="label" for="pub-area" data-i18n="filterArea">Alapterület (m²)</label>
-        <input type="number" id="pub-area" name="area" class="input" required min="0" placeholder="72">
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="label" for="pub-price" data-i18n="filterPrice">Ár (Ft)</label>
+          <input type="number" id="pub-price" name="price" class="input" required min="0" step="100000" placeholder="89500000">
+        </div>
+        <div class="form-group">
+          <label class="label" for="pub-area" data-i18n="filterArea">Alapterület (m²)</label>
+          <input type="number" id="pub-area" name="area" class="input" required min="0" placeholder="72">
+        </div>
       </div>
       <div class="form-group" id="pub-yard-area-wrap" style="display:none;">
         <label class="label" for="pub-yard-area" data-i18n="publishYardArea">院子面积 (m²)</label>
@@ -85,51 +78,55 @@
         <label class="label" for="pub-rooms" data-i18n="filterRooms">Szobák száma</label>
         <input type="number" id="pub-rooms" name="rooms" class="input" required min="0" placeholder="3">
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
-        <div class="form-group" style="margin-bottom:0">
+      <div class="form-row-floors form-row-2">
+        <div class="form-group">
           <label class="label" for="pub-floor" data-i18n="publishFloor">Emelet</label>
           <input type="number" id="pub-floor" name="floor" class="input" min="0" max="99" placeholder="2">
         </div>
-        <div class="form-group" style="margin-bottom:0">
+        <div class="form-group">
           <label class="label" for="pub-total-floors" data-i18n="publishTotalFloors">Összes szint</label>
           <input type="number" id="pub-total-floors" name="totalFloors" class="input" min="1" max="99" placeholder="6">
         </div>
       </div>
-      <div class="form-group">
-        <label class="label" for="pub-garage" data-i18n="publishGarage">车库</label>
-        <select id="pub-garage" name="garage" class="select">
-          <option value="" data-i18n="filterAny">不限</option>
-          <option value="1" data-i18n="filterYes">有</option>
-          <option value="0" data-i18n="filterNo">无</option>
-        </select>
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="label" for="pub-garage" data-i18n="publishGarage">车库</label>
+          <select id="pub-garage" name="garage" class="select">
+            <option value="" data-i18n="filterAny">不限</option>
+            <option value="1" data-i18n="filterYes">有</option>
+            <option value="0" data-i18n="filterNo">无</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="label" for="pub-condition" data-i18n="publishCondition">Állapot</label>
+          <select id="pub-condition" name="condition" class="select">
+            <option value="" data-i18n="filterAny">—</option>
+            <option value="new" data-i18n="conditionNew">Új építésű</option>
+            <option value="renovated" data-i18n="conditionRenovated">Felújított</option>
+            <option value="good" data-i18n="conditionGood">Jó állapotú</option>
+            <option value="needs_renovation" data-i18n="conditionNeedsRenovation">Felújításra szorul</option>
+          </select>
+        </div>
       </div>
-      <div class="form-group">
-        <label class="label" for="pub-condition" data-i18n="publishCondition">Állapot</label>
-        <select id="pub-condition" name="condition" class="select">
-          <option value="" data-i18n="filterAny">—</option>
-          <option value="new" data-i18n="conditionNew">Új építésű</option>
-          <option value="renovated" data-i18n="conditionRenovated">Felújított</option>
-          <option value="good" data-i18n="conditionGood">Jó állapotú</option>
-          <option value="needs_renovation" data-i18n="conditionNeedsRenovation">Felújításra szorul</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="label" for="pub-heating" data-i18n="publishHeating">Fűtés</label>
-        <select id="pub-heating" name="heating" class="select">
-          <option value="" data-i18n="filterAny">—</option>
-          <option value="gas_boiler" data-i18n="heatingGasBoiler">Gázkazán / Gáz cirkó</option>
-          <option value="district" data-i18n="heatingDistrict">Távfűtés</option>
-          <option value="electric" data-i18n="heatingElectric">Elektromos fűtés</option>
-          <option value="heat_pump" data-i18n="heatingHeatPump">Hőszivattyú</option>
-          <option value="mixed" data-i18n="heatingMixed">Vegyes tüzelés</option>
-          <option value="renewable_heat_pump" data-i18n="heatingRenewableHeatPump">Újenergiás hőszivattyú</option>
-          <option value="gas" data-i18n="heatingGas">Gázfűtés</option>
-          <option value="other" data-i18n="heatingOther">Egyéb</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="label" for="pub-location" data-i18n="publishLocation">Helyszín</label>
-        <input type="text" id="pub-location" name="location" class="input" required data-i18n-placeholder="locationPlaceholder" placeholder="Budapest V. kerület, Belváros">
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="label" for="pub-heating" data-i18n="publishHeating">Fűtés</label>
+          <select id="pub-heating" name="heating" class="select">
+            <option value="" data-i18n="filterAny">—</option>
+            <option value="gas_boiler" data-i18n="heatingGasBoiler">Gázkazán / Gáz cirkó</option>
+            <option value="district" data-i18n="heatingDistrict">Távfűtés</option>
+            <option value="electric" data-i18n="heatingElectric">Elektromos fűtés</option>
+            <option value="heat_pump" data-i18n="heatingHeatPump">Hőszivattyú</option>
+            <option value="mixed" data-i18n="heatingMixed">Vegyes tüzelés</option>
+            <option value="renewable_heat_pump" data-i18n="heatingRenewableHeatPump">Újenergiás hőszivattyú</option>
+            <option value="gas" data-i18n="heatingGas">Gázfűtés</option>
+            <option value="other" data-i18n="heatingOther">Egyéb</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="label" for="pub-location" data-i18n="publishLocation">Helyszín</label>
+          <input type="text" id="pub-location" name="location" class="input" required data-i18n-placeholder="locationPlaceholder" placeholder="Budapest V. kerület, Belváros">
+        </div>
       </div>
       <div class="form-group">
         <label class="label" for="pub-district" data-i18n="publishDistrictCity">区份/城市</label>
@@ -165,7 +162,7 @@
       </div>
       <div class="form-group">
         <span class="label" data-i18n="publishFacilities">设施</span>
-        <div class="publish-checkboxes" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:var(--space-2);margin-top:var(--space-2);">
+        <div class="publish-checkboxes">
           <label class="checkbox-label"><input type="checkbox" id="pub-ac" name="ac" value="1"> <span data-i18n="propAC">空调</span></label>
           <label class="checkbox-label"><input type="checkbox" id="pub-elevator" name="elevator" value="1"> <span data-i18n="propElevator">电梯</span></label>
           <label class="checkbox-label"><input type="checkbox" id="pub-alarm" name="alarm" value="1"> <span data-i18n="propAlarm">警报器</span></label>
@@ -180,13 +177,13 @@
       </div>
       <div class="form-group">
         <label class="label">房源照片（最多10张，第一张为封面）</label>
-        <div id="photo-upload-area" style="border:2px dashed var(--color-border);border-radius:var(--radius-md);padding:var(--space-4);text-align:center;cursor:pointer;transition:border-color 0.2s;" onclick="document.getElementById('pub-image-file').click()">
-          <div style="font-size:2rem;margin-bottom:var(--space-2)">📷</div>
-          <div style="color:var(--color-text-muted);font-size:var(--text-sm)">点击或拖拽上传照片（支持 JPG、PNG，每张最大 8MB）</div>
+        <div id="photo-upload-area" onclick="document.getElementById('pub-image-file').click()">
+          <div class="photo-upload-icon">📷</div>
+          <div class="photo-upload-hint">点击或拖拽上传照片（支持 JPG、PNG，每张最大 8MB）</div>
         </div>
         <input type="file" id="pub-image-file" name="imageFile" accept="image/*" multiple style="display:none">
-        <div id="pub-photo-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:var(--space-2);margin-top:var(--space-3);"></div>
-        <p id="pub-photo-status" style="font-size:var(--text-sm);color:var(--color-text-muted);margin-top:var(--space-2);"></p>
+        <div id="pub-photo-grid"></div>
+        <p id="pub-photo-status"></p>
       </div>
       <div class="form-group">
         <label class="label" for="pub-description" data-i18n="publishDescLabel">详细描述</label>

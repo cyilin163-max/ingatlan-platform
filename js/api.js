@@ -508,16 +508,14 @@
     var url = (BASE || '') + '/api/listings/' + encodeURIComponent(id);
     return fetch(url).then(function (r) {
       if (r.status === 404) {
-        // 服务器没有这条，尝试从本地（localStorage）找
-        var all = getAllListings();
-        var item = all.filter(function (l) { return String(l.id) === String(id); })[0];
-        return item ? Object.assign({}, item) : null;
+        // 服务器没有这条，尝试从本地（localStorage）找，返回完整对象
+        var raw = getMyListingsFromStorage().filter(function (l) { return String(l.id) === String(id); })[0];
+        return raw ? Object.assign({}, raw) : null;
       }
       return r.ok ? r.json() : Promise.reject(r);
     }).catch(function () {
-      var all = getAllListings();
-      var item = all.filter(function (l) { return String(l.id) === String(id); })[0];
-      return item ? Object.assign({}, item) : null;
+      var raw = getMyListingsFromStorage().filter(function (l) { return String(l.id) === String(id); })[0];
+      return raw ? Object.assign({}, raw) : null;
     });
   }
 
