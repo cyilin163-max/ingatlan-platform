@@ -213,10 +213,6 @@
       if (contactBlock && contactBlock.scrollIntoView) contactBlock.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    function sendMessage() {
-      scrollToContactTarget();
-    }
-
     if (!phone) {
       if (phoneEl) {
         phoneEl.textContent = '';
@@ -226,19 +222,8 @@
         hintEl.textContent = t('propPhoneUnavailable');
         hintEl.hidden = false;
       }
-      if (revealBtn) {
-        revealBtn.hidden = false;
-        revealBtn.textContent = t('footerContact');
-        revealBtn.onclick = sendMessage;
-      }
-      if (primaryBtn) {
-        primaryBtn.hidden = false;
-        primaryBtn.disabled = false;
-        primaryBtn.textContent = t('footerContact');
-        primaryBtn.classList.remove('btn-primary');
-        primaryBtn.classList.add('btn-accent');
-        primaryBtn.onclick = sendMessage;
-      }
+      if (revealBtn) revealBtn.hidden = true;
+      if (primaryBtn) primaryBtn.hidden = true;
       return;
     }
 
