@@ -232,19 +232,8 @@
       phoneEl.textContent = phone;
       phoneEl.hidden = true;
     }
-    if (revealBtn) {
-      revealBtn.hidden = false;
-      revealBtn.textContent = t('propRevealPhone');
-      revealBtn.onclick = revealPhone;
-    }
-    if (primaryBtn) {
-      primaryBtn.hidden = false;
-      primaryBtn.disabled = false;
-      primaryBtn.textContent = t('propShowPhone');
-      primaryBtn.classList.remove('btn-primary');
-      primaryBtn.classList.add('btn-accent');
-      primaryBtn.onclick = revealPhone;
-    }
+    if (revealBtn) revealBtn.hidden = true;
+    if (primaryBtn) primaryBtn.hidden = true;
   }
 
   function setMeta(name, content) {
