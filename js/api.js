@@ -283,6 +283,20 @@
     return currency === 'eur' ? num + ' €' : num + ' Ft';
   }
 
+  function resolveImageUrl(url) {
+    if (!url || typeof url !== 'string') return url;
+    var u = url.trim();
+    if (u.indexOf('http://localhost') === 0 || u.indexOf('http://127.0.0.1') === 0) {
+      var path = u.replace(/^https?:\/\/[^/]+/, '') || '/';
+      return (typeof window !== 'undefined' && window.location && window.location.origin ? window.location.origin : '') + path;
+    }
+    if (u.indexOf('/') === 0) {
+      var base = (typeof window !== 'undefined' && window.INGATLAN_API_BASE !== undefined) ? window.INGATLAN_API_BASE : (typeof window !== 'undefined' && window.location && window.location.origin ? window.location.origin : '');
+      return base + u;
+    }
+    return u;
+  }
+
   function matchArea(location, areaKey) {
     var loc = (location || '');
     if (areaKey === 'budapest-belvaros') {
@@ -601,6 +615,7 @@
     getAreaCounts: getAreaCounts,
     getDistrictAveragePricePerSqm: getDistrictAveragePricePerSqm,
     formatPrice: formatPrice,
+    resolveImageUrl: resolveImageUrl,
     getFavorites: getFavorites,
     setFavorites: setFavorites,
     getCurrentUser: getCurrentUser,

@@ -265,7 +265,7 @@
     return (
       '<a href="property.html?id=' + encodeURIComponent(item.id) + '" class="property-card">' +
         '<div class="card-media">' +
-          '<img src="' + (item.image || '').replace(/"/g, '&quot;') + '" alt="' + (item.title || '').replace(/"/g, '&quot;') + '" loading="lazy" width="600" height="450">' +
+          '<img src="' + (api.resolveImageUrl ? api.resolveImageUrl(item.image || '') : (item.image || '')).replace(/"/g, '&quot;') + '" alt="' + (item.title || '').replace(/"/g, '&quot;') + '" loading="lazy" width="600" height="450">' +
           '<span class="card-watermark">© 匈牙利房产</span>' +
           (badges ? '<div class="card-badges">' + badges + '</div>' : '') +
           metaBar +

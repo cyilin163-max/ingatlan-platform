@@ -280,7 +280,7 @@ document.querySelectorAll('.stat-value[data-count]').forEach(el => {
       var propType = item.propertyType ? '<div class="card-type">' + propTypeLabel(item.propertyType).replace(/"/g, '&quot;') + '</div>' : '';
       return '<a href="property.html?id=' + encodeURIComponent(item.id) + '" class="property-card">' +
         '<div class="card-media">' +
-          '<img src="' + (item.image || '').replace(/"/g, '&quot;') + '" alt="" loading="lazy" width="600" height="450">' +
+          '<img src="' + (api.resolveImageUrl ? api.resolveImageUrl(item.image || '') : (item.image || '')).replace(/"/g, '&quot;') + '" alt="" loading="lazy" width="600" height="450">' +
           '<span class="card-watermark">© 匈牙利房产</span>' +
         '</div>' +
         '<div class="card-body">' +

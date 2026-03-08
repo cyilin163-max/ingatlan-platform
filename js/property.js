@@ -3,6 +3,21 @@
   var api = window.INGATLAN_API;
   if (!api || !api.getListingById) return;
 
+  // 解析图片 URL：部署后若存的是 localhost 或相对路径，改为当前站点可访问的地址
+  function resolveImageUrl(url) {
+    if (!url || typeof url !== 'string') return url;
+    var u = url.trim();
+    if (u.indexOf('http://localhost') === 0 || u.indexOf('http://127.0.0.1') === 0) {
+      var path = u.replace(/^https?:\/\/[^/]+/, '') || '/';
+      return (window.location.origin || '') + path;
+    }
+    if (u.indexOf('/') === 0) {
+      var base = typeof window.INGATLAN_API_BASE !== 'undefined' ? window.INGATLAN_API_BASE : (window.location.origin || '');
+      return base + u;
+    }
+    return u;
+  }
+
   // 从位置文本解析布达佩斯区份（如 "Budapest V. kerület, Belváros" -> 第5区）
   function parseDistrictFromLocation(locationText) {
     if (!locationText || typeof locationText !== 'string') return null;
@@ -294,6 +309,7 @@
     var metaEl = document.getElementById('gallery-meta');
     var images = (data.images && data.images.length) ? data.images : (data.image ? [data.image] : []);
     if (!images.length) return;
+    images = images.map(function (u) { return resolveImageUrl(u); });
 
     var mainUrl = images[0].replace(/w=\d+&h=\d+/, 'w=1200&h=750');
     if (mainImg) {
@@ -344,7 +360,8 @@
         btn.addEventListener('click', function () {
           var img = btn.querySelector('img');
           if (img && mainImg) {
-            mainImg.src = img.src.replace(/w=\d+&h=\d+/, 'w=1200&h=750');
+            var fullUrl = resolveImageUrl(img.getAttribute('src') || img.src);
+            mainImg.src = fullUrl.replace(/w=\d+&h=\d+/, 'w=1200&h=750');
             thumbs.querySelectorAll('button').forEach(function (b) { b.classList.remove('active'); });
             btn.classList.add('active');
           }
@@ -497,7 +514,7 @@
       return;
     }
     section.hidden = false;
-    img.src = url;
+    img.src = resolveImageUrl(url);
     img.alt = (data.title || '') + ' – ' + (t('propFloorPlanSection') || 'Alaprajz');
   }
 
@@ -637,7 +654,7 @@
     setMeta('description', (data.subtitle || data.title || '') + ' – ' + (data.location || ''));
     setOg('og:title', (data.title || '') + ' | Ingatlan');
     setOg('og:description', (data.subtitle || data.description || '').slice(0, 200));
-    setOg('og:image', (data.images && data.images[0]) ? data.images[0] : (data.image || ''));
+    setOg('og:image', resolveImageUrl((data.images && data.images[0]) ? data.images[0] : (data.image || '')));
     setOg('og:url', canonicalUrl);
     var canonical = document.querySelector('link[rel="canonical"]');
     if (canonical) canonical.href = canonicalUrl;
@@ -646,7 +663,7 @@
   function injectJsonLd(data, canonicalUrl) {
     var existing = document.getElementById('ingatlan-jsonld');
     if (existing) existing.remove();
-    var img = (data.images && data.images[0]) || data.image || '';
+    var img = resolveImageUrl((data.images && data.images[0]) || data.image || '');
     var json = {
       '@context': 'https://schema.org',
       '@type': 'Product',
