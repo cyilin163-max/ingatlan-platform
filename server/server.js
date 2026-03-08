@@ -9,11 +9,65 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
 const nodemailer = require('nodemailer');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const store = require('./store');
 
 const PORT = process.env.PORT || 3000;
 const DATA_DIR = path.join(__dirname, 'data');
-const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
+// 上传目录：若设 UPLOAD_PATH（如 Render Persistent Disk 挂载路径 /data/uploads），则用该路径，部署后图片会保留
+const UPLOADS_DIR = process.env.UPLOAD_PATH
+  ? path.resolve(process.env.UPLOAD_PATH)
+  : path.join(__dirname, '..', 'uploads');
+
+// S3 兼容存储（AWS S3 / DigitalOcean Spaces / Backblaze B2）：有配置则上传到对象存储并返回完整 URL
+let s3Client = null;
+function getS3Config() {
+  const bucket = process.env.S3_BUCKET || process.env.AWS_S3_BUCKET;
+  const accessKey = process.env.AWS_ACCESS_KEY_ID || process.env.S3_ACCESS_KEY_ID;
+  const secretKey = process.env.AWS_SECRET_ACCESS_KEY || process.env.S3_SECRET_ACCESS_KEY;
+  const region = process.env.AWS_REGION || process.env.S3_REGION || 'us-east-1';
+  const endpoint = process.env.S3_ENDPOINT || process.env.AWS_ENDPOINT; // 如 https://nyc3.digitaloceanspaces.com
+  const publicBase = process.env.S3_PUBLIC_BASE || process.env.S3_PUBLIC_URL; // 如 https://bucket.nyc3.cdn.digitaloceanspaces.com
+  if (!bucket || !accessKey || !secretKey) return null;
+  return { bucket, accessKey, secretKey, region, endpoint, publicBase };
+}
+function getS3Client() {
+  if (s3Client) return s3Client;
+  const c = getS3Config();
+  if (!c) return null;
+  const config = {
+    region: c.region,
+    credentials: { accessKeyId: c.accessKey, secretAccessKey: c.secretKey },
+  };
+  if (c.endpoint) {
+    config.endpoint = c.endpoint;
+    config.forcePathStyle = !!process.env.S3_FORCE_PATH_STYLE; // B2 等有时需要
+  }
+  s3Client = new S3Client(config);
+  return s3Client;
+}
+function getS3PublicUrl(key) {
+  const c = getS3Config();
+  if (!c) return null;
+  if (c.publicBase) return (c.publicBase.replace(/\/$/, '') + '/' + key.replace(/^\//, ''));
+  if (c.endpoint) return null; // 自定义 endpoint 时建议设 S3_PUBLIC_BASE
+  return `https://${c.bucket}.s3.${c.region}.amazonaws.com/${key.replace(/^\//, '')}`;
+}
+async function uploadToS3(key, buffer, contentType) {
+  const client = getS3Client();
+  const c = getS3Config();
+  if (!client || !c) return null;
+  const params = {
+    Bucket: c.bucket,
+    Key: key,
+    Body: buffer,
+    ContentType: contentType,
+  };
+  const acl = process.env.S3_ACL || 'public-read';
+  if (acl) params.ACL = acl; // 若桶启用 “Object Ownership: bucket owner enforced” 可设 S3_ACL= 禁用 ACL
+  await client.send(new PutObjectCommand(params));
+  return getS3PublicUrl(key);
+}
 const ADMIN_BOOTSTRAP_EMAILS = ['yilin_1024@hotmail.com'];
 
 const app = express();
@@ -485,7 +539,7 @@ app.get('/api/my-listings', async (req, res) => {
   res.json({ items });
 });
 
-// 图片上传（需登录）：接收 base64 dataURL，保存为文件，返回可访问的 URL
+// 图片上传（需登录）：接收 base64 dataURL；若配置了 S3 则上传到对象存储并返回完整 URL，否则写入本地 uploads/
 app.post('/api/upload', async (req, res) => {
   const user = await requireApprovedPublisher(req, res);
   if (!user) return;
@@ -494,9 +548,22 @@ app.post('/api/upload', async (req, res) => {
   const match = dataUrl.match(/^data:(image\/(jpeg|png|gif|webp));base64,(.+)$/i);
   if (!match) return res.status(400).json({ ok: false, error: 'invalid_image' });
   const ext = match[2].toLowerCase() === 'jpeg' ? 'jpg' : match[2].toLowerCase();
+  const mime = 'image/' + (ext === 'jpg' ? 'jpeg' : ext);
   const buf = Buffer.from(match[3], 'base64');
   if (buf.length > 8 * 1024 * 1024) return res.status(400).json({ ok: false, error: 'too_large' });
   const filename = 'img-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.' + ext;
+  const s3Key = 'uploads/' + filename;
+
+  if (getS3Config()) {
+    try {
+      const url = await uploadToS3(s3Key, buf, mime);
+      if (url) return res.json({ ok: true, url });
+    } catch (e) {
+      console.error('S3 upload failed:', e && e.message);
+      return res.status(500).json({ ok: false, error: 'upload_failed' });
+    }
+  }
+
   const filepath = path.join(UPLOADS_DIR, filename);
   try {
     fs.writeFileSync(filepath, buf);
@@ -732,6 +799,7 @@ async function start() {
   app.listen(PORT, () => {
     console.log('Ingatlan server: http://localhost:' + PORT);
     console.log('  Storage:', store.isUsingDb() ? 'PostgreSQL' : 'JSON files (server/data/)');
+    console.log('  Uploads:', UPLOADS_DIR);
     console.log('  API: /api/me, /api/register, /api/login, /api/logout');
     console.log('       /api/stats, /api/listings, /api/listings/:id, /api/my-listings (auth), /api/areas/counts');
     console.log('       POST /api/listings (auth) = 内部上传房源');
