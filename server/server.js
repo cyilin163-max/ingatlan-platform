@@ -793,6 +793,24 @@ async function start() {
     try {
       await store.initDbSchema();
       console.log('Database schema ready.');
+      const list = await store.loadListings();
+      const shouldSeed = list.length === 0 || process.env.SEED_LISTINGS === '1';
+      if (shouldSeed) {
+        const seedPath = path.join(__dirname, 'seed-listings.json');
+        if (fs.existsSync(seedPath)) {
+          const seed = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
+          const items = Array.isArray(seed) ? seed : [seed];
+          for (const item of items) {
+            if (item && item.id) {
+              const exists = await store.getListingById(item.id);
+              if (!exists) {
+                await store.addListing(item);
+                console.log('  Seeded listing:', item.id, item.title || '');
+              }
+            }
+          }
+        }
+      }
     } catch (e) {
       console.error('Database init failed:', e.message);
       process.exit(1);
