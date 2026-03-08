@@ -286,13 +286,18 @@
   function resolveImageUrl(url) {
     if (!url || typeof url !== 'string') return url;
     var u = url.trim();
+    if (!u) return u;
     if (u.indexOf('http://localhost') === 0 || u.indexOf('http://127.0.0.1') === 0) {
       var path = u.replace(/^https?:\/\/[^/]+/, '') || '/';
-      return (typeof window !== 'undefined' && window.location && window.location.origin ? window.location.origin : '') + path;
+      var origin = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : '';
+      if (origin && origin.indexOf('http') === 0) return origin + path;
+      if (typeof window !== 'undefined' && window.INGATLAN_API_BASE) return window.INGATLAN_API_BASE + path;
+      return u;
     }
     if (u.indexOf('/') === 0) {
-      var base = (typeof window !== 'undefined' && window.INGATLAN_API_BASE !== undefined) ? window.INGATLAN_API_BASE : (typeof window !== 'undefined' && window.location && window.location.origin ? window.location.origin : '');
-      return base + u;
+      var base = (typeof window !== 'undefined' && window.INGATLAN_API_BASE) ? window.INGATLAN_API_BASE : '';
+      if (!base && typeof window !== 'undefined' && window.location && window.location.origin && window.location.origin.indexOf('http') === 0) base = window.location.origin;
+      return base ? base + u : u;
     }
     return u;
   }

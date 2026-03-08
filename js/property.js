@@ -3,17 +3,22 @@
   var api = window.INGATLAN_API;
   if (!api || !api.getListingById) return;
 
-  // 解析图片 URL：部署后若存的是 localhost 或相对路径，改为当前站点可访问的地址
+  // 解析图片 URL：部署后若存的是 localhost 或相对路径，改为当前站点可访问的地址；避免 origin 为 "null" 时生成错误 URL
   function resolveImageUrl(url) {
     if (!url || typeof url !== 'string') return url;
     var u = url.trim();
+    if (!u) return u;
     if (u.indexOf('http://localhost') === 0 || u.indexOf('http://127.0.0.1') === 0) {
       var path = u.replace(/^https?:\/\/[^/]+/, '') || '/';
-      return (window.location.origin || '') + path;
+      var origin = window.location.origin;
+      if (origin && origin.indexOf('http') === 0) return origin + path;
+      if (typeof window.INGATLAN_API_BASE !== 'undefined' && window.INGATLAN_API_BASE) return window.INGATLAN_API_BASE + path;
+      return u;
     }
     if (u.indexOf('/') === 0) {
-      var base = typeof window.INGATLAN_API_BASE !== 'undefined' ? window.INGATLAN_API_BASE : (window.location.origin || '');
-      return base + u;
+      var base = (typeof window.INGATLAN_API_BASE !== 'undefined' && window.INGATLAN_API_BASE) ? window.INGATLAN_API_BASE : '';
+      if (!base && window.location.origin && window.location.origin.indexOf('http') === 0) base = window.location.origin;
+      return base ? base + u : u;
     }
     return u;
   }
