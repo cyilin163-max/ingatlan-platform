@@ -2,6 +2,7 @@
  * Ingatlan 后端：注册、登录、会话、房源
  * 无 DATABASE_URL 时用 server/data/*.json；有 DATABASE_URL 时用 PostgreSQL（部署推荐）
  * 运行：cd server && npm install && npm start  默认端口 3000
+ * 图片：UPLOAD_PATH 指向持久盘（如 /data/uploads）则部署后保留
  */
 const path = require('path');
 const fs = require('fs');
