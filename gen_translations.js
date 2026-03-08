@@ -166,7 +166,7 @@ var t = {
     propPriceCompareAvg: '\u5f53\u5730\u5747\u4ef7',
     propPriceCompareThis: '\u8be5\u623f\u6e90',
     propPriceCompareMethodology: '\u5747\u4ef7\u6309\u8be5\u533a\u57df\u540c\u7c7b\u5728\u552e\u623f\u6e90 m\u00b2 \u5355\u4ef7\u8ba1\u7b97\u3002',
-    propSendMessage: '\u53d1\u9001\u548b\u8be2',
+    propSendMessage: '\u53d1\u9001\u54a8\u8be2',
     propYourName: '\u59d3\u540d',
     propYourEmail: '\u90ae\u7bb1',
     propMessage: '\u7559\u8a00',

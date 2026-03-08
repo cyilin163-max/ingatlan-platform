@@ -141,7 +141,7 @@
   }
 
   function scrollToContactTarget() {
-    var target = document.getElementById('contact-form') || document.getElementById('contact-block');
+    var target = document.getElementById('contact-block');
     if (target && target.scrollIntoView) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -228,13 +228,13 @@
       }
       if (revealBtn) {
         revealBtn.hidden = false;
-        revealBtn.textContent = t('propSendMessage');
+        revealBtn.textContent = t('footerContact');
         revealBtn.onclick = sendMessage;
       }
       if (primaryBtn) {
         primaryBtn.hidden = false;
         primaryBtn.disabled = false;
-        primaryBtn.textContent = t('propSendMessage');
+        primaryBtn.textContent = t('footerContact');
         primaryBtn.classList.remove('btn-primary');
         primaryBtn.classList.add('btn-accent');
         primaryBtn.onclick = sendMessage;
@@ -697,15 +697,6 @@
   function showContent() {
     document.getElementById('property-404').hidden = true;
     document.getElementById('property-root').hidden = false;
-  }
-
-  // Contact form
-  var form = document.getElementById('contact-form');
-  if (form) {
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      alert(window.i18n ? window.i18n.t('contactFormSuccess') : 'Üzenet elküldve. A hirdető hamarosan válaszol.');
-    });
   }
 
   var id = getPropId();

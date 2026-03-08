@@ -8,6 +8,7 @@ const fs = require('fs');
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
+const nodemailer = require('nodemailer');
 const store = require('./store');
 
 const PORT = process.env.PORT || 3000;
@@ -502,6 +503,59 @@ app.post('/api/upload', async (req, res) => {
     res.json({ ok: true, url: '/uploads/' + filename });
   } catch (e) {
     res.status(500).json({ ok: false, error: 'write_failed' });
+  }
+});
+
+// 咨询表单：发送邮件到 lemonon71@gmail.com（需配置 SMTP 环境变量）
+const INQUIRY_TO = 'lemonon71@gmail.com';
+let mailTransporter = null;
+function getMailTransporter() {
+  if (mailTransporter) return mailTransporter;
+  const host = process.env.INQUIRY_SMTP_HOST || process.env.SMTP_HOST;
+  const port = parseInt(process.env.INQUIRY_SMTP_PORT || process.env.SMTP_PORT || '587', 10);
+  const user = process.env.INQUIRY_SMTP_USER || process.env.SMTP_USER;
+  const pass = process.env.INQUIRY_SMTP_PASS || process.env.SMTP_PASS;
+  if (!host || !user || !pass) return null;
+  mailTransporter = nodemailer.createTransport({ host, port, secure: port === 465, auth: { user, pass } });
+  return mailTransporter;
+}
+app.post('/api/inquiry', async (req, res) => {
+  const b = req.body || {};
+  const name = (b.name || '').trim();
+  const email = (b.email || '').trim();
+  const message = (b.message || '').trim();
+  const listingId = (b.listingId || '').trim();
+  const listingTitle = (b.listingTitle || '').trim();
+  if (!name || !email || !message) {
+    return res.status(400).json({ ok: false, error: 'missing_fields' });
+  }
+  const transporter = getMailTransporter();
+  if (!transporter) {
+    return res.status(503).json({ ok: false, error: 'mail_not_configured' });
+  }
+  const subject = listingTitle
+    ? `[房源咨询] ${listingTitle}`
+    : '[房源咨询] 新留言';
+  const text = [
+    `姓名：${name}`,
+    `邮箱：${email}`,
+    listingId ? `房源ID：${listingId}` : '',
+    listingTitle ? `房源：${listingTitle}` : '',
+    '',
+    '留言内容：',
+    message
+  ].filter(Boolean).join('\n');
+  try {
+    await transporter.sendMail({
+      from: process.env.INQUIRY_FROM || process.env.SMTP_USER || process.env.INQUIRY_SMTP_USER || 'noreply@ingatlan.local',
+      to: INQUIRY_TO,
+      subject,
+      text
+    });
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('Inquiry email error:', e.message);
+    res.status(500).json({ ok: false, error: 'send_failed' });
   }
 });
 

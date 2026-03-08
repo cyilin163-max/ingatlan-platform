@@ -53,6 +53,7 @@
 | `ALLOWED_ORIGINS` | 允许的跨域来源，逗号分隔 | 仅当前端与后端**不同域名**时设置，如 `https://你的前端域名.com` |
 | `APP_URL` | 站点完整地址 | 若希望 Cookie 走 `secure`，可设 `https://你的域名.com` |
 | `SECURE_COOKIES` | 设为 `1` 时强制 Cookie 仅 HTTPS 传输 | 上线 HTTPS 后建议设为 `1` |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` | 发信 SMTP（咨询表单邮件发往 lemonon71@gmail.com） | 需发邮件时配置；也可用 `INQUIRY_SMTP_*` 前缀 |
 
 **同域名部署（推荐）**：前端和后端在同一域名下（例如都通过 `https://你的域名.com` 访问）时，**不用**设置 `ALLOWED_ORIGINS`，CORS 会按同源处理。
 

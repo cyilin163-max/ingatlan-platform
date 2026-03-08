@@ -170,7 +170,7 @@ window.TRANSLATIONS = {
     "propPriceCompareAvg": "当地均价",
     "propPriceCompareThis": "该房源",
     "propPriceCompareMethodology": "均价按该区域同类在售房源 m² 单价计算。",
-    "propSendMessage": "发送咋询",
+    "propSendMessage": "发送咨询",
     "propYourName": "姓名",
     "propYourEmail": "邮箱",
     "propMessage": "留言",
