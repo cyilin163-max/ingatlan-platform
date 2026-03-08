@@ -9,7 +9,6 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
 const nodemailer = require('nodemailer');
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const store = require('./store');
 
 const PORT = process.env.PORT || 3000;
@@ -35,6 +34,7 @@ function getS3Client() {
   if (s3Client) return s3Client;
   const c = getS3Config();
   if (!c) return null;
+  const { S3Client } = require('@aws-sdk/client-s3');
   const config = {
     region: c.region,
     credentials: { accessKeyId: c.accessKey, secretAccessKey: c.secretKey },
@@ -57,6 +57,7 @@ async function uploadToS3(key, buffer, contentType) {
   const client = getS3Client();
   const c = getS3Config();
   if (!client || !c) return null;
+  const { PutObjectCommand } = require('@aws-sdk/client-s3');
   const params = {
     Bucket: c.bucket,
     Key: key,
