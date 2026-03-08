@@ -251,8 +251,9 @@
   }
 
   function renderCard(item) {
-    var priceStr = api.formatPrice(item.price);
-    var perSqm = (item.pricePerSqm || 0).toLocaleString('hu-HU') + ' Ft/m²';
+    var priceStr = api.formatPrice(item.price, item.currency);
+    var perSqmUnit = item.currency === 'eur' ? ' €/m²' : ' Ft/m²';
+    var perSqm = (item.pricePerSqm || 0).toLocaleString('hu-HU') + perSqmUnit;
     var badges = (item.badges || []).map(function (b) {
       return '<span class="badge ' + badgeClass(b) + '">' + badgeLabel(b) + '</span>';
     }).join('');

@@ -368,8 +368,9 @@
     var specsEl = document.getElementById('detail-quick-specs');
     var highlightsEl = document.getElementById('detail-highlights');
     var contactMetaEl = document.getElementById('contact-inline-meta');
-    if (priceEl) priceEl.textContent = api.formatPrice(data.price);
-    if (unitEl) unitEl.textContent = (data.pricePerSqm || 0).toLocaleString('hu-HU') + ' Ft/m²';
+    if (priceEl) priceEl.textContent = api.formatPrice(data.price, data.currency);
+    var unitSuffix = data.currency === 'eur' ? ' €/m²' : ' Ft/m²';
+    if (unitEl) unitEl.textContent = (data.pricePerSqm || 0).toLocaleString('hu-HU') + unitSuffix;
     if (specsEl) {
       var floorStr = buildFloorSummary(data);
       specsEl.innerHTML = [

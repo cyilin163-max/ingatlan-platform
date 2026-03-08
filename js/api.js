@@ -278,8 +278,9 @@
     }
   ];
 
-  function formatPrice(n) {
-    return (n || 0).toLocaleString('hu-HU') + ' Ft';
+  function formatPrice(n, currency) {
+    var num = (n || 0).toLocaleString('hu-HU');
+    return currency === 'eur' ? num + ' €' : num + ' Ft';
   }
 
   function matchArea(location, areaKey) {
@@ -457,6 +458,7 @@
         has3D: item.has3D || false,
         badges: item.badges || [],
         listedAt: item.listedAt || '',
+        currency: item.currency || 'ft',
         condition: item.condition || '',
         heating: item.heating || '',
         elevator: item.elevator,

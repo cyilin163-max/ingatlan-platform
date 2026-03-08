@@ -60,9 +60,16 @@
           </select>
         </div>
       </div>
+      <div class="form-group">
+        <label class="label" for="pub-currency" data-i18n="publishCurrency">货币</label>
+        <select id="pub-currency" name="currency" class="select" required>
+          <option value="ft" data-i18n="currencyFt">Ft</option>
+          <option value="eur" data-i18n="currencyEur">EUR</option>
+        </select>
+      </div>
       <div class="form-row-2">
         <div class="form-group">
-          <label class="label" for="pub-price" data-i18n="filterPrice">Ár (Ft)</label>
+          <label class="label" for="pub-price" data-i18n="publishPriceLabel">价格</label>
           <input type="number" id="pub-price" name="price" class="input" required min="0" step="100000" placeholder="89500000">
         </div>
         <div class="form-group">
@@ -199,9 +206,9 @@
         <div>
           <div class="footer-title">匈牙利房产</div>
           <ul class="footer-links">
-            <li><a href="about.html" data-i18n="footerAbout">Rólunk</a></li>
-            <li><a href="contact.html" data-i18n="footerContact">Kapcsolat</a></li>
-            <li><a href="faq.html" data-i18n="footerFaq">GYIK</a></li>
+            <li><a href="about.html" data-i18n="footerAbout">关于我们</a></li>
+            <li><a href="contact.html" data-i18n="footerContact">联系我们</a></li>
+            <li><a href="faq.html" data-i18n="footerFaq">常见问题</a></li>
           </ul>
         </div>
         <div>
@@ -283,6 +290,7 @@
         if (f('pub-title'))       f('pub-title').value       = data.title    || '';
         if (f('pub-summary'))     f('pub-summary').value     = data.summary  || '';
         if (f('pub-category'))    f('pub-category').value    = data.category || 'buy';
+        if (f('pub-currency'))    f('pub-currency').value    = data.currency || 'ft';
         if (f('pub-price'))       f('pub-price').value       = data.price    || '';
         if (f('pub-area'))        f('pub-area').value        = data.area     || '';
         if (f('pub-yard-area'))   f('pub-yard-area').value   = (data.yardArea !== undefined && data.yardArea !== '') ? data.yardArea : '';
@@ -531,6 +539,7 @@
           summary: summary,
           category: category,
           propertyType: (g('pub-property-type') && g('pub-property-type').value) || '',
+          currency: (g('pub-currency') && g('pub-currency').value) || 'ft',
           price: price,
           area: area,
           rooms: rooms,

@@ -437,6 +437,7 @@ app.get('/api/listings', async (req, res) => {
     id: item.id,
     title: item.title,
     propertyType: normalizePropertyType(item.propertyType) || 'flat',
+    currency: item.currency || 'ft',
     price: item.price,
     pricePerSqm: item.pricePerSqm,
     area: item.area,
@@ -470,6 +471,7 @@ app.get('/api/my-listings', async (req, res) => {
   const items = mine.map((item) => ({
     id: item.id,
     title: item.title,
+    currency: item.currency || 'ft',
     price: item.price,
     pricePerSqm: item.pricePerSqm,
     area: item.area,
@@ -514,6 +516,7 @@ app.post('/api/listings', async (req, res) => {
     return res.status(400).json({ ok: false, error: 'missing_title' });
   }
   const price = parseInt(b.price, 10) || 0;
+  const currency = (b.currency || 'ft').toLowerCase() === 'eur' ? 'eur' : 'ft';
   const area = parseInt(b.area, 10) || 0;
   const rooms = parseInt(b.rooms, 10) || 0;
   const location = (b.location || '').trim();
@@ -537,6 +540,7 @@ app.post('/api/listings', async (req, res) => {
     subtitle: [location, area ? area + ' m²' : '', rooms ? rooms + ' szoba' : ''].filter(Boolean).join(' · '),
     category,
     propertyType,
+    currency,
     price,
     pricePerSqm,
     area,
@@ -587,6 +591,7 @@ app.put('/api/listings/:id', async (req, res) => {
   }
   const b = req.body || {};
   const price = parseInt(b.price, 10) || old.price;
+  const currency = b.currency !== undefined ? ((b.currency || 'ft').toLowerCase() === 'eur' ? 'eur' : 'ft') : (old.currency || 'ft');
   const area = parseInt(b.area, 10) || old.area;
   const location = (b.location || old.location || '').trim();
   const rooms = parseInt(b.rooms, 10) || old.rooms;
@@ -595,6 +600,7 @@ app.put('/api/listings/:id', async (req, res) => {
   const updated = Object.assign({}, old, {
     title: (b.title || old.title).trim(),
     category: b.category || old.category,
+    currency,
     price,
     area,
     rooms,

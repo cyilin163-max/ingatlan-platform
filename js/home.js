@@ -275,8 +275,8 @@ document.querySelectorAll('.stat-value[data-count]').forEach(el => {
       return;
     }
     grid.innerHTML = items.map(function (item) {
-      var priceStr = api.formatPrice(item.price);
-      var perSqm = (item.pricePerSqm || 0).toLocaleString('hu-HU') + ' Ft/m²';
+      var priceStr = api.formatPrice(item.price, item.currency);
+      var perSqm = (item.pricePerSqm || 0).toLocaleString('hu-HU') + (item.currency === 'eur' ? ' €/m²' : ' Ft/m²');
       var propType = item.propertyType ? '<div class="card-type">' + propTypeLabel(item.propertyType).replace(/"/g, '&quot;') + '</div>' : '';
       return '<a href="property.html?id=' + encodeURIComponent(item.id) + '" class="property-card">' +
         '<div class="card-media">' +
