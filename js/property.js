@@ -133,9 +133,13 @@
     return date.toLocaleDateString(locale, { year: 'numeric', month: '2-digit', day: '2-digit' });
   }
 
+  var FLOOR_LABELS = { basement: 'floorBasement', 'semi-basement': 'floorSemiBasement', mezzanine: 'floorMezzanine' };
   function buildFloorSummary(data) {
     var floor = data.floor !== undefined && data.floor !== '' && data.floor !== null ? String(data.floor) : '';
     var total = data.totalFloors ? String(data.totalFloors) : '';
+    if (floor && FLOOR_LABELS[floor] && window.i18n && window.i18n.t) {
+      floor = window.i18n.t(FLOOR_LABELS[floor]);
+    }
     if (floor && total) return floor + ' / ' + total;
     return floor || total || '';
   }
@@ -424,6 +428,9 @@
     if (!tbody) return;
 
     var floorVal = data.floor !== undefined && data.floor !== '' && data.floor !== null ? String(data.floor) : null;
+    if (floorVal && FLOOR_LABELS[floorVal] && window.i18n && window.i18n.t) {
+      floorVal = window.i18n.t(FLOOR_LABELS[floorVal]);
+    }
     var conditionVal = data.condition && CONDITION_MAP[data.condition] ? t(CONDITION_MAP[data.condition]) : (data.condition || null);
     var heatingVal   = data.heating   && HEATING_MAP[data.heating]    ? t(HEATING_MAP[data.heating])    : (data.heating   || null);
     var districtVal = formatDistrictLabel(data.district, data.location || data.address || '') || null;

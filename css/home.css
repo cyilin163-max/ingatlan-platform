@@ -296,6 +296,7 @@ body {
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: var(--space-6);
   margin-bottom: var(--space-6);
+  align-items: start;
 }
 .latest-section .property-card {
   background: var(--gradient-green-soft);

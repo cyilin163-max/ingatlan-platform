@@ -87,13 +87,42 @@
       </div>
       <div class="form-row-floors form-row-2">
         <div class="form-group">
-          <label class="label" for="pub-floor" data-i18n="publishFloor">Emelet</label>
-          <input type="number" id="pub-floor" name="floor" class="input" min="0" max="99" placeholder="2">
+          <label class="label" for="pub-floor" data-i18n="publishFloor">楼层</label>
+          <select id="pub-floor" name="floor" class="select">
+            <option value="" data-i18n="filterAny">—</option>
+            <option value="basement" data-i18n="floorBasement">地下室</option>
+            <option value="semi-basement" data-i18n="floorSemiBasement">半地下室</option>
+            <option value="mezzanine" data-i18n="floorMezzanine">夹层</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+            <option value="13">13</option>
+            <option value="14">14</option>
+            <option value="15">15</option>
+            <option value="16">16</option>
+            <option value="17">17</option>
+            <option value="18">18</option>
+            <option value="19">19</option>
+            <option value="20">20</option>
+          </select>
         </div>
         <div class="form-group">
-          <label class="label" for="pub-total-floors" data-i18n="publishTotalFloors">Összes szint</label>
+          <label class="label" for="pub-total-floors" data-i18n="publishTotalFloors">总楼层</label>
           <input type="number" id="pub-total-floors" name="totalFloors" class="input" min="1" max="99" placeholder="6">
         </div>
+      </div>
+      <div class="form-group">
+        <label class="label" for="pub-year-built" data-i18n="publishYearBuilt">建造年份</label>
+        <input type="number" id="pub-year-built" name="yearBuilt" class="input" min="1800" max="2030" placeholder="2020" step="1">
       </div>
       <div class="form-row-2">
         <div class="form-group">
@@ -304,6 +333,7 @@
         toggleYardAreaVisibility();
         if (f('pub-floor'))         f('pub-floor').value         = data.floor !== undefined ? data.floor : '';
         if (f('pub-total-floors'))  f('pub-total-floors').value  = data.totalFloors !== undefined ? data.totalFloors : '';
+        if (f('pub-year-built'))    f('pub-year-built').value    = data.yearBuilt !== undefined && data.yearBuilt !== '' && data.yearBuilt !== 0 ? data.yearBuilt : '';
         if (f('pub-condition'))     f('pub-condition').value     = data.condition  || '';
         if (f('pub-garage'))       f('pub-garage').value        = data.garage === true ? '1' : (data.garage === false ? '0' : '');
         if (f('pub-heating'))       f('pub-heating').value       = data.heating    || '';
@@ -580,8 +610,9 @@
           price: price,
           area: area,
           rooms: rooms,
-          floor: g('pub-floor') ? (parseInt(g('pub-floor').value, 10) || '') : '',
+          floor: g('pub-floor') ? (g('pub-floor').value || '') : '',
           totalFloors: g('pub-total-floors') ? (parseInt(g('pub-total-floors').value, 10) || '') : '',
+          yearBuilt: g('pub-year-built') ? (parseInt(g('pub-year-built').value, 10) || 0) : 0,
           condition: (g('pub-condition') && g('pub-condition').value) || '',
           garage: g('pub-garage') && g('pub-garage').value === '1',
           heating: (g('pub-heating') && g('pub-heating').value) || '',
