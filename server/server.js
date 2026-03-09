@@ -349,11 +349,12 @@ function parseDistrictFromQuery(q) {
   const cityMap = { debrecen: 'Debrecen', szeged: 'Szeged', miskolc: 'Miskolc', 德布勒森: 'Debrecen', 塞格德: 'Szeged', 米什科尔茨: 'Miskolc' };
   if (cityMap[lower]) return cityMap[lower];
   const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI', 'XXII', 'XXIII'];
-  const cleaned = s.replace(/[区區\s.,]+$/g, '').trim();
+  const cleaned = s.replace(/[区區\s.,]+$/g, '').replace(/^第/, '').trim();
+  const cleanedLower = cleaned.toLowerCase();
   const num = parseInt(cleaned, 10);
   if (!isNaN(num) && num >= 1 && num <= 23) return roman[num - 1];
   for (let i = 0; i < roman.length; i++) {
-    if (cleaned === roman[i] || lower === roman[i].toLowerCase()) return roman[i];
+    if (cleaned === roman[i] || cleanedLower === roman[i].toLowerCase()) return roman[i];
   }
   return null;
 }
@@ -483,7 +484,14 @@ app.get('/api/listings', async (req, res) => {
   if (!isNaN(areaMin)) list = list.filter((item) => item.area >= areaMin);
   if (!isNaN(areaMax)) list = list.filter((item) => item.area <= areaMax);
   if (!isNaN(rooms)) list = list.filter((item) => item.rooms >= rooms);
-  if (district) list = list.filter((item) => (item.district || '') === district);
+  if (district) {
+    const districts = district.split(',').map((d) => d.trim()).filter(Boolean);
+    if (districts.length > 1) {
+      list = list.filter((item) => districts.indexOf((item.district || '').trim()) !== -1);
+    } else {
+      list = list.filter((item) => (item.district || '').trim() === district.trim());
+    }
+  }
   if (buildingType) list = list.filter((item) => normalizePropertyType(item.propertyType) === buildingType);
   if (condition) {
     list = list.filter((item) => {

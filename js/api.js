@@ -394,11 +394,12 @@
     var cityMap = { debrecen: 'Debrecen', szeged: 'Szeged', miskolc: 'Miskolc', 德布勒森: 'Debrecen', 塞格德: 'Szeged', 米什科尔茨: 'Miskolc' };
     if (cityMap[lower]) return cityMap[lower];
     var roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI', 'XXII', 'XXIII'];
-    var cleaned = s.replace(/[区區\s.,]+$/g, '').trim();
+    var cleaned = s.replace(/[区區\s.,]+$/g, '').replace(/^第/, '').trim();
+    var cleanedLower = cleaned.toLowerCase();
     var num = parseInt(cleaned, 10);
     if (!isNaN(num) && num >= 1 && num <= 23) return roman[num - 1];
     for (var i = 0; i < roman.length; i++) {
-      if (cleaned === roman[i] || lower === roman[i].toLowerCase()) return roman[i];
+      if (cleaned === roman[i] || cleanedLower === roman[i].toLowerCase()) return roman[i];
     }
     return null;
   }
@@ -432,7 +433,13 @@
       if (areaKey && areaFilterKeys.indexOf(areaKey) !== -1) {
         if (getListingAreaItem(item) !== areaKey) return false;
       } else if (areaKey && !matchArea(areaKey === 'surrounding-cities' ? (item.location || '') + ' ' + (item.district || '') : item.location, areaKey)) return false;
-      if (district && (item.district || '') !== district) return false;
+      if (district) {
+        var districts = district.split(',').map(function (d) { return d.trim(); }).filter(Boolean);
+        var itemDist = (item.district || '').trim();
+        if (districts.length > 1) {
+          if (districts.indexOf(itemDist) === -1) return false;
+        } else if (itemDist !== district.trim()) return false;
+      }
       if (qParts.length) {
         var titleL = (item.title || '').toLowerCase();
         var locationL = (item.location || '').toLowerCase();

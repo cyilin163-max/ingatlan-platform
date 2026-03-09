@@ -110,7 +110,6 @@ document.querySelectorAll('.stat-value[data-count]').forEach(el => {
     cityRadios.forEach(function (radio) {
       radio.addEventListener('change', function () {
         if (!radio.checked) return;
-        if (modalInput) modalInput.value = radio.value;
         if (districtsList) {
           districtsList.querySelectorAll('input[type="checkbox"]').forEach(function (cb) { cb.checked = false; });
         }
@@ -127,14 +126,13 @@ document.querySelectorAll('.stat-value[data-count]').forEach(el => {
       var input = document.createElement('input');
       input.type = 'checkbox';
       input.name = 'district';
-      input.value = (i + 1);
+      input.value = r;
       input.setAttribute('data-district-index', i);
       input.addEventListener('change', function () {
         if (cityRadios && cityRadios.length) {
           cityRadios.forEach(function (r) { r.checked = false; });
         }
         updateMapHighlight();
-        syncModalInputFromCheckboxes();
       });
       var span = document.createElement('span');
       span.textContent = r + '.';
@@ -147,15 +145,6 @@ document.querySelectorAll('.stat-value[data-count]').forEach(el => {
   function updateMapHighlight() {
   }
 
-  function syncModalInputFromCheckboxes() {
-    if (!modalInput) return;
-    var checked = modal.querySelectorAll('.location-districts-list input:checked');
-    var nums = Array.prototype.map.call(checked, function (c) {
-      return c.parentNode.querySelector('span').textContent;
-    });
-    modalInput.value = nums.length ? nums.join(', ') : '';
-  }
-
   function openModal() {
     if (suppressOpenModal) {
       suppressOpenModal = false;
@@ -163,35 +152,7 @@ document.querySelectorAll('.stat-value[data-count]').forEach(el => {
     }
     modal.removeAttribute('hidden');
     modal.style.display = '';
-    if (modalInput) {
-      var initial = (searchInput ? searchInput.value : '').trim();
-      modalInput.value = initial;
-      parseInitialIntoCityAndDistricts(initial);
-    }
-    if (modalInput) modalInput.focus();
   }
-
-  function parseInitialIntoCityAndDistricts(text) {
-    var t = (text || '').trim();
-    var isCity = CITIES.indexOf(t) !== -1;
-    if (cityRadios && cityRadios.length) {
-      cityRadios.forEach(function (r) {
-        r.checked = (isCity && r.value === t);
-      });
-    }
-    if (isCity && districtsList) {
-      districtsList.querySelectorAll('input[type="checkbox"]').forEach(function (cb) { cb.checked = false; });
-      return;
-    }
-    if (!districtsList) return;
-    var parts = (text || '').split(/[·,，、\s]+/).map(function (s) { return s.trim(); }).filter(Boolean);
-    function norm(p) { return (p || '').replace(/[.,\s]+$/, '').trim(); }
-    districtsList.querySelectorAll('input[type="checkbox"]').forEach(function (input, i) {
-      var matched = parts.some(function (p) { return norm(p) === roman[i]; });
-      input.checked = !!matched;
-    });
-  }
-
 
   function closeModal() {
     modal.setAttribute('hidden', '');
@@ -205,32 +166,40 @@ document.querySelectorAll('.stat-value[data-count]').forEach(el => {
 
   if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
 
-  // 布达佩斯区份罗马数字 -> "X. kerület" 格式，与房源 location 一致，便于搜索匹配
-  function districtToSearchText(romanNum) {
-    return romanNum + '. kerület';
+  var BELVAROS = ['V', 'VI', 'VII'];
+  function getAreaForDistrict(d) {
+    if (BELVAROS.indexOf(d) !== -1) return 'budapest-belvaros';
+    if (['Debrecen', 'Szeged', 'Miskolc'].indexOf(d) !== -1) return 'surrounding-cities';
+    return 'budapest-agglomeracio';
   }
 
-  // 确定：先关闭弹窗，再把选中的区份或输入文字写回首页搜索框并回到顶部
+  // 确定：关闭弹窗回到首页，将选中的区份/城市写入表单，用户点击搜索时再跳转
   if (okBtn) {
     okBtn.addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
-      closeModal();
-      suppressOpenModal = true;
-      var checked = modal.querySelectorAll('.location-districts-list input:checked');
-      var text = modalInput ? modalInput.value.trim() : '';
-      if (searchInput) {
-        if (checked.length) {
-          var parts = Array.prototype.map.call(checked, function (c) {
-            var s = c.parentNode ? c.parentNode.querySelector('span') : null;
-            return s ? s.textContent.trim() : '';
-          });
-          searchInput.value = parts.filter(Boolean).join(', ');
-        } else if (text) {
-          searchInput.value = text;
-        }
-        searchInput.focus();
+      var cityChecked = modal.querySelector('input[name="location-city"]:checked');
+      var districtChecked = modal.querySelectorAll('.location-districts-list input:checked');
+      var district = null;
+      var area = null;
+      var displayText = '';
+      if (cityChecked) {
+        district = cityChecked.value;
+        area = 'surrounding-cities';
+        displayText = cityChecked.nextElementSibling ? cityChecked.nextElementSibling.textContent.trim() : district;
+      } else if (districtChecked.length) {
+        var codes = Array.prototype.map.call(districtChecked, function (c) { return c.value; });
+        district = codes.join(',');
+        area = codes.length ? getAreaForDistrict(codes[0]) : null;
+        displayText = codes.map(function (c) { return c + '.'; }).join(', ');
       }
+      closeModal();
+      var districtEl = document.getElementById('hero-district');
+      var areaEl = document.getElementById('hero-area');
+      if (districtEl) districtEl.value = district || '';
+      if (areaEl) areaEl.value = area || '';
+      if (searchInput) searchInput.value = displayText;
+      suppressOpenModal = true;
       setTimeout(function () { suppressOpenModal = false; }, 0);
       var hero = document.querySelector('.hero');
       if (hero && hero.scrollIntoView) hero.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -303,8 +272,16 @@ document.querySelectorAll('.stat-value[data-count]').forEach(el => {
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     var url = new URL('search.html', window.location.href);
-    var q = form.querySelector('[name="q"]');
-    if (q && q.value.trim()) url.searchParams.set('q', q.value.trim());
+    var districtEl = form.querySelector('[name="district"]');
+    var areaEl = form.querySelector('[name="area"]');
+    var hasDistrict = districtEl && districtEl.value.trim();
+    if (hasDistrict) {
+      url.searchParams.set('district', districtEl.value.trim());
+      if (areaEl && areaEl.value.trim()) url.searchParams.set('area', areaEl.value.trim());
+    } else {
+      var q = form.querySelector('[name="q"]');
+      if (q && q.value.trim()) url.searchParams.set('q', q.value.trim());
+    }
     var cat = form.querySelector('[name="category"]');
     if (cat && cat.value) url.searchParams.set('category', cat.value);
     var rooms = form.querySelector('[name="rooms"]');
