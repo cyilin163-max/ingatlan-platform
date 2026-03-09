@@ -339,6 +339,11 @@ body {
   font-weight: 700;
   color: var(--color-primary);
   margin-bottom: var(--space-1);
+  min-height: 2.5em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .latest-section .card-price-unit { font-size: var(--text-sm); font-weight: 400; color: var(--color-text-muted); }
 .latest-section .card-specs,

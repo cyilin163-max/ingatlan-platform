@@ -241,6 +241,23 @@ document.querySelectorAll('.stat-value[data-count]').forEach(el => {
     return raw;
   }
 
+  var BUDAPEST_ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI', 'XXII', 'XXIII'];
+  function getShortLocation(item) {
+    var d = (item.district || '').trim();
+    var loc = (item.location || '').trim();
+    var dUpper = d.toUpperCase();
+    var code = d ? (BUDAPEST_ROMAN.indexOf(dUpper) !== -1 ? dUpper : null) : null;
+    if (code) {
+      var lang = (window.i18n && window.i18n.getLang) ? window.i18n.getLang() : 'zh';
+      if (lang === 'zh') return code + ' 区';
+      if (lang === 'en') return 'District ' + code;
+      return code + '. kerület';
+    }
+    if (d) return d;
+    var comma = loc.indexOf(',');
+    return comma > 0 ? loc.substring(0, comma).trim() : loc;
+  }
+
   var loadingText = (window.i18n && window.i18n.t('loading')) || 'Loading…';
   grid.innerHTML = '<div class="latest-loading" aria-live="polite">' + loadingText + '</div>';
   api.getListings({ page: 1, perPage: 8, sort: 'newest' }).then(function (res) {
@@ -263,7 +280,7 @@ document.querySelectorAll('.stat-value[data-count]').forEach(el => {
           propType +
           '<div class="card-price">' + priceStr + ' <span class="card-price-unit">· ' + perSqm + '</span></div>' +
           '<div class="card-specs"><span>' + (item.area || '') + ' m²</span><span>' + (item.rooms || '') + ' ' + unitRooms + '</span></div>' +
-          '<div class="card-location">' + (item.location || '') + '</div>' +
+          '<div class="card-location">' + (getShortLocation(item) || '') + '</div>' +
         '</div></a>';
     }).join('');
     if (window.i18n && window.i18n.apply) window.i18n.apply();
