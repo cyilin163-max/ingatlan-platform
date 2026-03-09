@@ -561,6 +561,16 @@ app.get('/api/listings/:id', async (req, res) => {
   res.json(item);
 });
 
+// 记录房源浏览次数（无需登录，任何访客打开详情页即计数）
+app.post('/api/listings/:id/view', async (req, res) => {
+  const id = req.params.id;
+  const item = await store.getListingById(id);
+  if (!item) return res.status(404).json({ error: 'not_found' });
+  const viewCount = (item.viewCount || 0) + 1;
+  await store.updateListingById(id, Object.assign({}, item, { viewCount }));
+  res.json({ ok: true, viewCount });
+});
+
 // 当前登录用户发布的房源（需登录）
 app.get('/api/my-listings', async (req, res) => {
   const user = await getSessionUser(req, res);
@@ -580,6 +590,7 @@ app.get('/api/my-listings', async (req, res) => {
     image: item.image,
     images: item.images,
     listedAt: item.listedAt,
+    viewCount: item.viewCount || 0,
   }));
   res.json({ items });
 });

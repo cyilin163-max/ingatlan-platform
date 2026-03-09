@@ -380,6 +380,12 @@
         if (!card) return;
         e.preventDefault();
         e.stopPropagation();
+        var user = api.getCurrentUser && api.getCurrentUser();
+        if (!user || !user.id) {
+          var redirect = encodeURIComponent(window.location.href || 'search.html');
+          window.location.href = 'login.html?redirect=' + redirect;
+          return;
+        }
         var href = card.getAttribute('href') || '';
         var id = String((href.match(/id=([^&]+)/) || [])[1] || '');
         var favorites = (api.getFavorites && api.getFavorites()) || [];

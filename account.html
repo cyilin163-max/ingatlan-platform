@@ -269,7 +269,7 @@
                     var editHref = (apiBase || '') + '/publish.html?edit=' + encodeURIComponent(item.id);
                     row.innerHTML = '<div class="listing-thumb"><img src="' + (item.image || (item.images && item.images[0]) || '').replace(/"/g, '&quot;') + '" alt=""></div>' +
                       '<div class="listing-info"><h3>' + (item.title || '').replace(/</g, '&lt;') + '</h3><p>' + (item.area || '') + ' m² · ' + (item.rooms || '') + ' ' + unitRooms + ' · ' + priceStr + '</p>' +
-                      '<div class="listing-stats"><span>👁 0</span><span>' + accountViewsLabel + '</span></div></div>' +
+                      '<div class="listing-stats"><span>👁 ' + (item.viewCount != null ? item.viewCount : 0) + '</span><span>' + accountViewsLabel + '</span></div></div>' +
                       '<div class="listing-actions">' +
                         '<a href="' + viewHref + '" class="btn btn-outline" data-i18n="accountView">查看</a> ' +
                         '<a href="' + editHref + '" class="btn btn-ghost" data-i18n="accountEdit">编辑</a> ' +

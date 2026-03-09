@@ -574,6 +574,12 @@
    * @param {string} id
    * @returns {Promise<Object|null>}
    */
+  function recordListingView(id) {
+    if (!id) return;
+    var url = (BASE || '') + '/api/listings/' + encodeURIComponent(id) + '/view';
+    fetch(url, { method: 'POST', credentials: 'include' }).catch(function () {});
+  }
+
   function getListingById(id) {
     var url = (BASE || '') + '/api/listings/' + encodeURIComponent(id);
     return fetch(url).then(function (r) {
@@ -660,6 +666,7 @@
   global.INGATLAN_API = {
     getListings: getListings,
     getListingById: getListingById,
+    recordListingView: recordListingView,
     getStats: getStats,
     getAreaCounts: getAreaCounts,
     getDistrictAveragePricePerSqm: getDistrictAveragePricePerSqm,

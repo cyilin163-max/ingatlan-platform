@@ -163,6 +163,12 @@
     if (!favBtn._favoriteBound) {
       favBtn._favoriteBound = true;
       favBtn.addEventListener('click', function () {
+        var user = api.getCurrentUser && api.getCurrentUser();
+        if (!user || !user.id) {
+          var redirect = encodeURIComponent(window.location.href || ('property.html?id=' + listingId));
+          window.location.href = 'login.html?redirect=' + redirect;
+          return;
+        }
         var list = (api.getFavorites && api.getFavorites()) || [];
         var idText = String(listingId);
         var idx = list.indexOf(idText);
@@ -695,6 +701,7 @@
       renderBreadcrumb(null);
       return;
     }
+    if (api.recordListingView) api.recordListingView(id);
     showContent();
     renderBreadcrumb(data);
     document.getElementById('prop-title').textContent = data.title || '';

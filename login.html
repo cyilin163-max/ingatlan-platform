@@ -139,7 +139,14 @@
               if (window.INGATLAN_API && window.INGATLAN_API.setCurrentUser && result.data && result.data.user) {
                 window.INGATLAN_API.setCurrentUser(result.data.user);
               }
-              window.location.href = apiBase ? (apiBase + '/account.html') : 'account.html';
+              var redirect = (new URLSearchParams(window.location.search)).get('redirect');
+              var target = 'account.html';
+              if (redirect) {
+                var d = (redirect || '').trim();
+                if (d && (d.indexOf('http://') !== 0 && d.indexOf('https://') !== 0 || d.indexOf(window.location.origin) === 0)) target = d;
+              }
+              if (apiBase && target.indexOf('http') !== 0) target = apiBase + '/' + target.replace(/^\//, '');
+              window.location.href = target;
               return;
             }
             if (result.data && result.data.error === 'invalid_credentials') {
