@@ -310,7 +310,7 @@
     var isBudapestDistrict = /^(I{1,3}|IV|V|VI{1,3}|IX|X|XI{1,3}|XIV|XV|XVI{1,3}|XX|XXI|XXII|XXIII)$/i.test(dist) || /^([1-9]|1[0-9]|2[0-3])$/.test(dist);
     var hasBelvaros = /V\.\s*kerület|VI\.\s*kerület|VII\.\s*kerület|第[五六七]区|5\s*区|6\s*区|7\s*区/i.test(loc) || /^[VVI]+$|^[567]$/.test(dist);
     var hasBudapest = /Budapest|布达佩斯/.test(loc) || isBudapestDistrict;
-    var hasSurrounding = /Debrecen|Szeged|Miskolc|德布勒森|塞格德|米什科尔茨/.test(locDist);
+    var hasSurrounding = /Debrecen|Szeged|Miskolc|Other|德布勒森|塞格德|米什科尔茨|其他城市/.test(locDist);
     if (hasBelvaros) return 'budapest-belvaros';
     if (/Balaton|巴拉顿/.test(loc)) return 'balaton';
     if (hasSurrounding) return 'surrounding-cities';
@@ -325,7 +325,7 @@
     }
     if (areaKey === 'balaton') return loc.indexOf('Balaton') !== -1;
     if (areaKey === 'surrounding-cities') {
-      return loc.indexOf('Debrecen') !== -1 || loc.indexOf('Szeged') !== -1 || loc.indexOf('Miskolc') !== -1;
+      return loc.indexOf('Debrecen') !== -1 || loc.indexOf('Szeged') !== -1 || loc.indexOf('Miskolc') !== -1 || loc.indexOf('Other') !== -1;
     }
     if (areaKey === 'budapest-agglomeracio') {
       return loc.indexOf('Budapest') !== -1 && loc.indexOf('V. kerület') === -1 && loc.indexOf('VI. kerület') === -1 && loc.indexOf('VII. kerület') === -1;

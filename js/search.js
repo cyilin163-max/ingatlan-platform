@@ -2,7 +2,7 @@
 (function () {
   var form = document.getElementById('filters-form');
   var sortSelect = document.getElementById('sort');
-  var SURROUNDING_CITIES = ['Debrecen', 'Szeged', 'Miskolc'];
+  var SURROUNDING_CITIES = ['Debrecen', 'Szeged', 'Miskolc', 'Other'];
   var BUDAPEST_BELVAROS_DISTRICTS = ['V', 'VI', 'VII'];
   var BUDAPEST_AGGLOMERACION_DISTRICTS = ['II', 'III', 'XIV', 'XVI'];
 

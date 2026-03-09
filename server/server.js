@@ -367,7 +367,7 @@ function getListingArea(item) {
   const isBudapestDistrict = /^(I{1,3}|IV|V|VI{1,3}|IX|X|XI{1,3}|XIV|XV|XVI{1,3}|XX|XXI|XXII|XXIII)$/i.test(dist) || /^([1-9]|1[0-9]|2[0-3])$/.test(dist);
   const hasBelvaros = /V\.\s*kerület|VI\.\s*kerület|VII\.\s*kerület|第[五六七]区|5\s*区|6\s*区|7\s*区/i.test(loc) || /^[VVI]+$|^[567]$/.test(dist);
   const hasBudapest = /Budapest|布达佩斯/.test(loc) || isBudapestDistrict;
-  const hasSurrounding = /Debrecen|Szeged|Miskolc|德布勒森|塞格德|米什科尔茨/.test(locDist);
+  const hasSurrounding = /Debrecen|Szeged|Miskolc|Other|德布勒森|塞格德|米什科尔茨|其他城市/.test(locDist);
   if (hasBelvaros) return 'budapest-belvaros';
   if (/Balaton|巴拉顿/.test(loc)) return 'balaton';
   if (hasSurrounding) return 'surrounding-cities';

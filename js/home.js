@@ -184,9 +184,16 @@ document.querySelectorAll('.stat-value[data-count]').forEach(el => {
       var area = null;
       var displayText = '';
       if (cityChecked) {
-        district = cityChecked.value;
-        area = 'surrounding-cities';
-        displayText = cityChecked.nextElementSibling ? cityChecked.nextElementSibling.textContent.trim() : district;
+        var cityVal = cityChecked.value;
+        if (cityVal === '__other__') {
+          district = '';
+          area = 'surrounding-cities';
+          displayText = (window.i18n && window.i18n.t('areaOtherCities')) || '其他城市';
+        } else {
+          district = cityVal;
+          area = 'surrounding-cities';
+          displayText = cityChecked.nextElementSibling ? cityChecked.nextElementSibling.textContent.trim() : cityVal;
+        }
       } else if (districtChecked.length) {
         var codes = Array.prototype.map.call(districtChecked, function (c) { return c.value; });
         district = codes.join(',');
@@ -275,9 +282,10 @@ document.querySelectorAll('.stat-value[data-count]').forEach(el => {
     var districtEl = form.querySelector('[name="district"]');
     var areaEl = form.querySelector('[name="area"]');
     var hasDistrict = districtEl && districtEl.value.trim();
-    if (hasDistrict) {
-      url.searchParams.set('district', districtEl.value.trim());
-      if (areaEl && areaEl.value.trim()) url.searchParams.set('area', areaEl.value.trim());
+    var hasArea = areaEl && areaEl.value.trim();
+    if (hasDistrict || hasArea) {
+      if (hasDistrict) url.searchParams.set('district', districtEl.value.trim());
+      if (hasArea) url.searchParams.set('area', areaEl.value.trim());
     } else {
       var q = form.querySelector('[name="q"]');
       if (q && q.value.trim()) url.searchParams.set('q', q.value.trim());
