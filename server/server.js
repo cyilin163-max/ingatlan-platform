@@ -341,18 +341,46 @@ app.get('/api/stats', async (req, res) => {
   res.json({ activeListings: list.length, newToday });
 });
 
+// 从搜索词解析出区份代码：支持 "V"、"5"、"5区"、"XV"、"15"、罗马数字 I–XXIII、城市名
+function parseDistrictFromQuery(q) {
+  const s = (q || '').trim();
+  if (!s) return null;
+  const lower = s.toLowerCase();
+  const cityMap = { debrecen: 'Debrecen', szeged: 'Szeged', miskolc: 'Miskolc', 德布勒森: 'Debrecen', 塞格德: 'Szeged', 米什科尔茨: 'Miskolc' };
+  if (cityMap[lower]) return cityMap[lower];
+  const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI', 'XXII', 'XXIII'];
+  const cleaned = s.replace(/[区區\s.,]+$/g, '').trim();
+  const num = parseInt(cleaned, 10);
+  if (!isNaN(num) && num >= 1 && num <= 23) return roman[num - 1];
+  for (let i = 0; i < roman.length; i++) {
+    if (cleaned === roman[i] || lower === roman[i].toLowerCase()) return roman[i];
+  }
+  return null;
+}
+
+// 房源归属区域（与首页热门区域一致，支持匈语与中文 location；district 为布达佩斯区号时也计入）
+function getListingArea(item) {
+  const loc = (item.location || '').trim();
+  const dist = (item.district || '').trim();
+  const locDist = loc + ' ' + dist;
+  const isBudapestDistrict = /^(I{1,3}|IV|V|VI{1,3}|IX|X|XI{1,3}|XIV|XV|XVI{1,3}|XX|XXI|XXII|XXIII)$/i.test(dist) || /^([1-9]|1[0-9]|2[0-3])$/.test(dist);
+  const hasBelvaros = /V\.\s*kerület|VI\.\s*kerület|VII\.\s*kerület|第[五六七]区|5\s*区|6\s*区|7\s*区/i.test(loc) || /^[VVI]+$|^[567]$/.test(dist);
+  const hasBudapest = /Budapest|布达佩斯/.test(loc) || isBudapestDistrict;
+  const hasSurrounding = /Debrecen|Szeged|Miskolc|德布勒森|塞格德|米什科尔茨/.test(locDist);
+  if (hasBelvaros) return 'budapest-belvaros';
+  if (/Balaton|巴拉顿/.test(loc)) return 'balaton';
+  if (hasSurrounding) return 'surrounding-cities';
+  if (hasBudapest) return 'budapest-agglomeracio';
+  return null;
+}
+
 // 区域数量（首页热门区域用）
 app.get('/api/areas/counts', async (req, res) => {
   const list = await store.loadListings();
   const counts = { 'budapest-belvaros': 0, balaton: 0, 'budapest-agglomeracio': 0, 'surrounding-cities': 0 };
-  const locOrDist = (item) => (item.location || '') + ' ' + (item.district || '');
   list.forEach((item) => {
-    const loc = item.location || '';
-    const locDist = locOrDist(item);
-    if (loc.indexOf('V. kerület') !== -1 || loc.indexOf('VI. kerület') !== -1 || loc.indexOf('VII. kerület') !== -1) counts['budapest-belvaros']++;
-    else if (loc.indexOf('Balaton') !== -1) counts.balaton++;
-    else if (locDist.indexOf('Debrecen') !== -1 || locDist.indexOf('Szeged') !== -1 || locDist.indexOf('Miskolc') !== -1) counts['surrounding-cities']++;
-    else if (loc.indexOf('Budapest') !== -1 && loc.indexOf('V. kerület') === -1 && loc.indexOf('VI. kerület') === -1 && loc.indexOf('VII. kerület') === -1) counts['budapest-agglomeracio']++;
+    const area = getListingArea(item);
+    if (area && counts[area] !== undefined) counts[area]++;
   });
   res.json(counts);
 });
@@ -427,13 +455,20 @@ app.get('/api/listings', async (req, res) => {
   const balcony = String(req.query.balcony || '');
   const parking = String(req.query.parking || '');
   const listedSinceDays = parseInt(req.query.listed_since, 10);
-  const district = (req.query.district || '').trim();
+  let district = (req.query.district || '').trim();
+  const areaFilter = (req.query.area || '').trim().toLowerCase();
+  const parsedDistrictFromQ = q && !district ? parseDistrictFromQuery(q) : null;
+  if (parsedDistrictFromQ) district = parsedDistrictFromQ;
   const sort = req.query.sort || 'newest';
   const page = Math.max(1, parseInt(req.query.page, 10) || 1);
   const perPage = Math.min(50, Math.max(1, parseInt(req.query.perPage, 10) || 12));
 
-  if (q) {
-    // 去除点号，方便匹配 "XI. kerület" → ["xi", "kerület"]
+  if (areaFilter && ['budapest-belvaros', 'surrounding-cities', 'budapest-agglomeracio'].indexOf(areaFilter) !== -1) {
+    list = list.filter((item) => getListingArea(item) === areaFilter);
+  }
+
+  if (q && !parsedDistrictFromQ) {
+    // 非区份搜索：关键词模糊匹配 title / location / district
     const parts = q.replace(/\./g, ' ').split(/[\s,]+/).map((s) => s.trim().toLowerCase()).filter(Boolean);
     list = list.filter((item) => {
       const title = (item.title || '').toLowerCase();
@@ -793,24 +828,6 @@ async function start() {
     try {
       await store.initDbSchema();
       console.log('Database schema ready.');
-      const list = await store.loadListings();
-      const shouldSeed = list.length === 0 || process.env.SEED_LISTINGS === '1';
-      if (shouldSeed) {
-        const seedPath = path.join(__dirname, 'seed-listings.json');
-        if (fs.existsSync(seedPath)) {
-          const seed = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
-          const items = Array.isArray(seed) ? seed : [seed];
-          for (const item of items) {
-            if (item && item.id) {
-              const exists = await store.getListingById(item.id);
-              if (!exists) {
-                await store.addListing(item);
-                console.log('  Seeded listing:', item.id, item.title || '');
-              }
-            }
-          }
-        }
-      }
     } catch (e) {
       console.error('Database init failed:', e.message);
       process.exit(1);

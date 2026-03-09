@@ -54,10 +54,47 @@
 | `APP_URL` | 站点完整地址 | 若希望 Cookie 走 `secure`，可设 `https://你的域名.com` |
 | `SECURE_COOKIES` | 设为 `1` 时强制 Cookie 仅 HTTPS 传输 | 上线 HTTPS 后建议设为 `1` |
 | `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` | 发信 SMTP（咨询表单邮件发往 lemonon71@gmail.com） | 需发邮件时配置；也可用 `INQUIRY_SMTP_*` 前缀 |
+| `UPLOAD_PATH` | 上传目录绝对路径（如 Render Persistent Disk 挂载路径下的子目录） | 用 Render Storage 时填 `/data/uploads`，部署后图片会保留 |
 
 **同域名部署（推荐）**：前端和后端在同一域名下（例如都通过 `https://你的域名.com` 访问）时，**不用**设置 `ALLOWED_ORIGINS`，CORS 会按同源处理。
 
-### 4. 代码上不需要改的地方
+### 4. 图片持久化（部署后图片不丢失）
+
+在 Render 等 PaaS 上，每次部署后容器内 `uploads/` 会清空，导致已上传图片 404。有两种做法，**二选一**即可：
+
+**做法一：用 Render 自带的 Storage（Persistent Disk）—— 推荐，不必再买别家**
+
+若你已在 Render 购买了 **Persistent Disk**（在 Web Service 里添加 Disk，会挂载到某个路径如 `/data`）：
+
+1. 在 Render 的 **Environment** 里添加变量：`UPLOAD_PATH` = `/data/uploads`（若你的 Disk 挂载路径是 `/data`；若挂载到别的路径，则填该路径下的子目录，如 `/mnt/storage/uploads`）。
+2. 保存后重新部署。之后上传的图片会写到该磁盘，**重新部署也不会丢失**，无需再配置 S3 或其它平台。
+
+**做法二：用 S3 兼容对象存储（AWS S3 / DigitalOcean Spaces / Backblaze B2）**
+
+不买 Render Storage、改用对象存储时，可配置下面变量，新上传的图片会写入对象存储并返回完整 URL。
+
+| 变量名 | 说明 | 示例 |
+|--------|------|------|
+| `S3_BUCKET` 或 `AWS_S3_BUCKET` | 桶名称 | `my-ingatlan-images` |
+| `AWS_ACCESS_KEY_ID` 或 `S3_ACCESS_KEY_ID` | 访问密钥 | 从云控制台创建 |
+| `AWS_SECRET_ACCESS_KEY` 或 `S3_SECRET_ACCESS_KEY` | 私密密钥 | 从云控制台创建 |
+| `AWS_REGION` 或 `S3_REGION` | 区域（AWS 必填） | `eu-central-1` |
+| `S3_ENDPOINT` 或 `AWS_ENDPOINT` | 自定义端点（非 AWS 时填） | 见下方各平台 |
+| `S3_PUBLIC_BASE` 或 `S3_PUBLIC_URL` | 图片公网访问前缀（建议填） | 见下方各平台 |
+| `S3_ACL` | 对象 ACL，默认 `public-read`；若桶禁用 ACL 可设空 | 留空或 `public-read` |
+| `S3_FORCE_PATH_STYLE` | 设为 `1` 时使用路径风格（Backblaze B2 等有时需要） | `1` 或留空 |
+
+**AWS S3**：创建桶并开启「公共读取」或配置桶策略允许读；创建 IAM 用户并授予 `s3:PutObject`、`s3:PutObjectAcl`。不填 `S3_ENDPOINT`，公网 URL 自动为 `https://<桶>.s3.<区域>.amazonaws.com/uploads/xxx`；若用 CDN 可设 `S3_PUBLIC_BASE=https://cdn.你的域名.com`。
+
+**DigitalOcean Spaces**：在 Spaces 创建 Space 和 API Key。  
+`S3_ENDPOINT=https://nyc3.digitaloceanspaces.com`（把 `nyc3` 换成你的 region）、`S3_PUBLIC_BASE=https://你的空间名.nyc3.cdn.digitaloceanspaces.com`（或 Space 的公共 URL）、`AWS_REGION=nyc3`。
+
+**Backblaze B2**：创建桶和 Application Key。在 B2 控制台查看 S3 兼容端点（如 `https://s3.us-west-002.backblazeb2.com`）和桶的公共 URL。  
+`S3_ENDPOINT=...`、`S3_PUBLIC_BASE=桶的公共 URL`、`S3_FORCE_PATH_STYLE=1` 常需设为 `1`。
+
+配置完成后，在 Environment 中保存并重新部署；之后发布/编辑房源时上传的图片会存到对象存储，不再依赖本机磁盘。
+
+### 5. 代码上不需要改的地方
 
 - 前端请求 API 时使用的是**相对路径**（如 `/api/me`），只要页面和接口在同一域名下，部署后无需改前端代码。
 - 若你**确实**把前端和后端拆成两个域名部署，再在页面里通过 `window.INGATLAN_API_BASE = 'https://你的API域名';` 指定 API 根地址（在引入 `api.js` 之前设置）。
@@ -83,7 +120,53 @@
 4. 在平台里配置 **环境变量**：至少设置 `NODE_ENV=production`、`SESSION_SECRET`（**未设置时生产环境会拒绝启动**）；**强烈建议**再添加 PostgreSQL 的 `DATABASE_URL`（见上文「使用 PostgreSQL 持久化数据」），否则每次部署后用户和房源会丢失。
 5. 平台会分配一个 HTTPS 域名，也可绑定自己的域名。
 
-注意：PaaS 的磁盘可能**不持久**，重启后 `server/data/` 和 `uploads/` 里的内容可能丢失。**请按上文「使用 PostgreSQL 持久化数据」设置 `DATABASE_URL`**，这样用户和房源会存在数据库中，不会因部署而丢失；图片仍会随部署丢失，若需持久化请用对象存储（如 S3）。
+注意：PaaS 的磁盘可能**不持久**，重启后 `server/data/` 和 `uploads/` 里的内容可能丢失。**请按上文「使用 PostgreSQL 持久化数据」设置 `DATABASE_URL`**，这样用户和房源会存在数据库中，不会因部署而丢失；图片仍会随部署丢失，若需持久化请用 **Render Persistent Disk**（见下方）或对象存储。
+
+#### Render Persistent Disk 一步一步配置（图片部署后不丢失）
+
+在 Render 里给 Web Service 挂上磁盘并让应用把上传写到磁盘，以后重新部署图片也会保留。
+
+**第一步：打开你的 Web Service**
+
+1. 登录 [Render Dashboard](https://dashboard.render.com/)。
+2. 在 **Dashboard** 里点击你的 Web Service 名称（例如 `ingatlan-platform`），进入该服务页面。
+
+**第二步：添加一块 Persistent Disk**
+
+1. 在服务页面左侧菜单找到 **Disks**（或页面里的 “Disks” 区域），点击进入。
+2. 点击 **Add disk**（或 “Add Disk”）。
+3. **选择容量**：先选最小即可（例如 1 GB），以后可以加大、不能缩小。
+4. **填写挂载路径（Mount path）**：  
+   - 填 **`/data`**（推荐，简单好记）。  
+   - 只有写在这个路径下的文件会持久保存，其它目录部署后会被清空。
+5. 点击 **Save**（或 “Create”）。  
+   Render 会自动触发一次重新部署，等部署完成后再做下一步。
+
+**第三步：设置环境变量 UPLOAD_PATH**
+
+1. 在同一个服务页面，左侧点击 **Environment**（环境变量）。
+2. 点击 **Add Environment Variable**（或 “Add Variable”）。
+3. **Key（键）** 填：`UPLOAD_PATH`  
+   **Value（值）** 填：`/data/uploads`  
+   （因为你上面把磁盘挂在了 `/data`，应用会把上传的图片放到 `/data/uploads` 里。）
+4. 点击 **Save Changes**。  
+   Render 会再部署一次，部署完成后配置就生效。
+
+**第四步：确认**
+
+- 部署完成后，去你的站点 **发布或编辑一条房源**，上传一张图片并保存。
+- 然后到 Render 里再 **手动点一次 “Deploy” → “Deploy latest commit”**（或推送一次代码触发部署）。
+- 部署完成后刷新房源详情页，若图片仍然正常显示，说明图片已经写在磁盘上，以后每次部署都会保留。
+
+**小结**
+
+| 你做的操作 | 说明 |
+|------------|------|
+| Disks → Add disk，Mount path 填 `/data` | 挂一块持久盘到 `/data` |
+| Environment → 添加 `UPLOAD_PATH` = `/data/uploads` | 应用把上传写到磁盘上的 `/data/uploads` |
+| 保存后等待自动部署 | 之后上传的图片会持久保存，重新部署也不会丢 |
+
+若你挂载路径不用 `/data` 而用别的（例如 `/var/data`），则 `UPLOAD_PATH` 填成该路径下的子目录，例如 `/var/data/uploads`。
 
 ### 方式 B：自己的 VPS（如腾讯云、阿里云、DigitalOcean）
 
@@ -121,6 +204,10 @@
 
 - **登录后立刻掉线**：多为 Cookie 或域名不一致。确保前后端同域名，且生产环境已设 `SESSION_SECRET`；若用 HTTPS，可设 `SECURE_COOKIES=1`。
 - **跨域错误**：前端和后端不在同一域名时，在服务器上设置 `ALLOWED_ORIGINS=https://你的前端域名`（多个用逗号分隔）。
-- **上传图片 404**：确认 `uploads` 目录存在且应用有写权限；若用 Nginx，不要对 `/uploads` 做特殊重写，交给 Node 处理即可。
+- **上传图片 404 / 更新部署后图片全不显示**：在 Render 等 PaaS 上，每次「更新部署」都会换一个新容器，**磁盘上的 `uploads/` 不会保留**，所以库里存的 `/uploads/img-xxx.png` 会 404。  
+  **可选做法**：  
+  1. **把图片放进 Git**：把 `uploads/` 里需要的图片提交并推送，部署时就会带上（适合图片不多、不常换）。  
+  2. **用持久化存储**：**若已买 Render 的 Persistent Disk**，在 Environment 里设 `UPLOAD_PATH=/data/uploads`（挂载路径按你在 Render 里填的为准），即可保留图片，无需 S3。若不用 Render Storage，可配置 S3 兼容对象存储，见上文「图片持久化」。
+- **上传图片 404（自建机）**：确认 `uploads` 目录存在且应用有写权限；若用 Nginx，不要对 `/uploads` 做特殊重写，交给 Node 处理即可。
 
 按上述步骤做完「需要做的修改」并选一种方式部署后，就可以在网络上正常使用；之后有修改只需更新代码并重启（或触发重新部署）即可。

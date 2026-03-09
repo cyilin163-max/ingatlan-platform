@@ -70,7 +70,7 @@
       <div class="form-row-2">
         <div class="form-group">
           <label class="label" for="pub-price" data-i18n="publishPriceLabel">价格</label>
-          <input type="number" id="pub-price" name="price" class="input" required min="0" step="100000" placeholder="89500000">
+          <input type="number" id="pub-price" name="price" class="input" required min="0" step="1" placeholder="89500000">
         </div>
         <div class="form-group">
           <label class="label" for="pub-area" data-i18n="filterArea">Alapterület (m²)</label>
@@ -398,16 +398,51 @@
         }
       }
 
+      var draggedPhotoIdx = null;
+
       function renderPhotoGrid() {
         photoGrid.innerHTML = '';
         photos.forEach(function (photo, idx) {
           var cell = document.createElement('div');
-          cell.style.cssText = 'position:relative;border-radius:var(--radius-md);overflow:hidden;background:#f0f0f0;height:100px;';
+          cell.style.cssText = 'position:relative;border-radius:var(--radius-md);overflow:hidden;background:#f0f0f0;height:100px;cursor:grab;';
+          cell.draggable = true;
+          cell.dataset.idx = idx;
+          cell.addEventListener('dragstart', function (e) {
+            draggedPhotoIdx = idx;
+            cell.style.opacity = '0.5';
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', idx);
+          });
+          cell.addEventListener('dragend', function () {
+            cell.style.opacity = '';
+            draggedPhotoIdx = null;
+          });
+          cell.addEventListener('dragover', function (e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            if (draggedPhotoIdx !== null && draggedPhotoIdx !== idx) {
+              cell.style.border = '2px dashed var(--color-accent)';
+            }
+          });
+          cell.addEventListener('dragleave', function () {
+            cell.style.border = '';
+          });
+          cell.addEventListener('drop', function (e) {
+            e.preventDefault();
+            cell.style.border = '';
+            var from = parseInt(e.dataTransfer.getData('text/plain'), 10);
+            if (isNaN(from) || from === idx) return;
+            var item = photos.splice(from, 1)[0];
+            photos.splice(idx, 0, item);
+            renderPhotoGrid();
+            updateStatus();
+          });
           var img = document.createElement('img');
           img.src = photo.previewUrl;
-          img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;' + (photo.uploading ? 'opacity:0.5;' : '');
+          img.draggable = false;
+          img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;' + (photo.uploading ? 'opacity:0.5;' : '');
           var badge = document.createElement('span');
-          badge.style.cssText = 'position:absolute;top:4px;left:4px;background:rgba(0,0,0,0.6);color:#fff;font-size:11px;padding:2px 6px;border-radius:4px;';
+          badge.style.cssText = 'position:absolute;top:4px;left:4px;background:rgba(0,0,0,0.6);color:#fff;font-size:11px;padding:2px 6px;border-radius:4px;pointer-events:none;';
           badge.textContent = photo.uploading ? '⏳' : photo.failed ? '⚠' : (idx === 0 ? '封面' : (idx + 1));
           var delBtn = document.createElement('button');
           delBtn.type = 'button';
@@ -415,7 +450,8 @@
           delBtn.title = '删除';
           delBtn.style.cssText = 'position:absolute;top:4px;right:4px;background:rgba(180,0,0,0.8);color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:12px;line-height:1;padding:0;';
           (function (i) {
-            delBtn.addEventListener('click', function () {
+            delBtn.addEventListener('click', function (e) {
+              e.stopPropagation();
               photos.splice(i, 1);
               renderPhotoGrid();
               updateStatus();
