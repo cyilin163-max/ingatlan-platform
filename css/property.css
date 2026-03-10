@@ -155,7 +155,7 @@
 .gallery-main img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 .gallery-watermark {
   position: absolute;
@@ -186,7 +186,7 @@
 }
 .gallery-thumbs button:hover,
 .gallery-thumbs button.active { border-color: var(--detail-accent-dark); }
-.gallery-thumbs img { width: 100%; height: 100%; object-fit: cover; }
+.gallery-thumbs img { width: 100%; height: 100%; object-fit: contain; }
 .gallery-badges {
   position: absolute;
   top: var(--space-4);
