@@ -54,6 +54,7 @@ async function migrateUserColumns(p) {
     ['contact_phone', 'TEXT DEFAULT \'\''],
     ['contact_email', 'TEXT DEFAULT \'\''],
     ['contact_qr_url', 'TEXT DEFAULT \'\''],
+    ['max_listings', 'INTEGER DEFAULT 0'],
   ];
   for (const [name, def] of cols) {
     try {
@@ -67,7 +68,7 @@ async function migrateUserColumns(p) {
 /** 用户 */
 async function getAllUsers() {
   const res = await getPool().query(
-    'SELECT id, email, name, password_hash AS "passwordHash", is_admin AS "isAdmin", can_publish AS "canPublish", can_contact_display AS "canContactDisplay", contact_name AS "contactName", contact_phone AS "contactPhone", contact_email AS "contactEmail", contact_qr_url AS "contactQrUrl", created_at AS "createdAt" FROM users ORDER BY created_at DESC'
+    'SELECT id, email, name, password_hash AS "passwordHash", is_admin AS "isAdmin", can_publish AS "canPublish", can_contact_display AS "canContactDisplay", contact_name AS "contactName", contact_phone AS "contactPhone", contact_email AS "contactEmail", contact_qr_url AS "contactQrUrl", max_listings AS "maxListings", created_at AS "createdAt" FROM users ORDER BY created_at DESC'
   );
   return res.rows.map((r) => ({
     id: r.id,
@@ -81,12 +82,13 @@ async function getAllUsers() {
     contactPhone: r.contactPhone || '',
     contactEmail: r.contactEmail || '',
     contactQrUrl: r.contactQrUrl || '',
+    maxListings: r.maxListings != null ? parseInt(r.maxListings, 10) : 0,
     createdAt: r.createdAt ? new Date(r.createdAt).toISOString() : '',
   }));
 }
 
 async function findUserById(id) {
-  const res = await getPool().query('SELECT id, email, name, password_hash AS "passwordHash", is_admin AS "isAdmin", can_publish AS "canPublish", can_contact_display AS "canContactDisplay", contact_name AS "contactName", contact_phone AS "contactPhone", contact_email AS "contactEmail", contact_qr_url AS "contactQrUrl", created_at AS "createdAt" FROM users WHERE id = $1', [id]);
+  const res = await getPool().query('SELECT id, email, name, password_hash AS "passwordHash", is_admin AS "isAdmin", can_publish AS "canPublish", can_contact_display AS "canContactDisplay", contact_name AS "contactName", contact_phone AS "contactPhone", contact_email AS "contactEmail", contact_qr_url AS "contactQrUrl", max_listings AS "maxListings", created_at AS "createdAt" FROM users WHERE id = $1', [id]);
   if (!res.rows[0]) return null;
   const r = res.rows[0];
   return {
@@ -101,12 +103,13 @@ async function findUserById(id) {
     contactPhone: r.contactPhone || '',
     contactEmail: r.contactEmail || '',
     contactQrUrl: r.contactQrUrl || '',
+    maxListings: r.maxListings != null ? parseInt(r.maxListings, 10) : 0,
     createdAt: r.createdAt ? new Date(r.createdAt).toISOString() : '',
   };
 }
 
 async function findUserByEmail(email) {
-  const res = await getPool().query('SELECT id, email, name, password_hash AS "passwordHash", is_admin AS "isAdmin", can_publish AS "canPublish", can_contact_display AS "canContactDisplay", contact_name AS "contactName", contact_phone AS "contactPhone", contact_email AS "contactEmail", contact_qr_url AS "contactQrUrl", created_at AS "createdAt" FROM users WHERE LOWER(email) = LOWER($1)', [email]);
+  const res = await getPool().query('SELECT id, email, name, password_hash AS "passwordHash", is_admin AS "isAdmin", can_publish AS "canPublish", can_contact_display AS "canContactDisplay", contact_name AS "contactName", contact_phone AS "contactPhone", contact_email AS "contactEmail", contact_qr_url AS "contactQrUrl", max_listings AS "maxListings", created_at AS "createdAt" FROM users WHERE LOWER(email) = LOWER($1)', [email]);
   if (!res.rows[0]) return null;
   const r = res.rows[0];
   return {
@@ -121,6 +124,7 @@ async function findUserByEmail(email) {
     contactPhone: r.contactPhone || '',
     contactEmail: r.contactEmail || '',
     contactQrUrl: r.contactQrUrl || '',
+    maxListings: r.maxListings != null ? parseInt(r.maxListings, 10) : 0,
     createdAt: r.createdAt ? new Date(r.createdAt).toISOString() : '',
   };
 }
@@ -159,6 +163,7 @@ async function updateUser(id, updates) {
   if (updates.contactPhone !== undefined) { fields.push(`contact_phone = $${n++}`); values.push((updates.contactPhone || '').trim()); }
   if (updates.contactEmail !== undefined) { fields.push(`contact_email = $${n++}`); values.push((updates.contactEmail || '').trim()); }
   if (updates.contactQrUrl !== undefined) { fields.push(`contact_qr_url = $${n++}`); values.push((updates.contactQrUrl || '').trim()); }
+  if (updates.maxListings !== undefined) { fields.push(`max_listings = $${n++}`); values.push(Math.max(0, parseInt(updates.maxListings, 10) || 0)); }
   if (fields.length === 0) return;
   values.push(id);
   await getPool().query(`UPDATE users SET ${fields.join(', ')} WHERE id = $${n}`, values);

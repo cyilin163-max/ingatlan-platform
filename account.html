@@ -221,6 +221,12 @@
               '<div class="admin-user-meta" style="display:flex;flex-wrap:wrap;gap:var(--space-2);margin-top:var(--space-2);">' +
                 '<span><strong>' + (t('accountApprovalPublish') || '发布') + ':</strong> <span class="' + pubStatusClass + '">' + pubStatusText + '</span></span>' +
                 '<span><strong>' + (t('accountApprovalContact') || '联系方式') + ':</strong> <span class="' + contactStatusClass + '">' + contactStatusText + '</span></span>' +
+                '<span><strong>' + (t('accountMaxListings') || '发布上限') + ':</strong> ' + (item.listingCount != null ? item.listingCount : 0) + '/' + (item.maxListings || '∞') + '</span>' +
+              '</div>' +
+              '<div class="admin-user-max-wrap" style="margin-top:var(--space-2);display:flex;align-items:center;gap:var(--space-2);">' +
+                '<label class="label" style="margin:0;font-size:var(--text-sm);">' + (t('accountMaxListingsSet') || '设为') + '</label>' +
+                '<input type="number" class="input admin-max-input" min="0" placeholder="0=' + (t('accountMaxListingsUnlimited') || '不限') + '" value="' + (item.maxListings || '') + '" style="width:70px;padding:var(--space-2);">' +
+                '<button type="button" class="btn btn-ghost admin-max-save" style="padding:var(--space-2) var(--space-3);">' + (t('accountContactSave') || '保存') + '</button>' +
               '</div>' +
             '</div>' +
             '<div class="admin-user-actions" style="display:flex;flex-direction:column;gap:var(--space-2);">' +
@@ -257,6 +263,23 @@
               }).then(function (r) { return r.ok ? r.json() : Promise.reject(r); })
                 .then(function () { refreshAdminUsers(); })
                 .catch(function () { btn.disabled = false; alert(t('accountApprovalActionFailed', '操作失败，请重试。')); });
+            });
+          }
+          var maxSave = row.querySelector('.admin-max-save');
+          if (maxSave) {
+            maxSave.addEventListener('click', function () {
+              var input = row.querySelector('.admin-max-input');
+              var val = input ? parseInt(input.value, 10) : 0;
+              if (isNaN(val) || val < 0) val = 0;
+              maxSave.disabled = true;
+              fetch((apiBase || '') + '/api/admin/users/' + encodeURIComponent(item.id), {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ maxListings: val })
+              }).then(function (r) { return r.ok ? r.json() : Promise.reject(r); })
+                .then(function () { refreshAdminUsers(); })
+                .catch(function () { maxSave.disabled = false; alert(t('accountApprovalActionFailed', '操作失败，请重试。')); });
             });
           }
           row.querySelectorAll('.approval-contact-revoke').forEach(function (btn) {

@@ -107,6 +107,7 @@ function normalizeUserRecord(user) {
     contactPhone: String(base.contactPhone || base.contact_phone || '').trim(),
     contactEmail: String(base.contactEmail || base.contact_email || '').trim(),
     contactQrUrl: String(base.contactQrUrl || base.contact_qr_url || '').trim(),
+    maxListings: Math.max(0, parseInt(base.maxListings || base.max_listings || '0', 10) || 0),
     createdAt,
   });
 }
@@ -127,6 +128,7 @@ function toClientUser(user) {
     contactPhone: (user && user.contactPhone) || '',
     contactEmail: (user && user.contactEmail) || '',
     contactQrUrl: (user && user.contactQrUrl) || '',
+    maxListings: (user && user.maxListings != null) ? Math.max(0, parseInt(user.maxListings, 10) || 0) : 0,
     createdAt: user.createdAt || '',
   };
 }
@@ -320,14 +322,39 @@ app.get('/api/admin/users', async (req, res) => {
   const admin = await requireAdmin(req, res);
   if (!admin) return;
   const users = await store.getUsers();
+  const list = await store.loadListings();
+  const countByUser = {};
+  list.forEach((l) => {
+    const pid = l.publisher && l.publisher.id ? String(l.publisher.id) : '';
+    if (pid) countByUser[pid] = (countByUser[pid] || 0) + 1;
+  });
   const items = users
     .slice()
     .sort((a, b) => {
       if (!!a.isAdmin !== !!b.isAdmin) return a.isAdmin ? -1 : 1;
       return String(a.createdAt || '').localeCompare(String(b.createdAt || '')) * -1;
     })
-    .map((user) => toClientUser(normalizeUserRecord(user)));
+    .map((user) => {
+      const u = toClientUser(normalizeUserRecord(user));
+      u.listingCount = countByUser[String(user.id)] || 0;
+      return u;
+    });
   res.json({ ok: true, items });
+});
+
+// 管理员：更新用户发布上限
+app.patch('/api/admin/users/:id', async (req, res) => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  const user = await store.findUserById(req.params.id);
+  if (!user) return res.status(404).json({ ok: false, error: 'user_not_found' });
+  const body = req.body || {};
+  const updates = {};
+  if (body.maxListings !== undefined) updates.maxListings = body.maxListings;
+  if (Object.keys(updates).length === 0) return res.status(400).json({ ok: false, error: 'no_updates' });
+  await store.updateUser(user.id, updates);
+  const updated = await store.findUserById(user.id);
+  res.json({ ok: true, user: toClientUser(normalizeUserRecord(updated)) });
 });
 
 // 管理员：获取已通过审批且有房源的发布者列表
@@ -852,6 +879,14 @@ app.post('/api/inquiry', async (req, res) => {
 app.post('/api/listings', async (req, res) => {
   const user = await requireApprovedPublisher(req, res);
   if (!user) return;
+  const maxListings = Math.max(0, parseInt(user.maxListings || user.max_listings || '0', 10) || 0);
+  if (maxListings > 0) {
+    const list = await store.loadListings();
+    const userCount = list.filter((l) => l.publisher && String(l.publisher.id) === String(user.id)).length;
+    if (userCount >= maxListings) {
+      return res.status(403).json({ ok: false, error: 'listing_limit_reached', limit: maxListings, current: userCount });
+    }
+  }
   const b = req.body || {};
   const title = (b.title || '').trim();
   const category = (b.category || 'buy').toLowerCase();

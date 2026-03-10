@@ -653,6 +653,8 @@
               var err = new Error(data.error || 'save_failed');
               err.code = data.error || 'save_failed';
               err.status = r.status;
+              err.limit = data.limit;
+              err.current = data.current;
               return Promise.reject(err);
             }
           });
@@ -661,6 +663,11 @@
           var status = err && err.status;
           if (code === 'not_approved') {
             alert(t('publishApprovalRequired', '你的账号已注册，等待管理员批准后才能发布房源。'));
+            return;
+          }
+          if (code === 'listing_limit_reached') {
+            var limit = err.limit;
+            alert(t('publishListingLimitReached', '您已达到发布上限（{limit} 条），请先删除部分房源后再发布。').replace('{limit}', limit || ''));
             return;
           }
           var apiLib = window.INGATLAN_API;
