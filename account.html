@@ -225,7 +225,10 @@
             '</div>' +
             '<div class="admin-user-actions" style="display:flex;flex-direction:column;gap:var(--space-2);">' +
               '<button type="button" class="btn btn-outline approval-toggle" data-id="' + encodeURIComponent(item.id) + '" data-type="publish" data-approved="' + (item.canPublish ? '1' : '0') + '">' + (item.canPublish ? t('accountRevokePublish', '改为待审批') : t('accountApprovePublish', '通过审批')) + ' ' + (t('accountApprovalPublish') || '发布') + '</button>' +
-              '<button type="button" class="btn btn-outline approval-contact-toggle" data-id="' + encodeURIComponent(item.id) + '" data-type="contact" data-approved="' + (item.canContactDisplay ? '1' : '0') + '">' + (item.canContactDisplay ? t('accountRevokeContact', '撤销') : t('accountApproveContact', '通过')) + ' ' + (t('accountApprovalContact') || '联系方式') + '</button>' +
+              (item.canContactDisplay
+                ? '<button type="button" class="btn btn-outline approval-contact-revoke" data-scope="all">' + (t('accountRevokeContactAll') || '撤销（全部恢复默认）') + '</button>' +
+                  '<button type="button" class="btn btn-outline approval-contact-revoke" data-scope="new">' + (t('accountRevokeContactNew') || '撤销（仅新发布恢复默认）') + '</button>'
+                : '<button type="button" class="btn btn-outline approval-contact-toggle" data-id="' + encodeURIComponent(item.id) + '" data-type="contact" data-approved="0">' + (t('accountApproveContact', '通过') + ' ' + (t('accountApprovalContact') || '联系方式')) + '</button>') +
             '</div>';
           targetEl.appendChild(row);
           row.querySelector('.approval-toggle').addEventListener('click', function () {
@@ -241,18 +244,34 @@
               .then(function () { refreshAdminUsers(); })
               .catch(function () { btn.disabled = false; alert(t('accountApprovalActionFailed', '操作失败，请重试。')); });
           });
-          row.querySelector('.approval-contact-toggle').addEventListener('click', function () {
-            var btn = this;
-            var approved = btn.getAttribute('data-approved') !== '1';
-            btn.disabled = true;
-            fetch((apiBase || '') + '/api/admin/users/' + encodeURIComponent(item.id) + '/contact-approval', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'include',
-              body: JSON.stringify({ approved: approved })
-            }).then(function (r) { return r.ok ? r.json() : Promise.reject(r); })
-              .then(function () { refreshAdminUsers(); })
-              .catch(function () { btn.disabled = false; alert(t('accountApprovalActionFailed', '操作失败，请重试。')); });
+          var contactToggle = row.querySelector('.approval-contact-toggle');
+          if (contactToggle) {
+            contactToggle.addEventListener('click', function () {
+              var btn = this;
+              btn.disabled = true;
+              fetch((apiBase || '') + '/api/admin/users/' + encodeURIComponent(item.id) + '/contact-approval', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ approved: true })
+              }).then(function (r) { return r.ok ? r.json() : Promise.reject(r); })
+                .then(function () { refreshAdminUsers(); })
+                .catch(function () { btn.disabled = false; alert(t('accountApprovalActionFailed', '操作失败，请重试。')); });
+            });
+          }
+          row.querySelectorAll('.approval-contact-revoke').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+              var scope = btn.getAttribute('data-scope') || 'new';
+              btn.disabled = true;
+              fetch((apiBase || '') + '/api/admin/users/' + encodeURIComponent(item.id) + '/contact-approval', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ approved: false, revokeScope: scope })
+              }).then(function (r) { return r.ok ? r.json() : Promise.reject(r); })
+                .then(function () { refreshAdminUsers(); })
+                .catch(function () { btn.disabled = false; alert(t('accountApprovalActionFailed', '操作失败，请重试。')); });
+            });
           });
         }
 

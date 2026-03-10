@@ -405,6 +405,7 @@ app.post('/api/admin/users/:id/publish-approval', async (req, res) => {
 });
 
 // 管理员：批准 / 撤销高级审批（联系方式展示）
+// revokeScope: 'all' = 全部恢复默认；'new' 或不传 = 仅新发布恢复默认
 app.post('/api/admin/users/:id/contact-approval', async (req, res) => {
   const admin = await requireAdmin(req, res);
   if (!admin) return;
@@ -417,6 +418,16 @@ app.post('/api/admin/users/:id/contact-approval', async (req, res) => {
     return res.status(404).json({ ok: false, error: 'user_not_found' });
   }
   await store.updateUser(user.id, { canContactDisplay: body.approved === true });
+  if (body.approved === false && body.revokeScope === 'all') {
+    const list = await store.loadListings();
+    const userId = String(user.id);
+    for (const item of list) {
+      if (item.publisher && String(item.publisher.id) === userId) {
+        const pub = Object.assign({}, item.publisher, { publisherContactDisplay: false });
+        await store.updateListingById(item.id, Object.assign({}, item, { publisher: pub }));
+      }
+    }
+  }
   const updated = Object.assign({}, user, { canContactDisplay: body.approved === true });
   res.json({ ok: true, user: toClientUser(updated) });
 });
@@ -684,11 +695,14 @@ app.get('/api/listings', async (req, res) => {
   res.json({ items, total, page, perPage });
 });
 
-// 为 listing 的 publisher 补充联系方式（当发布者通过高级审批时）
+// 为 listing 的 publisher 补充联系方式（发布时有快照则用快照，否则用当前用户状态）
 async function enrichListingPublisher(listing) {
   if (!listing || !listing.publisher || !listing.publisher.id) return listing;
   const user = await store.findUserById(listing.publisher.id);
-  if (!user || !user.canContactDisplay) return listing;
+  if (!user) return listing;
+  const snap = listing.publisher.publisherContactDisplay;
+  const shouldShow = snap === true || (snap === undefined && user.canContactDisplay);
+  if (!shouldShow) return listing;
   const pub = Object.assign({}, listing.publisher, {
     contactName: (user.contactName || user.contact_name || '').trim(),
     contactPhone: (user.contactPhone || user.contact_phone || '').trim(),
@@ -883,7 +897,7 @@ app.post('/api/listings', async (req, res) => {
     badges: [],
     summary,
     description: description || title,
-    publisher: { name: user.name || user.email, id: user.id, phone: (user.contactPhone || user.contact_phone || '').trim() },
+    publisher: { name: user.name || user.email, id: user.id, phone: (user.contactPhone || user.contact_phone || '').trim(), publisherContactDisplay: !!user.canContactDisplay },
     address: location,
     listedAt,
     ac: !!b.ac,
