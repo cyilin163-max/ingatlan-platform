@@ -41,6 +41,7 @@
       <nav class="account-nav" aria-label="Account menu">
         <a href="account.html#listings" class="active" data-i18n="accountMyListings">Hirdetéseim</a>
         <a href="account.html#favorites" data-i18n="accountFavorites">Kedvencek</a>
+        <a href="account.html#contact" data-i18n="accountContactInfo">联系方式</a>
         <a href="account.html#manage" id="account-manage-nav-link" data-admin-only hidden data-i18n="accountManageListings">管理房源</a>
         <a href="account.html#admin" id="account-admin-nav-link" data-admin-only hidden data-i18n="accountAdminPanel">审批状态</a>
       </nav>
@@ -73,6 +74,33 @@
           <h2 class="panel-title" data-i18n="accountFavorites">Kedvencek</h2>
           <p style="color: var(--color-text-muted); margin-bottom: var(--space-6);" data-i18n="accountFavIntro">Kedvenc ingatlanok árváltozásáról e-mailben értesítünk.</p>
           <div class="fav-grid" id="favorites-grid"></div>
+        </section>
+
+        <!-- Contact info -->
+        <section id="contact" class="account-panel">
+          <h2 class="panel-title" data-i18n="accountContactInfo">联系方式</h2>
+          <p style="color: var(--color-text-muted); margin-bottom: var(--space-6);" data-i18n="accountContactIntro">填写联系方式与二维码，通过高级审批后将在房源详情页展示。</p>
+          <form id="contact-form" style="max-width:400px;">
+            <div class="form-group" style="margin-bottom:var(--space-4);">
+              <label class="label" for="contact-name" data-i18n="registerContactName">联系人名称</label>
+              <input type="text" id="contact-name" name="contactName" class="input" autocomplete="name" placeholder="如：微信名">
+            </div>
+            <div class="form-group" style="margin-bottom:var(--space-4);">
+              <label class="label" for="contact-phone" data-i18n="registerContactPhone">联系电话</label>
+              <input type="tel" id="contact-phone" name="contactPhone" class="input" autocomplete="tel" placeholder="0036305357008">
+            </div>
+            <div class="form-group" style="margin-bottom:var(--space-4);">
+              <label class="label" for="contact-email" data-i18n="registerContactEmail">联系邮箱</label>
+              <input type="email" id="contact-email" name="contactEmail" class="input" autocomplete="email">
+            </div>
+            <div class="form-group" style="margin-bottom:var(--space-4);">
+              <label class="label" for="contact-qr" data-i18n="registerContactQr">二维码图片</label>
+              <input type="file" id="contact-qr" name="contactQr" accept="image/jpeg,image/png,image/gif,image/webp">
+              <p id="contact-qr-preview" style="margin-top:var(--space-2);font-size:var(--text-sm);color:var(--color-text-muted);" data-i18n="registerContactQrHint">选填，通过高级审批后将在房源详情页展示</p>
+            </div>
+            <button type="submit" class="btn btn-primary" data-i18n="accountContactSave">保存</button>
+            <p id="contact-form-message" class="error" style="margin-top:var(--space-2);" hidden></p>
+          </form>
         </section>
 
         <section id="admin" class="account-panel" data-admin-only hidden>
@@ -335,6 +363,82 @@
         });
         if (window.location.hash.slice(1) === 'manage') refreshManagePublishers();
       }
+      function initContactPanel(base, currentUser) {
+        var form = document.getElementById('contact-form');
+        var nameEl = document.getElementById('contact-name');
+        var phoneEl = document.getElementById('contact-phone');
+        var emailEl = document.getElementById('contact-email');
+        var qrEl = document.getElementById('contact-qr');
+        var qrPreview = document.getElementById('contact-qr-preview');
+        var msgEl = document.getElementById('contact-form-message');
+        if (!form || !nameEl || !phoneEl || !emailEl || !qrEl) return;
+        if (currentUser) {
+          nameEl.value = (currentUser.contactName || '').trim();
+          phoneEl.value = (currentUser.contactPhone || '').trim();
+          emailEl.value = (currentUser.contactEmail || '').trim();
+          if (currentUser.contactQrUrl) {
+            qrPreview.innerHTML = '<img src="' + (window.INGATLAN_API && window.INGATLAN_API.resolveImageUrl ? window.INGATLAN_API.resolveImageUrl(currentUser.contactQrUrl) : currentUser.contactQrUrl) + '" alt="" style="max-width:120px;height:auto;border-radius:6px;display:block;margin-top:var(--space-2);">';
+          }
+        }
+        qrEl.addEventListener('change', function () {
+          if (!qrEl.files || !qrEl.files[0]) { qrPreview.textContent = (window.i18n && window.i18n.t('registerContactQrHint')) || '选填'; return; }
+          var f = qrEl.files[0];
+          var r = new FileReader();
+          r.onload = function () {
+            var dataUrl = r.result;
+            if (dataUrl && dataUrl.indexOf('data:image/') === 0) {
+              qrPreview.innerHTML = '<img src="' + dataUrl.replace(/"/g, '&quot;') + '" alt="" style="max-width:120px;height:auto;border-radius:6px;display:block;margin-top:var(--space-2);">';
+            }
+          };
+          r.readAsDataURL(f);
+        });
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+          msgEl.hidden = true;
+          var payload = {
+            contactName: nameEl.value.trim(),
+            contactPhone: phoneEl.value.trim(),
+            contactEmail: emailEl.value.trim()
+          };
+          var qrFile = qrEl.files[0];
+          var btn = form.querySelector('button[type="submit"]');
+          btn.disabled = true;
+          function doPatch(dataUrl) {
+            if (dataUrl) payload.contactQrImage = dataUrl;
+            return fetch((base || '') + '/api/me/contact', {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify(payload)
+            }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); });
+          }
+          var p = qrFile ? new Promise(function (resolve) {
+            var reader = new FileReader();
+            reader.onload = function () {
+              var u = reader.result;
+              resolve((u && u.indexOf('data:image/') === 0) ? u : null);
+            };
+            reader.readAsDataURL(qrFile);
+          }).then(function (dataUrl) { return doPatch(dataUrl); }) : doPatch();
+          p.then(function (res) {
+            btn.disabled = false;
+            if (res.ok && res.data && res.data.user) {
+              if (window.INGATLAN_API && window.INGATLAN_API.setCurrentUser) window.INGATLAN_API.setCurrentUser(res.data.user);
+              msgEl.textContent = (window.i18n && window.i18n.t('accountContactSaved')) || '已保存。';
+              msgEl.style.color = 'var(--color-success, green)';
+              msgEl.hidden = false;
+            } else {
+              msgEl.textContent = (window.i18n && window.i18n.t('publishError')) || '保存失败，请重试。';
+              msgEl.style.color = '';
+              msgEl.hidden = false;
+            }
+          }).catch(function () {
+            btn.disabled = false;
+            msgEl.textContent = (window.i18n && window.i18n.t('loginErrorNetwork')) || '网络错误。';
+            msgEl.hidden = false;
+          });
+        });
+      }
       fetch(apiBase + '/api/me', { credentials: 'include' })
         .then(function (r) {
           if (r.status === 401) {
@@ -362,6 +466,7 @@
               refreshAdminUsers();
               initManagePanel(apiBase, data.user);
             }
+            initContactPanel(apiBase, data.user);
             if (api && api.getMyListingsByUser) {
               var section = document.getElementById('listings');
               if (!section) return;

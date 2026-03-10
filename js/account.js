@@ -15,7 +15,7 @@ function showPanel(id) {
   });
 }
 
-var VALID_PANELS = ['listings', 'favorites', 'manage', 'admin'];
+var VALID_PANELS = ['listings', 'favorites', 'contact', 'manage', 'admin'];
 
 function init() {
   var hash = window.location.hash.slice(1) || 'listings';
