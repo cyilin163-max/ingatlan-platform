@@ -102,6 +102,11 @@ function normalizeUserRecord(user) {
     name: String(base.name || '').trim(),
     isAdmin,
     canPublish: isAdmin || base.canPublish === true,
+    canContactDisplay: base.canContactDisplay === true,
+    contactName: String(base.contactName || base.contact_name || '').trim(),
+    contactPhone: String(base.contactPhone || base.contact_phone || '').trim(),
+    contactEmail: String(base.contactEmail || base.contact_email || '').trim(),
+    contactQrUrl: String(base.contactQrUrl || base.contact_qr_url || '').trim(),
     createdAt,
   });
 }
@@ -117,6 +122,11 @@ function toClientUser(user) {
     name: user.name,
     isAdmin: !!user.isAdmin,
     canPublish: isApprovedPublisher(user),
+    canContactDisplay: !!(user && user.canContactDisplay),
+    contactName: (user && user.contactName) || '',
+    contactPhone: (user && user.contactPhone) || '',
+    contactEmail: (user && user.contactEmail) || '',
+    contactQrUrl: (user && user.contactQrUrl) || '',
     createdAt: user.createdAt || '',
   };
 }
@@ -236,7 +246,7 @@ app.get('/api/me', async (req, res) => {
 
 // 注册
 app.post('/api/register', async (req, res) => {
-  const { email, password, name } = req.body || {};
+  const { email, password, name, contactName, contactPhone, contactEmail, contactQrImage } = req.body || {};
   const emailNorm = (email || '').trim().toLowerCase();
   if (!emailNorm || !password || !name) {
     return res.status(400).json({ ok: false, error: 'missing_fields' });
@@ -248,6 +258,10 @@ app.post('/api/register', async (req, res) => {
   if (existing) {
     return res.status(409).json({ ok: false, error: 'email_exists' });
   }
+  let contactQrUrl = '';
+  if (contactQrImage && typeof contactQrImage === 'string') {
+    contactQrUrl = (await saveBase64Image(contactQrImage)) || '';
+  }
   const id = String(Date.now()) + '-' + Math.random().toString(36).slice(2, 8);
   const passwordHash = await bcrypt.hash(password, 10);
   const user = normalizeUserRecord({
@@ -257,6 +271,11 @@ app.post('/api/register', async (req, res) => {
     passwordHash,
     isAdmin: false,
     canPublish: false,
+    canContactDisplay: false,
+    contactName: (contactName || '').trim(),
+    contactPhone: (contactPhone || '').trim(),
+    contactEmail: (contactEmail || '').trim(),
+    contactQrUrl,
     createdAt: new Date().toISOString(),
   });
   await store.insertUser(user);
@@ -383,6 +402,63 @@ app.post('/api/admin/users/:id/publish-approval', async (req, res) => {
   await store.updateUser(user.id, { canPublish: body.approved === true });
   const updated = Object.assign({}, user, { canPublish: body.approved === true });
   res.json({ ok: true, user: toClientUser(updated) });
+});
+
+// 管理员：批准 / 撤销高级审批（联系方式展示）
+app.post('/api/admin/users/:id/contact-approval', async (req, res) => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  const body = req.body || {};
+  if (typeof body.approved !== 'boolean') {
+    return res.status(400).json({ ok: false, error: 'missing_approval_state' });
+  }
+  const user = await store.findUserById(req.params.id);
+  if (!user) {
+    return res.status(404).json({ ok: false, error: 'user_not_found' });
+  }
+  await store.updateUser(user.id, { canContactDisplay: body.approved === true });
+  const updated = Object.assign({}, user, { canContactDisplay: body.approved === true });
+  res.json({ ok: true, user: toClientUser(updated) });
+});
+
+// 公开：获取通过高级审批的用户列表（供 contact.html 展示）
+app.get('/api/contact-display', async (req, res) => {
+  const users = await store.getUsers();
+  const items = users
+    .filter((u) => !u.isAdmin && u.canContactDisplay === true)
+    .map((u) => ({
+      id: u.id,
+      name: u.name || '',
+      contactName: (u.contactName || u.contact_name || '').trim(),
+      contactPhone: (u.contactPhone || u.contact_phone || '').trim(),
+      contactEmail: (u.contactEmail || u.contact_email || '').trim(),
+      contactQrUrl: (u.contactQrUrl || u.contact_qr_url || '').trim(),
+    }))
+    .filter((u) => (u.contactName || u.contactPhone || u.contactEmail || u.contactQrUrl));
+  res.json({ ok: true, items });
+});
+
+// 登录用户：更新自己的联系方式
+app.patch('/api/me/contact', async (req, res) => {
+  const user = await getSessionUser(req, res);
+  if (!user) return;
+  const body = req.body || {};
+  const updates = {};
+  if (body.contactName !== undefined) updates.contactName = body.contactName;
+  if (body.contactPhone !== undefined) updates.contactPhone = body.contactPhone;
+  if (body.contactEmail !== undefined) updates.contactEmail = body.contactEmail;
+  if (body.contactQrImage !== undefined && typeof body.contactQrImage === 'string') {
+    const url = await saveBase64Image(body.contactQrImage);
+    if (url) updates.contactQrUrl = url;
+  } else if (body.contactQrUrl !== undefined) {
+    updates.contactQrUrl = body.contactQrUrl;
+  }
+  if (Object.keys(updates).length === 0) {
+    return res.json({ ok: true, user: toClientUser(user) });
+  }
+  await store.updateUser(user.id, updates);
+  const updated = await store.findUserById(user.id);
+  res.json({ ok: true, user: toClientUser(normalizeUserRecord(updated)) });
 });
 
 // ---------- 房源与统计 API ----------
@@ -608,11 +684,27 @@ app.get('/api/listings', async (req, res) => {
   res.json({ items, total, page, perPage });
 });
 
+// 为 listing 的 publisher 补充联系方式（当发布者通过高级审批时）
+async function enrichListingPublisher(listing) {
+  if (!listing || !listing.publisher || !listing.publisher.id) return listing;
+  const user = await store.findUserById(listing.publisher.id);
+  if (!user || !user.canContactDisplay) return listing;
+  const pub = Object.assign({}, listing.publisher, {
+    contactName: (user.contactName || user.contact_name || '').trim(),
+    contactPhone: (user.contactPhone || user.contact_phone || '').trim(),
+    contactEmail: (user.contactEmail || user.contact_email || '').trim(),
+    contactQrUrl: (user.contactQrUrl || user.contact_qr_url || '').trim(),
+    canContactDisplay: true,
+  });
+  return Object.assign({}, listing, { publisher: pub });
+}
+
 // 单条房源详情
 app.get('/api/listings/:id', async (req, res) => {
   const item = await store.getListingById(req.params.id);
   if (!item) return res.status(404).json({ error: 'not_found' });
-  res.json(item);
+  const enriched = await enrichListingPublisher(item);
+  res.json(enriched);
 });
 
 // 记录房源浏览次数（无需登录，任何访客打开详情页即计数）
@@ -649,6 +741,33 @@ app.get('/api/my-listings', async (req, res) => {
   res.json({ items });
 });
 
+// 将 base64 dataURL 保存为文件，返回 URL（供注册等使用）
+async function saveBase64Image(dataUrl) {
+  if (!dataUrl || typeof dataUrl !== 'string') return null;
+  const match = dataUrl.match(/^data:(image\/(jpeg|png|gif|webp));base64,(.+)$/i);
+  if (!match) return null;
+  const ext = match[2].toLowerCase() === 'jpeg' ? 'jpg' : match[2].toLowerCase();
+  const mime = 'image/' + (ext === 'jpg' ? 'jpeg' : ext);
+  const buf = Buffer.from(match[3], 'base64');
+  if (buf.length > 8 * 1024 * 1024) return null;
+  const filename = 'img-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.' + ext;
+  const s3Key = 'uploads/' + filename;
+  if (getS3Config()) {
+    try {
+      return await uploadToS3(s3Key, buf, mime);
+    } catch (e) {
+      console.error('S3 upload failed:', e && e.message);
+      return null;
+    }
+  }
+  try {
+    fs.writeFileSync(path.join(UPLOADS_DIR, filename), buf);
+    return '/uploads/' + filename;
+  } catch (e) {
+    return null;
+  }
+}
+
 // 图片上传（需登录）：接收 base64 dataURL；若配置了 S3 则上传到对象存储并返回完整 URL，否则写入本地 uploads/
 app.post('/api/upload', async (req, res) => {
   const user = await requireApprovedPublisher(req, res);
@@ -657,30 +776,9 @@ app.post('/api/upload', async (req, res) => {
   if (!dataUrl || typeof dataUrl !== 'string') return res.status(400).json({ ok: false, error: 'missing_data' });
   const match = dataUrl.match(/^data:(image\/(jpeg|png|gif|webp));base64,(.+)$/i);
   if (!match) return res.status(400).json({ ok: false, error: 'invalid_image' });
-  const ext = match[2].toLowerCase() === 'jpeg' ? 'jpg' : match[2].toLowerCase();
-  const mime = 'image/' + (ext === 'jpg' ? 'jpeg' : ext);
-  const buf = Buffer.from(match[3], 'base64');
-  if (buf.length > 8 * 1024 * 1024) return res.status(400).json({ ok: false, error: 'too_large' });
-  const filename = 'img-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.' + ext;
-  const s3Key = 'uploads/' + filename;
-
-  if (getS3Config()) {
-    try {
-      const url = await uploadToS3(s3Key, buf, mime);
-      if (url) return res.json({ ok: true, url });
-    } catch (e) {
-      console.error('S3 upload failed:', e && e.message);
-      return res.status(500).json({ ok: false, error: 'upload_failed' });
-    }
-  }
-
-  const filepath = path.join(UPLOADS_DIR, filename);
-  try {
-    fs.writeFileSync(filepath, buf);
-    res.json({ ok: true, url: '/uploads/' + filename });
-  } catch (e) {
-    res.status(500).json({ ok: false, error: 'write_failed' });
-  }
+  const url = await saveBase64Image(dataUrl);
+  if (!url) return res.status(500).json({ ok: false, error: 'upload_failed' });
+  res.json({ ok: true, url });
 });
 
 // 咨询表单：发送邮件到 lemonon71@gmail.com（需配置 SMTP 环境变量）
@@ -785,7 +883,7 @@ app.post('/api/listings', async (req, res) => {
     badges: [],
     summary,
     description: description || title,
-    publisher: { name: user.name || user.email, id: user.id, phone: '' },
+    publisher: { name: user.name || user.email, id: user.id, phone: (user.contactPhone || user.contact_phone || '').trim() },
     address: location,
     listedAt,
     ac: !!b.ac,

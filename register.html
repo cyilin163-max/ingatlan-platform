@@ -56,6 +56,24 @@
         <input type="password" id="reg-password2" name="password2" class="input" required autocomplete="new-password">
         <p class="error" id="register-password-error" hidden></p>
       </div>
+      <p class="label" style="margin-top:var(--space-6);margin-bottom:var(--space-2);" data-i18n="registerContactSection">联系方式（选填，通过高级审批后将在房源详情页展示）</p>
+      <div class="form-group">
+        <label class="label" for="reg-contact-name" data-i18n="registerContactName">联系人名称</label>
+        <input type="text" id="reg-contact-name" name="contactName" class="input" autocomplete="name" placeholder="如：微信名">
+      </div>
+      <div class="form-group">
+        <label class="label" for="reg-contact-phone" data-i18n="registerContactPhone">联系电话</label>
+        <input type="tel" id="reg-contact-phone" name="contactPhone" class="input" autocomplete="tel" placeholder="0036305357008">
+      </div>
+      <div class="form-group">
+        <label class="label" for="reg-contact-email" data-i18n="registerContactEmail">联系邮箱</label>
+        <input type="email" id="reg-contact-email" name="contactEmail" class="input" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="label" for="reg-contact-qr" data-i18n="registerContactQr">二维码图片</label>
+        <input type="file" id="reg-contact-qr" name="contactQr" accept="image/jpeg,image/png,image/gif,image/webp">
+        <p class="error" id="register-qr-error" style="font-size:var(--text-sm);color:var(--color-text-muted);margin-top:var(--space-1);" data-i18n="registerContactQrHint">选填，通过高级审批后将在房源详情页展示</p>
+      </div>
       <button type="submit" class="btn btn-primary" data-i18n="registerSubmit">Regisztráció</button>
       <p class="auth-link"><a href="login.html" data-i18n="loginLink">Már van fiókod? Bejelentkezés</a></p>
     </form>
@@ -137,15 +155,36 @@
           errEl.hidden = false;
           return;
         }
+        var contactName = document.getElementById('reg-contact-name').value.trim();
+        var contactPhone = document.getElementById('reg-contact-phone').value.trim();
+        var contactEmail = document.getElementById('reg-contact-email').value.trim();
+        var qrFile = document.getElementById('reg-contact-qr').files[0];
+        var payload = { email: email, password: p1, name: name };
+        if (contactName) payload.contactName = contactName;
+        if (contactPhone) payload.contactPhone = contactPhone;
+        if (contactEmail) payload.contactEmail = contactEmail;
         var btn = form.querySelector('button[type="submit"]');
         btn.disabled = true;
         var apiBase = (window.location.protocol === 'file:' || (window.location.port && window.location.port !== '3000')) ? 'http://localhost:3000' : '';
-        fetch(apiBase + '/api/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ email: email, password: p1, name: name })
-        }).then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+        function doRegister(contactQrImage) {
+          if (contactQrImage) payload.contactQrImage = contactQrImage;
+          return fetch(apiBase + '/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(payload)
+          }).then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); });
+        }
+        var p = qrFile ? new Promise(function (resolve) {
+          var r = new FileReader();
+          r.onload = function () {
+            var dataUrl = r.result;
+            if (dataUrl && dataUrl.indexOf('data:image/') === 0) resolve(dataUrl);
+            else resolve(null);
+          };
+          r.readAsDataURL(qrFile);
+        }).then(function (dataUrl) { return doRegister(dataUrl); }) : doRegister();
+        p
           .then(function (result) {
             btn.disabled = false;
             if (result.ok) {

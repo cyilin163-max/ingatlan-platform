@@ -182,40 +182,50 @@
         function renderUserCard(item, targetEl) {
           var row = document.createElement('div');
           row.className = 'admin-user-row';
-          var statusText = item.canPublish ? t('accountApprovalApprovedStatus', '已通过') : t('accountApprovalPendingStatus', '待审批');
-          var statusClass = item.canPublish ? 'status-pill status-pill--approved' : 'status-pill status-pill--pending';
+          var pubStatusText = item.canPublish ? t('accountApprovalApprovedStatus', '已通过') : t('accountApprovalPendingStatus', '待审批');
+          var pubStatusClass = item.canPublish ? 'status-pill status-pill--approved' : 'status-pill status-pill--pending';
+          var contactStatusText = item.canContactDisplay ? t('accountApprovalApprovedStatus', '已通过') : t('accountApprovalPendingStatus', '待审批');
+          var contactStatusClass = item.canContactDisplay ? 'status-pill status-pill--approved' : 'status-pill status-pill--pending';
           row.innerHTML =
             '<div class="admin-user-main">' +
               '<h3 class="admin-user-name">' + (item.name || item.email || '').replace(/</g, '&lt;') + '</h3>' +
               '<p class="admin-user-email">' + (item.email || '').replace(/</g, '&lt;') + '</p>' +
-              '<div class="admin-user-meta">' +
-                '<span class="' + statusClass + '">' + statusText + '</span>' +
+              '<div class="admin-user-meta" style="display:flex;flex-wrap:wrap;gap:var(--space-2);margin-top:var(--space-2);">' +
+                '<span><strong>' + (t('accountApprovalPublish') || '发布') + ':</strong> <span class="' + pubStatusClass + '">' + pubStatusText + '</span></span>' +
+                '<span><strong>' + (t('accountApprovalContact') || '联系方式') + ':</strong> <span class="' + contactStatusClass + '">' + contactStatusText + '</span></span>' +
               '</div>' +
             '</div>' +
-            '<div class="admin-user-actions">' +
-              '<button type="button" class="btn btn-outline approval-toggle" data-id="' + encodeURIComponent(item.id) + '" data-approved="' + (item.canPublish ? '1' : '0') + '">' + (item.canPublish ? t('accountRevokePublish', '改为待审批') : t('accountApprovePublish', '通过审批')) + '</button>' +
+            '<div class="admin-user-actions" style="display:flex;flex-direction:column;gap:var(--space-2);">' +
+              '<button type="button" class="btn btn-outline approval-toggle" data-id="' + encodeURIComponent(item.id) + '" data-type="publish" data-approved="' + (item.canPublish ? '1' : '0') + '">' + (item.canPublish ? t('accountRevokePublish', '改为待审批') : t('accountApprovePublish', '通过审批')) + ' ' + (t('accountApprovalPublish') || '发布') + '</button>' +
+              '<button type="button" class="btn btn-outline approval-contact-toggle" data-id="' + encodeURIComponent(item.id) + '" data-type="contact" data-approved="' + (item.canContactDisplay ? '1' : '0') + '">' + (item.canContactDisplay ? t('accountRevokeContact', '撤销') : t('accountApproveContact', '通过')) + ' ' + (t('accountApprovalContact') || '联系方式') + '</button>' +
             '</div>';
           targetEl.appendChild(row);
-          var btn = row.querySelector('.approval-toggle');
-          if (btn) {
-            btn.addEventListener('click', function () {
-              var approved = btn.getAttribute('data-approved') !== '1';
-              btn.disabled = true;
-              fetch((apiBase || '') + '/api/admin/users/' + encodeURIComponent(item.id) + '/publish-approval', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ approved: approved })
-              }).then(function (r) {
-                return r.ok ? r.json() : Promise.reject(r);
-              }).then(function () {
-                refreshAdminUsers();
-              }).catch(function () {
-                btn.disabled = false;
-                alert(t('accountApprovalActionFailed', '操作失败，请重试。'));
-              });
-            });
-          }
+          row.querySelector('.approval-toggle').addEventListener('click', function () {
+            var btn = this;
+            var approved = btn.getAttribute('data-approved') !== '1';
+            btn.disabled = true;
+            fetch((apiBase || '') + '/api/admin/users/' + encodeURIComponent(item.id) + '/publish-approval', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ approved: approved })
+            }).then(function (r) { return r.ok ? r.json() : Promise.reject(r); })
+              .then(function () { refreshAdminUsers(); })
+              .catch(function () { btn.disabled = false; alert(t('accountApprovalActionFailed', '操作失败，请重试。')); });
+          });
+          row.querySelector('.approval-contact-toggle').addEventListener('click', function () {
+            var btn = this;
+            var approved = btn.getAttribute('data-approved') !== '1';
+            btn.disabled = true;
+            fetch((apiBase || '') + '/api/admin/users/' + encodeURIComponent(item.id) + '/contact-approval', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ approved: approved })
+            }).then(function (r) { return r.ok ? r.json() : Promise.reject(r); })
+              .then(function () { refreshAdminUsers(); })
+              .catch(function () { btn.disabled = false; alert(t('accountApprovalActionFailed', '操作失败，请重试。')); });
+          });
         }
 
         pendingItems.forEach(function (item) { renderUserCard(item, pendingListEl); });

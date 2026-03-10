@@ -27,14 +27,19 @@
   </header>
 
   <main id="main" class="container" style="padding: 3rem 1.5rem;">
-    <h1 class="page-title">联系我们</h1>
-    <p class="page-subtitle">如有疑问，欢迎通过以下方式联系。</p>
-    <div style="margin: 1.5rem 0; line-height: 1.8;">
-      <p><strong>联系我们：</strong>Hun_yilin</p>
-      <p><strong>联系电话：</strong><a href="tel:0036305357008">0036305357008</a></p>
-      <p><strong>联系邮件：</strong><a href="mailto:lemonon71@gmail.com">lemonon71@gmail.com</a></p>
+    <h1 class="page-title" data-i18n="footerContact">联系我们</h1>
+    <p class="page-subtitle" data-i18n="contactSubtitle">如有疑问，欢迎通过以下方式联系。</p>
+    <div id="contact-display" style="margin: 1.5rem 0;">
+      <!-- 默认联系方式，无高级审批用户时显示 -->
+      <div id="contact-default" style="line-height: 1.8;">
+        <p><strong data-i18n="contactLabel">联系我们：</strong>Hun_yilin</p>
+        <p><strong data-i18n="contactPhoneLabel">联系电话：</strong><a href="tel:0036305357008">0036305357008</a></p>
+        <p><strong data-i18n="contactEmailLabel">联系邮件：</strong><a href="mailto:lemonon71@gmail.com">lemonon71@gmail.com</a></p>
+      </div>
+      <!-- 通过高级审批的用户列表，动态渲染 -->
+      <div id="contact-approved-list" style="display:none;"></div>
     </div>
-    <p><a href="index.html" class="btn btn-outline">返回首页</a></p>
+    <p><a href="index.html" class="btn btn-outline" data-i18n="backToHome">返回首页</a></p>
   </main>
 
   <footer class="site-footer">
@@ -83,8 +88,49 @@
   </div>
   <script src="js/translations.js"></script>
   <script src="js/i18n.js"></script>
+  <script src="js/api.js"></script>
   <script src="js/cookie-consent.js"></script>
   <script src="js/header.js"></script>
   <script src="js/auth-header.js"></script>
+  <script>
+    (function () {
+      var apiBase = (window.location.protocol === 'file:' || (window.location.port && window.location.port !== '3000')) ? 'http://localhost:3000' : '';
+      var defaultEl = document.getElementById('contact-default');
+      var listEl = document.getElementById('contact-approved-list');
+      fetch((apiBase || '') + '/api/contact-display')
+        .then(function (r) { return r.ok ? r.json() : Promise.reject(r); })
+        .then(function (res) {
+          var items = res.items || [];
+          if (items.length === 0) {
+            defaultEl.style.display = '';
+            listEl.style.display = 'none';
+            return;
+          }
+          defaultEl.style.display = 'none';
+          listEl.style.display = '';
+          var t = function (k, f) { return (window.i18n && window.i18n.t) ? window.i18n.t(k) : (f || k); };
+          var api = window.INGATLAN_API;
+          listEl.innerHTML = items.map(function (u) {
+            var name = (u.contactName || u.name || '').trim();
+            var phone = (u.contactPhone || '').trim();
+            var email = (u.contactEmail || '').trim();
+            var qrUrl = (u.contactQrUrl || '').trim();
+            if (api && api.resolveImageUrl) qrUrl = api.resolveImageUrl(qrUrl);
+            var html = '<div class="contact-card" style="margin-bottom:var(--space-6);padding:var(--space-4);border:1px solid var(--color-border);border-radius:8px;">';
+            if (name) html += '<p style="font-weight:600;margin:0 0 var(--space-2);">' + name.replace(/</g, '&lt;') + '</p>';
+            if (phone) html += '<p style="margin:0;"><strong>' + t('contactPhoneLabel', '联系电话') + ':</strong> <a href="tel:' + phone.replace(/"/g, '&quot;') + '">' + phone.replace(/</g, '&lt;') + '</a></p>';
+            if (email) html += '<p style="margin:0;"><strong>' + t('contactEmailLabel', '联系邮箱') + ':</strong> <a href="mailto:' + email.replace(/"/g, '&quot;') + '">' + email.replace(/</g, '&lt;') + '</a></p>';
+            if (qrUrl) html += '<div style="margin-top:var(--space-3);text-align:center;"><img src="' + qrUrl.replace(/"/g, '&quot;') + '" alt="" style="max-width:180px;height:auto;border-radius:8px;"><p style="margin:var(--space-2) 0 0;font-size:0.9rem;color:var(--color-text-muted);">' + t('propScanQr', '扫码添加微信') + '</p></div>';
+            html += '</div>';
+            return html;
+          }).join('');
+          if (window.i18n && window.i18n.apply) window.i18n.apply();
+        })
+        .catch(function () {
+          defaultEl.style.display = '';
+          listEl.style.display = 'none';
+        });
+    })();
+  </script>
 </body>
 </html>

@@ -199,13 +199,54 @@
     wrap.hidden = items.length === 0;
   }
 
+  var DEFAULT_CONTACT = {
+    title: '联系我们：Hun_yilin',
+    qrSrc: 'assets/wechat-hun-yilin.png',
+    qrAlt: '微信 Hun_yilin',
+    hint: '扫码添加微信'
+  };
+
+  function renderContactBlock(data) {
+    var contactBlock = document.getElementById('contact-block');
+    if (!contactBlock) return;
+    var pub = (data || {}).publisher || {};
+    var usePublisher = pub.canContactDisplay && (pub.contactName || pub.contactPhone || pub.contactEmail || pub.contactQrUrl);
+    var title, qrSrc, qrAlt, hint;
+    if (usePublisher) {
+      title = (pub.contactName || pub.name || '').trim() || (t('propContact') || '联系我们');
+      var qrUrl = (pub.contactQrUrl || '').trim();
+      qrSrc = qrUrl ? (api && api.resolveImageUrl ? api.resolveImageUrl(qrUrl) : qrUrl) : '';
+      qrAlt = title;
+      hint = (t('propScanQr') || '扫码添加微信');
+    } else {
+      title = DEFAULT_CONTACT.title;
+      qrSrc = DEFAULT_CONTACT.qrSrc;
+      qrAlt = DEFAULT_CONTACT.qrAlt;
+      hint = DEFAULT_CONTACT.hint;
+    }
+    var html = '<p class="contact-unified-title" style="font-weight:600;font-size:1.1rem;">' + escapeHtml(title) + '</p>';
+    if (usePublisher && (pub.contactPhone || pub.contactEmail)) {
+      html += '<div style="margin:var(--space-2) 0;line-height:1.6;">';
+      if (pub.contactPhone) html += '<p style="margin:0;"><strong>' + (t('propContactPhone') || '联系电话') + ':</strong> <a href="tel:' + escapeHtml(pub.contactPhone) + '">' + escapeHtml(pub.contactPhone) + '</a></p>';
+      if (pub.contactEmail) html += '<p style="margin:0;"><strong>' + (t('propContactEmail') || '联系邮箱') + ':</strong> <a href="mailto:' + escapeHtml(pub.contactEmail) + '">' + escapeHtml(pub.contactEmail) + '</a></p>';
+      html += '</div>';
+    }
+    if (qrSrc) {
+      html += '<div class="contact-qr-wrap" style="text-align:center;">';
+      html += '<img src="' + escapeHtml(qrSrc) + '" alt="' + escapeHtml(qrAlt) + '" class="contact-qr-img" style="max-width:200px;height:auto;border-radius:8px;">';
+      html += '<p style="margin:0;font-size:0.9rem;color:var(--color-text-muted);">' + escapeHtml(hint) + '</p>';
+      html += '</div>';
+    }
+    contactBlock.innerHTML = html;
+  }
+
   function wireContactActions(data) {
     var primaryBtn = document.getElementById('detail-primary-contact');
     var revealBtn = document.getElementById('reveal-phone');
     var phoneEl = document.getElementById('phone-revealed');
     var hintEl = document.getElementById('contact-hint');
     var contactBlock = document.getElementById('contact-block');
-    var phone = (((data || {}).publisher || {}).phone || '').trim();
+    var phone = (((data || {}).publisher || {}).phone || ((data || {}).publisher || {}).contactPhone || '').trim();
 
     function revealPhone() {
       if (phoneEl) {
@@ -424,6 +465,7 @@
     }
 
     wireContactActions(data);
+    renderContactBlock(data);
   }
 
   var CONDITION_MAP = { 'new': 'conditionNew', 'renovated': 'conditionRenovated', 'good': 'conditionGood', 'needs_renovation': 'conditionNeedsRenovation' };
