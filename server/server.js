@@ -311,6 +311,60 @@ app.get('/api/admin/users', async (req, res) => {
   res.json({ ok: true, items });
 });
 
+// 管理员：获取已通过审批且有房源的发布者列表
+app.get('/api/admin/publishers', async (req, res) => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  const users = await store.getUsers();
+  const list = await store.loadListings();
+  const approvedIds = new Set(users.filter((u) => !u.isAdmin && u.canPublish).map((u) => String(u.id)));
+  const countByPublisher = {};
+  list.forEach((l) => {
+    const pid = l.publisher && l.publisher.id ? String(l.publisher.id) : '';
+    if (pid && approvedIds.has(pid)) {
+      countByPublisher[pid] = (countByPublisher[pid] || 0) + 1;
+    }
+  });
+  const items = users
+    .filter((u) => !u.isAdmin && u.canPublish && (countByPublisher[String(u.id)] || 0) > 0)
+    .map((u) => ({
+      id: u.id,
+      name: u.name || '',
+      email: u.email || '',
+      listingCount: countByPublisher[String(u.id)] || 0,
+    }))
+    .sort((a, b) => b.listingCount - a.listingCount);
+  res.json({ ok: true, items });
+});
+
+// 管理员：获取指定发布者的房源列表
+app.get('/api/admin/listings', async (req, res) => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  const publisherId = (req.query.publisher || '').trim();
+  const list = await store.loadListings();
+  let filtered = list;
+  if (publisherId) {
+    filtered = list.filter((l) => l.publisher && String(l.publisher.id) === publisherId);
+  }
+  const items = filtered.map((item) => ({
+    id: item.id,
+    title: item.title,
+    currency: item.currency || 'ft',
+    price: item.price,
+    pricePerSqm: item.pricePerSqm,
+    area: item.area,
+    rooms: item.rooms,
+    location: item.location,
+    image: item.image,
+    images: item.images,
+    listedAt: item.listedAt,
+    viewCount: item.viewCount || 0,
+    publisher: item.publisher,
+  }));
+  res.json({ ok: true, items });
+});
+
 // 管理员：批准 / 撤销发布权限
 app.post('/api/admin/users/:id/publish-approval', async (req, res) => {
   const admin = await requireAdmin(req, res);
@@ -756,14 +810,15 @@ app.post('/api/listings', async (req, res) => {
   res.json({ ok: true, id: item.id });
 });
 
-// 编辑本人发布的房源（需登录，且只能改自己的）
+// 编辑本人发布的房源（需登录，且只能改自己的；管理员可改任意房源）
 app.put('/api/listings/:id', async (req, res) => {
   const user = await requireApprovedPublisher(req, res);
   if (!user) return;
   const userId = user.id;
+  const isAdmin = !!user.isAdmin;
   const old = await store.getListingById(req.params.id);
   if (!old) return res.status(404).json({ error: 'not_found' });
-  if (!old.publisher || String(old.publisher.id) !== String(userId)) {
+  if (!isAdmin && (!old.publisher || String(old.publisher.id) !== String(userId))) {
     return res.status(403).json({ error: 'forbidden' });
   }
   const b = req.body || {};
@@ -815,13 +870,15 @@ app.put('/api/listings/:id', async (req, res) => {
   res.json({ ok: true, id: updated.id });
 });
 
-// 删除本人发布的房源（需登录，且只能删自己的）
+// 删除本人发布的房源（需登录，且只能删自己的；管理员可删任意房源）
 app.delete('/api/listings/:id', async (req, res) => {
   const userId = req.session.userId;
   if (!userId) return res.status(401).json({ error: 'not_logged_in' });
+  const user = await getSessionUser(req, res);
+  const isAdmin = !!(user && user.isAdmin);
   const item = await store.getListingById(req.params.id);
   if (!item) return res.status(404).json({ error: 'not_found' });
-  if (!item.publisher || String(item.publisher.id) !== String(userId)) {
+  if (!isAdmin && (!item.publisher || String(item.publisher.id) !== String(userId))) {
     return res.status(403).json({ error: 'forbidden' });
   }
   await store.deleteListingById(req.params.id);

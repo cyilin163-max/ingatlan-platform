@@ -41,6 +41,7 @@
       <nav class="account-nav" aria-label="Account menu">
         <a href="account.html#listings" class="active" data-i18n="accountMyListings">Hirdetéseim</a>
         <a href="account.html#favorites" data-i18n="accountFavorites">Kedvencek</a>
+        <a href="account.html#manage" id="account-manage-nav-link" data-admin-only hidden data-i18n="accountManageListings">管理房源</a>
         <a href="account.html#admin" id="account-admin-nav-link" data-admin-only hidden data-i18n="accountAdminPanel">审批状态</a>
       </nav>
 
@@ -50,6 +51,21 @@
           <h2 class="panel-title" data-i18n="accountMyListings">Hirdetéseim</h2>
           <p style="color: var(--color-text-muted); margin-bottom: var(--space-6);" data-i18n="accountListingsIntro">Itt láthatod a saját hirdetéseid megtekintéseit és érdeklődéseket.</p>
           <div id="account-approval-banner" class="approval-banner" hidden></div>
+        </section>
+
+        <!-- Manage listings (admin only) -->
+        <section id="manage" class="account-panel" data-admin-only hidden>
+          <h2 class="panel-title" data-i18n="accountManageListings">管理房源</h2>
+          <p class="admin-panel-intro" data-i18n="accountManageListingsIntro">查看并管理所有已通过审批用户发布的房源。</p>
+          <div id="manage-publishers-wrap">
+            <div id="manage-publishers-list" class="admin-users-list"></div>
+            <p id="manage-publishers-empty" class="results-empty" data-i18n="accountManagePublishersEmpty" hidden>暂无已发布房源的发布者。</p>
+          </div>
+          <div id="manage-user-listings-wrap" hidden>
+            <button type="button" class="btn btn-ghost" id="manage-back-btn" data-i18n="accountManageBack">← 返回列表</button>
+            <h3 id="manage-user-name" class="admin-status-title" style="margin-top:var(--space-4);"></h3>
+            <div id="manage-user-listings" class="listing-rows-wrap"></div>
+          </div>
         </section>
 
         <!-- Favorites -->
@@ -214,6 +230,101 @@
           .then(function (res) { renderAdminUsers(res.items || []); })
           .catch(function () {});
       }
+      function initManagePanel(base, currentUser) {
+        var publishersWrap = document.getElementById('manage-publishers-wrap');
+        var userListingsWrap = document.getElementById('manage-user-listings-wrap');
+        var publishersList = document.getElementById('manage-publishers-list');
+        var publishersEmpty = document.getElementById('manage-publishers-empty');
+        var backBtn = document.getElementById('manage-back-btn');
+        var userNameEl = document.getElementById('manage-user-name');
+        var userListingsEl = document.getElementById('manage-user-listings');
+        if (!publishersWrap || !userListingsWrap || !publishersList || !backBtn || !userNameEl || !userListingsEl) return;
+        function showPublishersList() {
+          publishersWrap.hidden = false;
+          userListingsWrap.hidden = true;
+        }
+        function showUserListings(userId, userName) {
+          publishersWrap.hidden = true;
+          userListingsWrap.hidden = false;
+          userNameEl.textContent = (userName || '').replace(/</g, '&lt;') + ' ' + (t('accountManageListingsSuffix') || '的房源');
+          fetch((base || '') + '/api/admin/listings?publisher=' + encodeURIComponent(userId), { credentials: 'include' })
+            .then(function (r) { return r.ok ? r.json() : Promise.reject(r); })
+            .then(function (res) {
+              var items = res.items || [];
+              var api = window.INGATLAN_API;
+              var unitRooms = (window.i18n && window.i18n.t('unitRooms')) || 'szoba';
+              var accountViewsLabel = (window.i18n && window.i18n.t('accountViews')) || ' megtekintés';
+              var accountEditLabel = (window.i18n && window.i18n.t('accountEdit')) || '编辑';
+              var accountDeleteLabel = (window.i18n && window.i18n.t('accountDelete')) || '删除';
+              userListingsEl.innerHTML = '';
+              if (items.length === 0) {
+                userListingsEl.innerHTML = '<p class="results-empty" style="color:var(--color-text-muted);padding:var(--space-4);">' + (t('accountListingsEmpty') || '') + '</p>';
+              } else {
+                items.forEach(function (item) {
+                  var priceStr = api && api.formatPrice ? api.formatPrice(item.price, item.currency) : (item.price || '') + ' ' + (item.currency === 'eur' ? '€' : 'Ft');
+                  var row = document.createElement('div');
+                  row.className = 'listing-row';
+                  row.setAttribute('data-id', item.id);
+                  var viewHref = (base || '') + '/property.html?id=' + encodeURIComponent(item.id);
+                  var editHref = (base || '') + '/publish.html?edit=' + encodeURIComponent(item.id);
+                  var imgUrl = (item.image || (item.images && item.images[0]) || '');
+                  if (api && api.resolveImageUrl) imgUrl = api.resolveImageUrl(imgUrl);
+                  row.innerHTML = '<div class="listing-thumb"><img src="' + (imgUrl || '').replace(/"/g, '&quot;') + '" alt=""></div>' +
+                    '<div class="listing-info"><h3>' + (item.title || '').replace(/</g, '&lt;') + '</h3><p>' + (item.area || '') + ' m² · ' + (item.rooms || '') + ' ' + unitRooms + ' · ' + priceStr + '</p>' +
+                    '<div class="listing-stats"><span>👁 ' + (item.viewCount != null ? item.viewCount : 0) + '</span><span>' + accountViewsLabel + '</span></div></div>' +
+                    '<div class="listing-actions">' +
+                      '<a href="' + viewHref + '" class="btn btn-outline" data-i18n="accountView">查看</a> ' +
+                      '<a href="' + editHref + '" class="btn btn-ghost" data-i18n="accountEdit">编辑</a> ' +
+                      '<button type="button" class="btn btn-ghost listing-delete" data-i18n="accountDelete">' + accountDeleteLabel + '</button>' +
+                    '</div>';
+                  userListingsEl.appendChild(row);
+                  row.querySelector('.listing-delete').addEventListener('click', function () {
+                    if (!confirm(t('accountDeleteConfirm') || '确定要删除这条房源吗？')) return;
+                    fetch((base || '') + '/api/listings/' + encodeURIComponent(item.id), { method: 'DELETE', credentials: 'include' })
+                      .then(function (r) { return r.ok ? r.json() : Promise.reject(r); })
+                      .then(function () { showUserListings(userId, userName); })
+                      .catch(function () { alert(t('publishError') || '删除失败，请重试。'); });
+                  });
+                });
+              }
+              if (window.i18n && window.i18n.apply) window.i18n.apply();
+            })
+            .catch(function () { userListingsEl.innerHTML = '<p class="results-empty" style="color:var(--color-danger);">加载失败</p>'; });
+        }
+        backBtn.addEventListener('click', showPublishersList);
+        function refreshManagePublishers() {
+          if (window.location.hash.slice(1) !== 'manage') return;
+          fetch((base || '') + '/api/admin/publishers', { credentials: 'include' })
+            .then(function (r) { return r.ok ? r.json() : Promise.reject(r); })
+            .then(function (res) {
+              var items = res.items || [];
+              publishersList.innerHTML = '';
+              publishersEmpty.hidden = items.length > 0;
+              items.forEach(function (p) {
+                var row = document.createElement('div');
+                row.className = 'admin-user-row';
+                row.style.cursor = 'pointer';
+                row.innerHTML = '<div class="admin-user-main">' +
+                  '<h3 class="admin-user-name">' + (p.name || p.email || p.id).replace(/</g, '&lt;') + '</h3>' +
+                  '<p class="admin-user-email">' + (p.email || '').replace(/</g, '&lt;') + '</p>' +
+                  '<div class="admin-user-meta"><span class="status-pill status-pill--approved">' + (p.listingCount || 0) + ' ' + (t('accountManageListingCount') || '条房源') + '</span></div>' +
+                '</div>' +
+                '<div class="admin-user-actions"><span style="color:var(--color-text-muted);">→</span></div>';
+                row.addEventListener('click', function () { showUserListings(p.id, p.name || p.email); });
+                publishersList.appendChild(row);
+              });
+              if (window.i18n && window.i18n.apply) window.i18n.apply();
+            })
+            .catch(function () { publishersEmpty.hidden = false; publishersList.innerHTML = ''; });
+        }
+        window.addEventListener('hashchange', function () {
+          if (window.location.hash.slice(1) === 'manage') {
+            showPublishersList();
+            refreshManagePublishers();
+          }
+        });
+        if (window.location.hash.slice(1) === 'manage') refreshManagePublishers();
+      }
       fetch(apiBase + '/api/me', { credentials: 'include' })
         .then(function (r) {
           if (r.status === 401) {
@@ -228,7 +339,7 @@
             if (api && api.setCurrentUser) api.setCurrentUser(data.user);
             showAdminUi(!!data.user.isAdmin);
             setApprovalBanner(data.user);
-            if (!data.user.isAdmin && window.location.hash.slice(1) === 'admin') {
+            if (!data.user.isAdmin && (window.location.hash.slice(1) === 'admin' || window.location.hash.slice(1) === 'manage')) {
               window.location.hash = 'listings';
             }
             var el = document.getElementById('account-user-greeting');
@@ -237,7 +348,10 @@
             var ctaBtn = document.getElementById('publish-cta-btn');
             if (ctaText) ctaText.textContent = (window.i18n && window.i18n.t('accountPublishLoggedIn')) || 'Bejelentkezve. Itt adhatod fel az ingatlanhirdetésed.';
             if (ctaBtn) { ctaBtn.href = 'publish.html'; ctaBtn.textContent = (window.i18n && window.i18n.t('accountPublishGo')) || 'Hirdetés feladása'; }
-            if (data.user.isAdmin) refreshAdminUsers();
+            if (data.user.isAdmin) {
+              refreshAdminUsers();
+              initManagePanel(apiBase, data.user);
+            }
             if (api && api.getMyListingsByUser) {
               var section = document.getElementById('listings');
               if (!section) return;
