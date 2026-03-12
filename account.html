@@ -43,7 +43,8 @@
         <a href="account.html#favorites" data-i18n="accountFavorites">Kedvencek</a>
         <a href="account.html#contact" data-i18n="accountContactInfo">联系方式</a>
         <a href="account.html#manage" id="account-manage-nav-link" data-admin-only hidden data-i18n="accountManageListings">管理房源</a>
-        <a href="account.html#admin" id="account-admin-nav-link" data-admin-only hidden data-i18n="accountAdminPanel">审批状态</a>
+        <a href="account.html#pending-listings" id="account-pending-nav-link" data-admin-only hidden data-i18n="accountPendingListings">待审批房源</a>
+        <a href="account.html#admin" id="account-admin-nav-link" data-admin-only hidden data-i18n="accountAdminPanel">用户审批</a>
       </nav>
 
       <div class="account-content">
@@ -103,18 +104,21 @@
           </form>
         </section>
 
+        <!-- 待审批房源（管理员） -->
+        <section id="pending-listings" class="account-panel" data-admin-only hidden>
+          <h2 class="panel-title" data-i18n="accountPendingListings">待审批房源</h2>
+          <p class="admin-panel-intro" data-i18n="accountPendingListingsIntro">新发布的房源需管理员审批通过后才会公开展示。</p>
+          <div id="pending-listings-list" class="admin-users-list"></div>
+          <p id="pending-listings-empty" class="results-empty" data-i18n="accountPendingListingsEmpty" hidden>当前没有待审批房源。</p>
+        </section>
+
         <section id="admin" class="account-panel" data-admin-only hidden>
-          <h2 class="panel-title" data-i18n="accountAdminPanel">审批状态</h2>
-          <p class="admin-panel-intro" data-i18n="accountAdminPanelIntro">在这里查看待审批和已通过的发布账号。</p>
+          <h2 class="panel-title" data-i18n="accountAdminPanel">用户审批</h2>
+          <p class="admin-panel-intro" data-i18n="accountAdminPanelIntro">管理用户联系方式展示权限与发布上限。</p>
           <div class="admin-status-section">
-            <h3 class="admin-status-title" data-i18n="accountPendingSection">待审批</h3>
-            <div id="admin-users-pending" class="admin-users-list"></div>
-            <p id="admin-users-pending-empty" class="results-empty" data-i18n="accountPendingEmpty" hidden>当前没有待审批账号。</p>
-          </div>
-          <div class="admin-status-section">
-            <h3 class="admin-status-title" data-i18n="accountApprovedSection">已通过</h3>
-            <div id="admin-users-approved" class="admin-users-list"></div>
-            <p id="admin-users-approved-empty" class="results-empty" data-i18n="accountApprovedEmpty" hidden>当前没有已通过账号。</p>
+            <h3 class="admin-status-title" data-i18n="accountAllUsers">所有用户</h3>
+            <div id="admin-users-list" class="admin-users-list"></div>
+            <p id="admin-users-empty" class="results-empty" data-i18n="accountAdminUsersEmpty" hidden>暂无用户。</p>
           </div>
         </section>
       </div>
@@ -187,42 +191,36 @@
       function setApprovalBanner(user) {
         var banner = document.getElementById('account-approval-banner');
         if (!banner) return;
-        if (!user || user.isAdmin || user.canPublish) {
-          banner.hidden = true;
-          return;
-        }
-        banner.textContent = t('accountApprovalPending', '你的账号已注册，等待管理员批准后才能发布房源。');
-        banner.hidden = false;
+        banner.hidden = true;
       }
       function renderAdminUsers(items) {
-        var pendingListEl = document.getElementById('admin-users-pending');
-        var approvedListEl = document.getElementById('admin-users-approved');
-        var pendingEmptyEl = document.getElementById('admin-users-pending-empty');
-        var approvedEmptyEl = document.getElementById('admin-users-approved-empty');
-        if (!pendingListEl || !approvedListEl || !pendingEmptyEl || !approvedEmptyEl) return;
-
-        pendingListEl.innerHTML = '';
-        approvedListEl.innerHTML = '';
-
-        var pendingItems = (items || []).filter(function (item) { return !item.isAdmin && !item.canPublish; });
-        var approvedItems = (items || []).filter(function (item) { return !item.isAdmin && item.canPublish; });
+        var listEl = document.getElementById('admin-users-list');
+        var emptyEl = document.getElementById('admin-users-empty');
+        if (!listEl || !emptyEl) return;
+        listEl.innerHTML = '';
+        var allItems = (items || []).filter(function (item) { return !item.isAdmin; });
 
         function renderUserCard(item, targetEl) {
           var row = document.createElement('div');
           row.className = 'admin-user-row';
-          var pubStatusText = item.canPublish ? t('accountApprovalApprovedStatus', '已通过') : t('accountApprovalPendingStatus', '待审批');
-          var pubStatusClass = item.canPublish ? 'status-pill status-pill--approved' : 'status-pill status-pill--pending';
           var contactStatusText = item.canContactDisplay ? t('accountApprovalApprovedStatus', '已通过') : t('accountApprovalPendingStatus', '待审批');
           var contactStatusClass = item.canContactDisplay ? 'status-pill status-pill--approved' : 'status-pill status-pill--pending';
+          var qrImg = item.contactQrUrl ? ((window.INGATLAN_API && window.INGATLAN_API.resolveImageUrl) ? window.INGATLAN_API.resolveImageUrl(item.contactQrUrl) : ((apiBase || '') + (item.contactQrUrl.indexOf('/') === 0 ? '' : '/') + item.contactQrUrl)) : '';
+          var contactBlock = '<div class="admin-user-contact" style="margin-top:var(--space-2);font-size:var(--text-sm);color:var(--color-text-muted);">' +
+            (item.contactName ? '<div>' + (t('registerContactName') || '联系人') + ': ' + (item.contactName || '').replace(/</g, '&lt;') + '</div>' : '') +
+            (item.contactPhone ? '<div>' + (t('registerContactPhone') || '电话') + ': ' + (item.contactPhone || '').replace(/</g, '&lt;') + '</div>' : '') +
+            (item.contactEmail ? '<div>' + (t('registerContactEmail') || '邮箱') + ': ' + (item.contactEmail || '').replace(/</g, '&lt;') + '</div>' : '') +
+            (qrImg ? '<div style="margin-top:var(--space-1);"><img src="' + qrImg.replace(/"/g, '&quot;') + '" alt="QR" style="max-width:80px;height:auto;border-radius:4px;"></div>' : '') +
+            '</div>';
           row.innerHTML =
             '<div class="admin-user-main">' +
               '<h3 class="admin-user-name">' + (item.name || item.email || '').replace(/</g, '&lt;') + '</h3>' +
               '<p class="admin-user-email">' + (item.email || '').replace(/</g, '&lt;') + '</p>' +
               '<div class="admin-user-meta" style="display:flex;flex-wrap:wrap;gap:var(--space-2);margin-top:var(--space-2);">' +
-                '<span><strong>' + (t('accountApprovalPublish') || '发布') + ':</strong> <span class="' + pubStatusClass + '">' + pubStatusText + '</span></span>' +
                 '<span><strong>' + (t('accountApprovalContact') || '联系方式') + ':</strong> <span class="' + contactStatusClass + '">' + contactStatusText + '</span></span>' +
                 '<span><strong>' + (t('accountMaxListings') || '发布上限') + ':</strong> ' + (item.listingCount != null ? item.listingCount : 0) + '/' + (item.maxListings || '∞') + '</span>' +
               '</div>' +
+              contactBlock +
               '<div class="admin-user-max-wrap" style="margin-top:var(--space-2);display:flex;align-items:center;gap:var(--space-2);">' +
                 '<label class="label" style="margin:0;font-size:var(--text-sm);">' + (t('accountMaxListingsSet') || '设为') + '</label>' +
                 '<input type="number" class="input admin-max-input" min="0" placeholder="0=' + (t('accountMaxListingsUnlimited') || '不限') + '" value="' + (item.maxListings || '') + '" style="width:70px;padding:var(--space-2);">' +
@@ -230,26 +228,13 @@
               '</div>' +
             '</div>' +
             '<div class="admin-user-actions" style="display:flex;flex-direction:column;gap:var(--space-2);">' +
-              '<button type="button" class="btn btn-outline approval-toggle" data-id="' + encodeURIComponent(item.id) + '" data-type="publish" data-approved="' + (item.canPublish ? '1' : '0') + '">' + (item.canPublish ? t('accountRevokePublish', '改为待审批') : t('accountApprovePublish', '通过审批')) + ' ' + (t('accountApprovalPublish') || '发布') + '</button>' +
               (item.canContactDisplay
                 ? '<button type="button" class="btn btn-outline approval-contact-revoke" data-scope="all">' + (t('accountRevokeContactAll') || '撤销（全部恢复默认）') + '</button>' +
                   '<button type="button" class="btn btn-outline approval-contact-revoke" data-scope="new">' + (t('accountRevokeContactNew') || '撤销（仅新发布恢复默认）') + '</button>'
                 : '<button type="button" class="btn btn-outline approval-contact-toggle" data-id="' + encodeURIComponent(item.id) + '" data-type="contact" data-approved="0">' + (t('accountApproveContact', '通过') + ' ' + (t('accountApprovalContact') || '联系方式')) + '</button>') +
+              '<button type="button" class="btn btn-outline admin-reset-password-btn" data-id="' + encodeURIComponent(item.id) + '">' + (t('accountResetPassword') || '重置密码') + '</button>' +
             '</div>';
           targetEl.appendChild(row);
-          row.querySelector('.approval-toggle').addEventListener('click', function () {
-            var btn = this;
-            var approved = btn.getAttribute('data-approved') !== '1';
-            btn.disabled = true;
-            fetch((apiBase || '') + '/api/admin/users/' + encodeURIComponent(item.id) + '/publish-approval', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'include',
-              body: JSON.stringify({ approved: approved })
-            }).then(function (r) { return r.ok ? r.json() : Promise.reject(r); })
-              .then(function () { refreshAdminUsers(); })
-              .catch(function () { btn.disabled = false; alert(t('accountApprovalActionFailed', '操作失败，请重试。')); });
-          });
           var contactToggle = row.querySelector('.approval-contact-toggle');
           if (contactToggle) {
             contactToggle.addEventListener('click', function () {
@@ -296,13 +281,73 @@
                 .catch(function () { btn.disabled = false; alert(t('accountApprovalActionFailed', '操作失败，请重试。')); });
             });
           });
+          var resetPwBtn = row.querySelector('.admin-reset-password-btn');
+          if (resetPwBtn) {
+            resetPwBtn.addEventListener('click', function () {
+              var newPw = prompt(t('accountResetPasswordPrompt', '请输入新密码（至少6位）'));
+              if (newPw == null) return;
+              if (typeof newPw !== 'string' || newPw.length < 6) {
+                alert(t('accountResetPasswordTooShort', '密码至少6位。'));
+                return;
+              }
+              resetPwBtn.disabled = true;
+              fetch((apiBase || '') + '/api/admin/users/' + encodeURIComponent(item.id) + '/reset-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ newPassword: newPw })
+              }).then(function (r) { return r.ok ? r.json() : Promise.reject(r); })
+                .then(function () { alert(t('accountResetPasswordSuccess', '密码已重置，请告知用户新密码。')); })
+                .catch(function () { alert(t('accountApprovalActionFailed', '操作失败，请重试。')); })
+                .finally(function () { resetPwBtn.disabled = false; });
+            });
+          }
         }
 
-        pendingItems.forEach(function (item) { renderUserCard(item, pendingListEl); });
-        approvedItems.forEach(function (item) { renderUserCard(item, approvedListEl); });
-
-        pendingEmptyEl.hidden = pendingItems.length > 0;
-        approvedEmptyEl.hidden = approvedItems.length > 0;
+        allItems.forEach(function (item) { renderUserCard(item, listEl); });
+        emptyEl.hidden = allItems.length > 0;
+      }
+      function renderPendingListings(items) {
+        var listEl = document.getElementById('pending-listings-list');
+        var emptyEl = document.getElementById('pending-listings-empty');
+        if (!listEl || !emptyEl) return;
+        listEl.innerHTML = '';
+        items = items || [];
+        var api = window.INGATLAN_API;
+        items.forEach(function (item) {
+          var row = document.createElement('div');
+          row.className = 'admin-user-row';
+          var priceStr = api && api.formatPrice ? api.formatPrice(item.price, item.currency) : (item.price || '') + ' ' + (item.currency === 'eur' ? '€' : 'Ft');
+          var imgUrl = (item.image || '').replace(/"/g, '&quot;');
+          if (api && api.resolveImageUrl) imgUrl = api.resolveImageUrl(imgUrl);
+          var pubName = (item.publisher && item.publisher.name) || '';
+          row.innerHTML = '<div class="admin-user-main" style="flex:1;">' +
+            '<div style="display:flex;gap:var(--space-4);align-items:flex-start;">' +
+            '<img src="' + imgUrl + '" alt="" style="width:80px;height:60px;object-fit:cover;border-radius:var(--radius-sm);">' +
+            '<div><h3 class="admin-user-name">' + (item.title || '').replace(/</g, '&lt;') + '</h3>' +
+            '<p class="admin-user-email">' + pubName.replace(/</g, '&lt;') + ' · ' + (item.area || '') + ' m² · ' + (item.rooms || '') + ' szoba · ' + priceStr + '</p></div></div></div>' +
+            '<div class="admin-user-actions"><a href="' + (apiBase || '') + '/property.html?id=' + encodeURIComponent(item.id) + '" class="btn btn-ghost" target="_blank">' + (t('accountView') || '查看') + '</a>' +
+            '<button type="button" class="btn btn-primary pending-approve-btn" data-id="' + encodeURIComponent(item.id) + '">' + (t('accountApprovePublish') || '通过') + '</button></div>';
+          listEl.appendChild(row);
+          row.querySelector('.pending-approve-btn').addEventListener('click', function () {
+            var btn = this;
+            btn.disabled = true;
+            fetch((apiBase || '') + '/api/admin/listings/' + encodeURIComponent(item.id) + '/approve', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include'
+            }).then(function (r) { return r.ok ? r.json() : Promise.reject(r); })
+              .then(function () { refreshPendingListings(); })
+              .catch(function () { btn.disabled = false; alert(t('accountApprovalActionFailed', '操作失败，请重试。')); });
+          });
+        });
+        emptyEl.hidden = items.length > 0;
+      }
+      function refreshPendingListings() {
+        fetch((apiBase || '') + '/api/admin/listings/pending', { credentials: 'include' })
+          .then(function (r) { return r.ok ? r.json() : Promise.reject(r); })
+          .then(function (res) { renderPendingListings(res.items || []); })
+          .catch(function () {});
       }
       function refreshAdminUsers() {
         fetch((apiBase || '') + '/api/admin/users', { credentials: 'include' })
@@ -349,15 +394,30 @@
                   var editHref = (base || '') + '/publish.html?edit=' + encodeURIComponent(item.id);
                   var imgUrl = (item.image || (item.images && item.images[0]) || '');
                   if (api && api.resolveImageUrl) imgUrl = api.resolveImageUrl(imgUrl);
+                  var approvedBadge = item.approved ? '' : ' <span class="status-pill status-pill--pending">' + (t('accountApprovalPendingStatus') || '待审批') + '</span>';
                   row.innerHTML = '<div class="listing-thumb"><img src="' + (imgUrl || '').replace(/"/g, '&quot;') + '" alt=""></div>' +
-                    '<div class="listing-info"><h3>' + (item.title || '').replace(/</g, '&lt;') + '</h3><p>' + (item.area || '') + ' m² · ' + (item.rooms || '') + ' ' + unitRooms + ' · ' + priceStr + '</p>' +
+                    '<div class="listing-info"><h3>' + (item.title || '').replace(/</g, '&lt;') + '</h3><p>' + (item.area || '') + ' m² · ' + (item.rooms || '') + ' ' + unitRooms + ' · ' + priceStr + approvedBadge + '</p>' +
                     '<div class="listing-stats"><span>👁 ' + (item.viewCount != null ? item.viewCount : 0) + '</span><span>' + accountViewsLabel + '</span></div></div>' +
                     '<div class="listing-actions">' +
                       '<a href="' + viewHref + '" class="btn btn-outline" data-i18n="accountView">查看</a> ' +
+                      (item.approved ? '' : '<button type="button" class="btn btn-primary listing-approve">' + (t('accountApprovePublish') || '通过') + '</button> ') +
                       '<a href="' + editHref + '" class="btn btn-ghost" data-i18n="accountEdit">编辑</a> ' +
                       '<button type="button" class="btn btn-ghost listing-delete" data-i18n="accountDelete">' + accountDeleteLabel + '</button>' +
                     '</div>';
                   userListingsEl.appendChild(row);
+                  var approveBtn = row.querySelector('.listing-approve');
+                  if (approveBtn) {
+                    approveBtn.addEventListener('click', function () {
+                      approveBtn.disabled = true;
+                      fetch((base || '') + '/api/admin/listings/' + encodeURIComponent(item.id) + '/approve', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include'
+                      }).then(function (r) { return r.ok ? r.json() : Promise.reject(r); })
+                        .then(function () { showUserListings(userId, userName); })
+                        .catch(function () { approveBtn.disabled = false; alert(t('accountApprovalActionFailed')); });
+                    });
+                  }
                   row.querySelector('.listing-delete').addEventListener('click', function () {
                     if (!confirm(t('accountDeleteConfirm') || '确定要删除这条房源吗？')) return;
                     fetch((base || '') + '/api/listings/' + encodeURIComponent(item.id), { method: 'DELETE', credentials: 'include' })
@@ -384,10 +444,11 @@
                 var row = document.createElement('div');
                 row.className = 'admin-user-row';
                 row.style.cursor = 'pointer';
+                var pendingBadge = (p.pendingCount || 0) > 0 ? ' <span class="status-pill status-pill--pending">' + p.pendingCount + ' ' + (t('accountPendingListings') || '待审批') + '</span>' : '';
                 row.innerHTML = '<div class="admin-user-main">' +
                   '<h3 class="admin-user-name">' + (p.name || p.email || p.id).replace(/</g, '&lt;') + '</h3>' +
                   '<p class="admin-user-email">' + (p.email || '').replace(/</g, '&lt;') + '</p>' +
-                  '<div class="admin-user-meta"><span class="status-pill status-pill--approved">' + (p.listingCount || 0) + ' ' + (t('accountManageListingCount') || '条房源') + '</span></div>' +
+                  '<div class="admin-user-meta"><span class="status-pill status-pill--approved">' + (p.listingCount || 0) + ' ' + (t('accountManageListingCount') || '条房源') + '</span>' + pendingBadge + '</div>' +
                 '</div>' +
                 '<div class="admin-user-actions"><span style="color:var(--color-text-muted);">→</span></div>';
                 row.addEventListener('click', function () { showUserListings(p.id, p.name || p.email); });
@@ -398,9 +459,12 @@
             .catch(function () { publishersEmpty.hidden = false; publishersList.innerHTML = ''; });
         }
         window.addEventListener('hashchange', function () {
-          if (window.location.hash.slice(1) === 'manage') {
+          var h = window.location.hash.slice(1);
+          if (h === 'manage') {
             showPublishersList();
             refreshManagePublishers();
+          } else if (h === 'pending-listings') {
+            refreshPendingListings();
           }
         });
         if (window.location.hash.slice(1) === 'manage') refreshManagePublishers();
@@ -495,7 +559,7 @@
             if (api && api.setCurrentUser) api.setCurrentUser(data.user);
             showAdminUi(!!data.user.isAdmin);
             setApprovalBanner(data.user);
-            if (!data.user.isAdmin && (window.location.hash.slice(1) === 'admin' || window.location.hash.slice(1) === 'manage')) {
+            if (!data.user.isAdmin && ['admin', 'manage', 'pending-listings'].indexOf(window.location.hash.slice(1)) !== -1) {
               window.location.hash = 'listings';
             }
             var el = document.getElementById('account-user-greeting');
@@ -506,6 +570,7 @@
             if (ctaBtn) { ctaBtn.href = 'publish.html'; ctaBtn.textContent = (window.i18n && window.i18n.t('accountPublishGo')) || 'Hirdetés feladása'; }
             if (data.user.isAdmin) {
               refreshAdminUsers();
+              refreshPendingListings();
               initManagePanel(apiBase, data.user);
             }
             initContactPanel(apiBase, data.user);
@@ -538,8 +603,9 @@
                     if (isLocal) row.setAttribute('data-is-local', '1');
                     var viewHref = (apiBase || '') + '/property.html?id=' + encodeURIComponent(item.id);
                     var editHref = (apiBase || '') + '/publish.html?edit=' + encodeURIComponent(item.id);
+                    var pendingBadge = (item.approved === false) ? ' <span class="status-pill status-pill--pending">' + (t('accountApprovalPendingStatus') || '待审批') + '</span>' : '';
                     row.innerHTML = '<div class="listing-thumb"><img src="' + (item.image || (item.images && item.images[0]) || '').replace(/"/g, '&quot;') + '" alt=""></div>' +
-                      '<div class="listing-info"><h3>' + (item.title || '').replace(/</g, '&lt;') + '</h3><p>' + (item.area || '') + ' m² · ' + (item.rooms || '') + ' ' + unitRooms + ' · ' + priceStr + '</p>' +
+                      '<div class="listing-info"><h3>' + (item.title || '').replace(/</g, '&lt;') + '</h3><p>' + (item.area || '') + ' m² · ' + (item.rooms || '') + ' ' + unitRooms + ' · ' + priceStr + pendingBadge + '</p>' +
                       '<div class="listing-stats"><span>👁 ' + (item.viewCount != null ? item.viewCount : 0) + '</span><span>' + accountViewsLabel + '</span></div></div>' +
                       '<div class="listing-actions">' +
                         '<a href="' + viewHref + '" class="btn btn-outline" data-i18n="accountView">查看</a> ' +

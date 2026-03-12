@@ -246,24 +246,30 @@ app.get('/api/me', async (req, res) => {
   });
 });
 
-// 注册
+// 注册（所有字段必填，含联系方式；一个邮箱只能注册一个账户）
 app.post('/api/register', async (req, res) => {
   const { email, password, name, contactName, contactPhone, contactEmail, contactQrImage } = req.body || {};
   const emailNorm = (email || '').trim().toLowerCase();
+  const contactNameTrim = (contactName || '').trim();
+  const contactPhoneTrim = (contactPhone || '').trim();
+  const contactEmailTrim = (contactEmail || '').trim();
   if (!emailNorm || !password || !name) {
     return res.status(400).json({ ok: false, error: 'missing_fields' });
   }
   if (password.length < 6) {
     return res.status(400).json({ ok: false, error: 'password_too_short' });
   }
+  if (!contactNameTrim || !contactPhoneTrim || !contactEmailTrim) {
+    return res.status(400).json({ ok: false, error: 'missing_contact' });
+  }
+  if (!contactQrImage || typeof contactQrImage !== 'string') {
+    return res.status(400).json({ ok: false, error: 'missing_contact_qr' });
+  }
   const existing = await store.findUserByEmail(emailNorm);
   if (existing) {
     return res.status(409).json({ ok: false, error: 'email_exists' });
   }
-  let contactQrUrl = '';
-  if (contactQrImage && typeof contactQrImage === 'string') {
-    contactQrUrl = (await saveBase64Image(contactQrImage)) || '';
-  }
+  const contactQrUrl = (await saveBase64Image(contactQrImage)) || '';
   const id = String(Date.now()) + '-' + Math.random().toString(36).slice(2, 8);
   const passwordHash = await bcrypt.hash(password, 10);
   const user = normalizeUserRecord({
@@ -272,11 +278,11 @@ app.post('/api/register', async (req, res) => {
     name: (name || '').trim(),
     passwordHash,
     isAdmin: false,
-    canPublish: false,
+    canPublish: true,
     canContactDisplay: false,
-    contactName: (contactName || '').trim(),
-    contactPhone: (contactPhone || '').trim(),
-    contactEmail: (contactEmail || '').trim(),
+    contactName: contactNameTrim,
+    contactPhone: contactPhoneTrim,
+    contactEmail: contactEmailTrim,
     contactQrUrl,
     createdAt: new Date().toISOString(),
   });
@@ -357,27 +363,44 @@ app.patch('/api/admin/users/:id', async (req, res) => {
   res.json({ ok: true, user: toClientUser(normalizeUserRecord(updated)) });
 });
 
-// 管理员：获取已通过审批且有房源的发布者列表
+// 管理员：重置用户密码（用户忘记密码时由管理员手动重置）
+app.post('/api/admin/users/:id/reset-password', async (req, res) => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  const user = await store.findUserById(req.params.id);
+  if (!user) return res.status(404).json({ ok: false, error: 'user_not_found' });
+  const newPassword = (req.body && req.body.newPassword) || '';
+  if (typeof newPassword !== 'string' || newPassword.length < 6) {
+    return res.status(400).json({ ok: false, error: 'password_too_short' });
+  }
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+  await store.updateUser(user.id, { passwordHash });
+  res.json({ ok: true });
+});
+
+// 管理员：获取有房源的发布者列表（含已审批与待审批数量）
 app.get('/api/admin/publishers', async (req, res) => {
   const admin = await requireAdmin(req, res);
   if (!admin) return;
   const users = await store.getUsers();
   const list = await store.loadListings();
-  const approvedIds = new Set(users.filter((u) => !u.isAdmin && u.canPublish).map((u) => String(u.id)));
   const countByPublisher = {};
+  const pendingByPublisher = {};
   list.forEach((l) => {
     const pid = l.publisher && l.publisher.id ? String(l.publisher.id) : '';
-    if (pid && approvedIds.has(pid)) {
+    if (pid) {
       countByPublisher[pid] = (countByPublisher[pid] || 0) + 1;
+      if (!isListingApproved(l)) pendingByPublisher[pid] = (pendingByPublisher[pid] || 0) + 1;
     }
   });
   const items = users
-    .filter((u) => !u.isAdmin && u.canPublish && (countByPublisher[String(u.id)] || 0) > 0)
+    .filter((u) => !u.isAdmin && (countByPublisher[String(u.id)] || 0) > 0)
     .map((u) => ({
       id: u.id,
       name: u.name || '',
       email: u.email || '',
       listingCount: countByPublisher[String(u.id)] || 0,
+      pendingCount: pendingByPublisher[String(u.id)] || 0,
     }))
     .sort((a, b) => b.listingCount - a.listingCount);
   res.json({ ok: true, items });
@@ -407,11 +430,43 @@ app.get('/api/admin/listings', async (req, res) => {
     listedAt: item.listedAt,
     viewCount: item.viewCount || 0,
     publisher: item.publisher,
+    approved: isListingApproved(item),
   }));
   res.json({ ok: true, items });
 });
 
-// 管理员：批准 / 撤销发布权限
+// 管理员：获取待审批房源列表
+app.get('/api/admin/listings/pending', async (req, res) => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  const list = (await store.loadListings()).filter((l) => !isListingApproved(l));
+  const items = list.map((item) => ({
+    id: item.id,
+    title: item.title,
+    currency: item.currency || 'ft',
+    price: item.price,
+    area: item.area,
+    rooms: item.rooms,
+    location: item.location,
+    image: item.image,
+    listedAt: item.listedAt,
+    publisher: item.publisher,
+  }));
+  res.json({ ok: true, items });
+});
+
+// 管理员：审批房源（通过后公开展示）
+app.post('/api/admin/listings/:id/approve', async (req, res) => {
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
+  const item = await store.getListingById(req.params.id);
+  if (!item) return res.status(404).json({ ok: false, error: 'not_found' });
+  const updated = Object.assign({}, item, { approved: true });
+  await store.updateListingById(item.id, updated);
+  res.json({ ok: true, id: item.id });
+});
+
+// 管理员：批准 / 撤销发布权限（已废弃，保留兼容旧 UI）
 app.post('/api/admin/users/:id/publish-approval', async (req, res) => {
   const admin = await requireAdmin(req, res);
   if (!admin) return;
@@ -501,9 +556,9 @@ app.patch('/api/me/contact', async (req, res) => {
 
 // ---------- 房源与统计 API ----------
 
-// 统计：在售数量、今日新增
+// 统计：在售数量、今日新增（仅统计已审批房源）
 app.get('/api/stats', async (req, res) => {
-  const list = await store.loadListings();
+  const list = (await store.loadListings()).filter(isListingApproved);
   const today = new Date().toISOString().slice(0, 10);
   const newToday = list.filter((l) => (l.listedAt || '').slice(0, 10) === today).length;
   res.json({ activeListings: list.length, newToday });
@@ -543,9 +598,9 @@ function getListingArea(item) {
   return null;
 }
 
-// 区域数量（首页热门区域用）
+// 区域数量（首页热门区域用，仅统计已审批房源）
 app.get('/api/areas/counts', async (req, res) => {
-  const list = await store.loadListings();
+  const list = (await store.loadListings()).filter(isListingApproved);
   const counts = { 'budapest-belvaros': 0, balaton: 0, 'budapest-agglomeracio': 0, 'surrounding-cities': 0 };
   list.forEach((item) => {
     const area = getListingArea(item);
@@ -605,9 +660,14 @@ function matchesBoolFilter(filterValue, actualValue) {
   return true;
 }
 
-// 房源列表（支持分页、排序）
+// 房源是否已通过审批可公开展示（旧数据无 approved 字段视为已通过）
+function isListingApproved(item) {
+  return item.approved !== false;
+}
+
+// 房源列表（支持分页、排序，仅展示已审批房源）
 app.get('/api/listings', async (req, res) => {
-  let list = await store.loadListings();
+  let list = (await store.loadListings()).filter(isListingApproved);
   const q = (req.query.q || '').toLowerCase().trim();
   const category = (req.query.category || '').toLowerCase();
   const buildingType = normalizePropertyType(req.query.building_type || req.query.propertyType || '');
@@ -740,19 +800,28 @@ async function enrichListingPublisher(listing) {
   return Object.assign({}, listing, { publisher: pub });
 }
 
-// 单条房源详情
+// 单条房源详情（未审批房源仅发布者和管理员可查看）
 app.get('/api/listings/:id', async (req, res) => {
   const item = await store.getListingById(req.params.id);
   if (!item) return res.status(404).json({ error: 'not_found' });
+  if (!isListingApproved(item)) {
+    const userId = req.session?.userId;
+    if (!userId) return res.status(404).json({ error: 'not_found' });
+    const user = await store.findUserById(userId);
+    const isOwner = item.publisher && user && String(item.publisher.id) === String(user.id);
+    const isAdmin = user && (user.isAdmin || ADMIN_BOOTSTRAP_EMAILS.includes((user.email || '').toLowerCase()));
+    if (!isOwner && !isAdmin) return res.status(404).json({ error: 'not_found' });
+  }
   const enriched = await enrichListingPublisher(item);
   res.json(enriched);
 });
 
-// 记录房源浏览次数（无需登录，任何访客打开详情页即计数）
+// 记录房源浏览次数（仅已审批房源计数，无需登录）
 app.post('/api/listings/:id/view', async (req, res) => {
   const id = req.params.id;
   const item = await store.getListingById(id);
   if (!item) return res.status(404).json({ error: 'not_found' });
+  if (!isListingApproved(item)) return res.status(404).json({ error: 'not_found' });
   const viewCount = (item.viewCount || 0) + 1;
   await store.updateListingById(id, Object.assign({}, item, { viewCount }));
   res.json({ ok: true, viewCount });
@@ -778,6 +847,7 @@ app.get('/api/my-listings', async (req, res) => {
     images: item.images,
     listedAt: item.listedAt,
     viewCount: item.viewCount || 0,
+    approved: isListingApproved(item),
   }));
   res.json({ items });
 });
@@ -811,7 +881,7 @@ async function saveBase64Image(dataUrl) {
 
 // 图片上传（需登录）：接收 base64 dataURL；若配置了 S3 则上传到对象存储并返回完整 URL，否则写入本地 uploads/
 app.post('/api/upload', async (req, res) => {
-  const user = await requireApprovedPublisher(req, res);
+  const user = await getSessionUser(req, res);
   if (!user) return;
   const { dataUrl } = req.body || {};
   if (!dataUrl || typeof dataUrl !== 'string') return res.status(400).json({ ok: false, error: 'missing_data' });
@@ -875,9 +945,9 @@ app.post('/api/inquiry', async (req, res) => {
   }
 });
 
-// 内部上传房源（需登录）
+// 内部上传房源（需登录，注册后即可发布；房源需管理员审批后才公开展示）
 app.post('/api/listings', async (req, res) => {
-  const user = await requireApprovedPublisher(req, res);
+  const user = await getSessionUser(req, res);
   if (!user) return;
   const maxListings = Math.max(0, parseInt(user.maxListings || user.max_listings || '0', 10) || 0);
   if (maxListings > 0) {
@@ -952,6 +1022,7 @@ app.post('/api/listings', async (req, res) => {
     totalFloors: parseInt(b.totalFloors, 10) || 0,
     district: (b.district || '').trim(),
     yardArea: parseInt(b.yardArea, 10) || 0,
+    approved: false,
   };
   await store.addListing(item);
   res.json({ ok: true, id: item.id });
@@ -959,7 +1030,7 @@ app.post('/api/listings', async (req, res) => {
 
 // 编辑本人发布的房源（需登录，且只能改自己的；管理员可改任意房源）
 app.put('/api/listings/:id', async (req, res) => {
-  const user = await requireApprovedPublisher(req, res);
+  const user = await getSessionUser(req, res);
   if (!user) return;
   const userId = user.id;
   const isAdmin = !!user.isAdmin;
