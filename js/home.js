@@ -135,7 +135,7 @@ document.querySelectorAll('.stat-value[data-count]').forEach(el => {
         updateMapHighlight();
       });
       var span = document.createElement('span');
-      span.textContent = r + '.';
+      span.textContent = r + ' (' + (i + 1) + '区)';
       label.appendChild(input);
       label.appendChild(span);
       districtsList.appendChild(label);
