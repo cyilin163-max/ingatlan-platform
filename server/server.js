@@ -189,6 +189,7 @@ app.use((req, res, next) => {
   if (allow) res.setHeader('Access-Control-Allow-Origin', origin || 'http://localhost:3000');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });
@@ -207,6 +208,12 @@ app.use(
     secure: isProduction && (process.env.SECURE_COOKIES === '1' || (process.env.APP_URL || '').startsWith('https')),
   })
 );
+
+// favicon.ico：避免 404
+const FAVICON_GIF = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
+app.get('/favicon.ico', (req, res) => {
+  res.type('image/gif').send(FAVICON_GIF);
+});
 
 // 静态资源目录（不列出目录，无 index 时 404）
 const staticDir = path.join(__dirname, '..');
@@ -556,9 +563,9 @@ app.patch('/api/me/contact', async (req, res) => {
 
 // ---------- 房源与统计 API ----------
 
-// 统计：在售数量、今日新增（仅统计已审批房源）
+// 统计：在售数量、今日新增（仅统计已审批且未隐藏的房源）
 app.get('/api/stats', async (req, res) => {
-  const list = (await store.loadListings()).filter(isListingApproved);
+  const list = (await store.loadListings()).filter(isListingPublicVisible);
   const today = new Date().toISOString().slice(0, 10);
   const newToday = list.filter((l) => (l.listedAt || '').slice(0, 10) === today).length;
   res.json({ activeListings: list.length, newToday });
@@ -598,9 +605,9 @@ function getListingArea(item) {
   return null;
 }
 
-// 区域数量（首页热门区域用，仅统计已审批房源）
+// 区域数量（首页热门区域用，仅统计已审批且未隐藏的房源）
 app.get('/api/areas/counts', async (req, res) => {
-  const list = (await store.loadListings()).filter(isListingApproved);
+  const list = (await store.loadListings()).filter(isListingPublicVisible);
   const counts = { 'budapest-belvaros': 0, balaton: 0, 'budapest-agglomeracio': 0, 'surrounding-cities': 0 };
   list.forEach((item) => {
     const area = getListingArea(item);
@@ -665,9 +672,14 @@ function isListingApproved(item) {
   return item.approved !== false;
 }
 
-// 房源列表（支持分页、排序，仅展示已审批房源）
+// 房源是否对公众可见（已审批且未隐藏）
+function isListingPublicVisible(item) {
+  return isListingApproved(item) && !item.hidden;
+}
+
+// 房源列表（支持分页、排序，仅展示已审批且未隐藏的房源）
 app.get('/api/listings', async (req, res) => {
-  let list = (await store.loadListings()).filter(isListingApproved);
+  let list = (await store.loadListings()).filter(isListingPublicVisible);
   const q = (req.query.q || '').toLowerCase().trim();
   const category = (req.query.category || '').toLowerCase();
   const buildingType = normalizePropertyType(req.query.building_type || req.query.propertyType || '');
@@ -800,28 +812,26 @@ async function enrichListingPublisher(listing) {
   return Object.assign({}, listing, { publisher: pub });
 }
 
-// 单条房源详情（未审批房源仅发布者和管理员可查看）
+// 单条房源详情（未审批或已隐藏房源仅发布者和管理员可查看）
 app.get('/api/listings/:id', async (req, res) => {
   const item = await store.getListingById(req.params.id);
   if (!item) return res.status(404).json({ error: 'not_found' });
-  if (!isListingApproved(item)) {
-    const userId = req.session?.userId;
-    if (!userId) return res.status(404).json({ error: 'not_found' });
-    const user = await store.findUserById(userId);
-    const isOwner = item.publisher && user && String(item.publisher.id) === String(user.id);
-    const isAdmin = user && (user.isAdmin || ADMIN_BOOTSTRAP_EMAILS.includes((user.email || '').toLowerCase()));
-    if (!isOwner && !isAdmin) return res.status(404).json({ error: 'not_found' });
-  }
+  const userId = req.session?.userId;
+  const user = userId ? await store.findUserById(userId) : null;
+  const isOwner = item.publisher && user && String(item.publisher.id) === String(user.id);
+  const isAdmin = user && (user.isAdmin || ADMIN_BOOTSTRAP_EMAILS.includes((user.email || '').toLowerCase()));
+  const canSee = isListingPublicVisible(item) || isOwner || isAdmin;
+  if (!canSee) return res.status(404).json({ error: 'not_found' });
   const enriched = await enrichListingPublisher(item);
   res.json(enriched);
 });
 
-// 记录房源浏览次数（仅已审批房源计数，无需登录）
+// 记录房源浏览次数（仅已审批且未隐藏房源计数，无需登录）
 app.post('/api/listings/:id/view', async (req, res) => {
   const id = req.params.id;
   const item = await store.getListingById(id);
   if (!item) return res.status(404).json({ error: 'not_found' });
-  if (!isListingApproved(item)) return res.status(404).json({ error: 'not_found' });
+  if (!isListingPublicVisible(item)) return res.status(404).json({ error: 'not_found' });
   const viewCount = (item.viewCount || 0) + 1;
   await store.updateListingById(id, Object.assign({}, item, { viewCount }));
   res.json({ ok: true, viewCount });
@@ -848,8 +858,30 @@ app.get('/api/my-listings', async (req, res) => {
     listedAt: item.listedAt,
     viewCount: item.viewCount || 0,
     approved: isListingApproved(item),
+    hidden: !!item.hidden,
   }));
   res.json({ items });
+});
+
+// 隐藏/取消隐藏本人发布的房源（需登录，仅本人可操作；管理员可操作任意房源）
+app.patch('/api/listings/:id/hidden', async (req, res) => {
+  try {
+    const user = await getSessionUser(req, res);
+    if (!user) return;
+    const item = await store.getListingById(req.params.id);
+    if (!item) return res.status(404).json({ ok: false, error: 'not_found' });
+    const isAdmin = !!(user && user.isAdmin);
+    if (!isAdmin && (!item.publisher || String(item.publisher.id) !== String(user.id))) {
+      return res.status(403).json({ ok: false, error: 'forbidden' });
+    }
+    const hidden = req.body && req.body.hidden === true;
+    const updated = Object.assign({}, item, { hidden });
+    await store.updateListingById(item.id, updated);
+    res.json({ ok: true, hidden });
+  } catch (e) {
+    console.error('PATCH /api/listings/:id/hidden error:', e && e.message);
+    res.status(500).json({ ok: false, error: 'server_error' });
+  }
 });
 
 // 将 base64 dataURL 保存为文件，返回 URL（供注册等使用）

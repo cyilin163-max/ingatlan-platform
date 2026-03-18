@@ -94,7 +94,7 @@
   <script src="js/auth-header.js"></script>
   <script>
     (function () {
-      var apiBase = (window.location.protocol === 'file:' || (window.location.port && window.location.port !== '3000')) ? 'http://localhost:3000' : '';
+      var apiBase = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
       var defaultEl = document.getElementById('contact-default');
       var listEl = document.getElementById('contact-approved-list');
       fetch((apiBase || '') + '/api/contact-display')

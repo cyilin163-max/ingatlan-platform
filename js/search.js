@@ -193,6 +193,15 @@
     form.addEventListener('submit', onSubmit);
     form.addEventListener('reset', onReset);
   }
+  var filtersToggle = document.getElementById('filters-toggle');
+  var filtersSidebar = document.getElementById('filters-sidebar');
+  if (filtersToggle && filtersSidebar) {
+    filtersToggle.addEventListener('click', function () {
+      var collapsed = filtersSidebar.classList.toggle('filters-sidebar--collapsed');
+      filtersToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      filtersToggle.textContent = (window.i18n && window.i18n.t) ? window.i18n.t(collapsed ? 'filtersShow' : 'filtersHide') : (collapsed ? '筛选' : '收起筛选');
+    });
+  }
   if (sortSelect) {
     sortSelect.addEventListener('change', function () {
       var url = new URL(window.location.href);

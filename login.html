@@ -15,6 +15,10 @@
     .auth-form .input { width: 100%; padding: var(--space-3); }
     .auth-form .btn { width: 100%; margin-top: var(--space-2); }
     .auth-form .auth-link { margin-top: var(--space-4); text-align: center; font-size: var(--text-sm); }
+    .password-wrap { position: relative; }
+    .password-wrap .input { padding-right: 2.75rem; }
+    .password-toggle { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 0.9rem; color: var(--color-text-muted); padding: 4px 8px; line-height: 1; }
+    .password-toggle:hover { color: var(--color-text, #333); }
   </style>
 </head>
 <body>
@@ -43,7 +47,10 @@
       </div>
       <div class="form-group">
         <label class="label" for="login-password" data-i18n="loginPassword">Jelszó</label>
-        <input type="password" id="login-password" name="password" class="input" required autocomplete="current-password">
+        <div class="password-wrap">
+          <input type="password" id="login-password" name="password" class="input" required autocomplete="current-password">
+          <button type="button" class="password-toggle" id="login-password-toggle" aria-label="显示密码" data-i18n="loginShowPassword">显示</button>
+        </div>
       </div>
       <button type="submit" class="btn btn-primary" data-i18n="navLogin">Bejelentkezés</button>
       <p class="auth-link"><a href="register.html" data-i18n="registerLink">Még nincs fiókod? Regisztrálj</a></p>
@@ -107,7 +114,7 @@
       msg.style.cssText = 'margin-top:1rem;color:var(--color-danger);font-size:var(--text-sm);';
       msg.hidden = true;
       form.appendChild(msg);
-      var apiBase = (window.location.protocol === 'file:' || (window.location.port && window.location.port !== '3000')) ? 'http://localhost:3000' : '';
+      var apiBase = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
       if (apiBase) {
         var tip = document.createElement('p');
         tip.className = 'auth-form';
@@ -116,6 +123,17 @@
         form.insertBefore(tip, form.firstChild);
       }
 
+      var pwInput = document.getElementById('login-password');
+      var pwToggle = document.getElementById('login-password-toggle');
+      if (pwToggle && pwInput) {
+        pwToggle.addEventListener('click', function () {
+          var isHidden = pwInput.type === 'password';
+          pwInput.type = isHidden ? 'text' : 'password';
+          var t = (window.i18n && window.i18n.t) ? window.i18n.t.bind(window.i18n) : function (k, f) { return f || k; };
+          pwToggle.textContent = isHidden ? t('loginHidePassword', '隐藏') : t('loginShowPassword', '显示');
+          pwToggle.setAttribute('aria-label', isHidden ? t('loginHidePassword', '隐藏') + '密码' : t('loginShowPassword', '显示') + '密码');
+        });
+      }
       form.addEventListener('submit', function (e) {
         e.preventDefault();
         msg.hidden = true;

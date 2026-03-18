@@ -16,6 +16,10 @@
     .auth-form .btn { width: 100%; margin-top: var(--space-2); }
     .auth-form .auth-link { margin-top: var(--space-4); text-align: center; font-size: var(--text-sm); }
     .auth-form .error { font-size: var(--text-sm); color: var(--color-danger); margin-top: var(--space-1); }
+    .password-wrap { position: relative; }
+    .password-wrap .input { padding-right: 2.75rem; }
+    .password-toggle { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 0.9rem; color: var(--color-text-muted); padding: 4px 8px; line-height: 1; }
+    .password-toggle:hover { color: var(--color-text, #333); }
   </style>
 </head>
 <body>
@@ -49,30 +53,36 @@
       </div>
       <div class="form-group">
         <label class="label" for="reg-password" data-i18n="loginPassword">Jelszó</label>
-        <input type="password" id="reg-password" name="password" class="input" required autocomplete="new-password" minlength="6">
+        <div class="password-wrap">
+          <input type="password" id="reg-password" name="password" class="input" required autocomplete="new-password" minlength="6">
+          <button type="button" class="password-toggle reg-pw-toggle" data-target="reg-password" data-i18n="loginShowPassword" aria-label="显示密码">显示</button>
+        </div>
       </div>
       <div class="form-group">
         <label class="label" for="reg-password2" data-i18n="registerPassword2">Jelszó újra</label>
-        <input type="password" id="reg-password2" name="password2" class="input" required autocomplete="new-password">
+        <div class="password-wrap">
+          <input type="password" id="reg-password2" name="password2" class="input" required autocomplete="new-password">
+          <button type="button" class="password-toggle reg-pw-toggle" data-target="reg-password2" data-i18n="loginShowPassword" aria-label="显示密码">显示</button>
+        </div>
         <p class="error" id="register-password-error" hidden></p>
       </div>
-      <p class="label" style="margin-top:var(--space-6);margin-bottom:var(--space-2);" data-i18n="registerContactSection">联系方式（选填，通过高级审批后将在房源详情页展示）</p>
+      <p class="label" style="margin-top:var(--space-6);margin-bottom:var(--space-2);" data-i18n="registerContactSection">联系方式（必填）</p>
       <div class="form-group">
         <label class="label" for="reg-contact-name" data-i18n="registerContactName">联系人名称</label>
-        <input type="text" id="reg-contact-name" name="contactName" class="input" autocomplete="name" placeholder="如：微信名">
+        <input type="text" id="reg-contact-name" name="contactName" class="input" required autocomplete="name" placeholder="如：微信名">
       </div>
       <div class="form-group">
         <label class="label" for="reg-contact-phone" data-i18n="registerContactPhone">联系电话</label>
-        <input type="tel" id="reg-contact-phone" name="contactPhone" class="input" autocomplete="tel" placeholder="0036305357008">
+        <input type="tel" id="reg-contact-phone" name="contactPhone" class="input" required autocomplete="tel" placeholder="0036305357008">
       </div>
       <div class="form-group">
         <label class="label" for="reg-contact-email" data-i18n="registerContactEmail">联系邮箱</label>
-        <input type="email" id="reg-contact-email" name="contactEmail" class="input" autocomplete="email">
+        <input type="email" id="reg-contact-email" name="contactEmail" class="input" required autocomplete="email">
       </div>
       <div class="form-group">
         <label class="label" for="reg-contact-qr" data-i18n="registerContactQr">二维码图片</label>
-        <input type="file" id="reg-contact-qr" name="contactQr" accept="image/jpeg,image/png,image/gif,image/webp">
-        <p class="error" id="register-qr-error" style="font-size:var(--text-sm);color:var(--color-text-muted);margin-top:var(--space-1);" data-i18n="registerContactQrHint">选填，通过高级审批后将在房源详情页展示</p>
+        <input type="file" id="reg-contact-qr" name="contactQr" accept="image/jpeg,image/png,image/gif,image/webp" required>
+        <p class="error" id="register-qr-error" style="font-size:var(--text-sm);color:var(--color-text-muted);margin-top:var(--space-1);" data-i18n="registerContactQrHint">必填</p>
       </div>
       <button type="submit" class="btn btn-primary" data-i18n="registerSubmit">Regisztráció</button>
       <p class="auth-link"><a href="login.html" data-i18n="loginLink">Már van fiókod? Bejelentkezés</a></p>
@@ -131,8 +141,22 @@
   <script src="js/auth-header.js"></script>
   <script>
     (function () {
+      var apiBase = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
       var form = document.getElementById('register-form');
       var errEl = document.getElementById('register-password-error');
+      document.querySelectorAll('.reg-pw-toggle').forEach(function (btn) {
+        var targetId = btn.getAttribute('data-target');
+        var pwInput = targetId ? document.getElementById(targetId) : null;
+        if (btn && pwInput) {
+          btn.addEventListener('click', function () {
+            var isHidden = pwInput.type === 'password';
+            pwInput.type = isHidden ? 'text' : 'password';
+            var t = (window.i18n && window.i18n.t) ? window.i18n.t.bind(window.i18n) : function (k, f) { return f || k; };
+            btn.textContent = isHidden ? t('loginHidePassword', '隐藏') : t('loginShowPassword', '显示');
+            btn.setAttribute('aria-label', (isHidden ? t('loginHidePassword', '隐藏') : t('loginShowPassword', '显示')) + '密码');
+          });
+        }
+      });
       form.addEventListener('submit', function (e) {
         e.preventDefault();
         var p1 = document.getElementById('reg-password').value;
@@ -145,8 +169,17 @@
         errEl.hidden = true;
         var email = document.getElementById('reg-email').value.trim();
         var name = document.getElementById('reg-name').value.trim();
-        if (!email || !name || !p1) {
-          errEl.textContent = (window.i18n && window.i18n.t('loginErrorFields')) || 'Kérjük, töltsd ki az összes mezőt.';
+        var contactName = document.getElementById('reg-contact-name').value.trim();
+        var contactPhone = document.getElementById('reg-contact-phone').value.trim();
+        var contactEmail = document.getElementById('reg-contact-email').value.trim();
+        var qrFile = document.getElementById('reg-contact-qr').files[0];
+        if (!email || !name || !p1 || !contactName || !contactPhone || !contactEmail) {
+          errEl.textContent = (window.i18n && window.i18n.t('loginErrorFields')) || '请填写所有必填项。';
+          errEl.hidden = false;
+          return;
+        }
+        if (!qrFile) {
+          errEl.textContent = (window.i18n && window.i18n.t('registerContactQrRequired')) || '请上传二维码图片。';
           errEl.hidden = false;
           return;
         }
@@ -155,17 +188,9 @@
           errEl.hidden = false;
           return;
         }
-        var contactName = document.getElementById('reg-contact-name').value.trim();
-        var contactPhone = document.getElementById('reg-contact-phone').value.trim();
-        var contactEmail = document.getElementById('reg-contact-email').value.trim();
-        var qrFile = document.getElementById('reg-contact-qr').files[0];
-        var payload = { email: email, password: p1, name: name };
-        if (contactName) payload.contactName = contactName;
-        if (contactPhone) payload.contactPhone = contactPhone;
-        if (contactEmail) payload.contactEmail = contactEmail;
+        var payload = { email: email, password: p1, name: name, contactName: contactName, contactPhone: contactPhone, contactEmail: contactEmail };
         var btn = form.querySelector('button[type="submit"]');
         btn.disabled = true;
-        var apiBase = (window.location.protocol === 'file:' || (window.location.port && window.location.port !== '3000')) ? 'http://localhost:3000' : '';
         function doRegister(contactQrImage) {
           if (contactQrImage) payload.contactQrImage = contactQrImage;
           return fetch(apiBase + '/api/register', {
@@ -175,7 +200,7 @@
             body: JSON.stringify(payload)
           }).then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); });
         }
-        var p = qrFile ? new Promise(function (resolve) {
+        var p = new Promise(function (resolve) {
           var r = new FileReader();
           r.onload = function () {
             var dataUrl = r.result;
@@ -183,7 +208,15 @@
             else resolve(null);
           };
           r.readAsDataURL(qrFile);
-        }).then(function (dataUrl) { return doRegister(dataUrl); }) : doRegister();
+        }).then(function (dataUrl) {
+          if (!dataUrl || dataUrl.indexOf('data:image/') !== 0) {
+            errEl.textContent = (window.i18n && window.i18n.t('registerContactQrInvalid')) || '请上传有效的图片文件。';
+            errEl.hidden = false;
+            btn.disabled = false;
+            return Promise.reject({ skipCatch: true });
+          }
+          return doRegister(dataUrl);
+        });
         p
           .then(function (result) {
             btn.disabled = false;
@@ -195,15 +228,18 @@
               return;
             }
             if (result.data.error === 'email_exists') {
-              errEl.textContent = (window.i18n && window.i18n.t('registerErrorEmailExists')) || 'Ez az e-mail már regisztrálva van.';
+              errEl.textContent = (window.i18n && window.i18n.t('registerErrorEmailExists')) || '该邮箱已注册，一个邮箱只能注册一个账户。';
+            } else if (result.data.error === 'missing_contact' || result.data.error === 'missing_contact_qr') {
+              errEl.textContent = (window.i18n && window.i18n.t('loginErrorFields')) || '请填写所有必填项（含联系方式与二维码）。';
             } else {
-              errEl.textContent = (window.i18n && window.i18n.t('loginErrorGeneric')) || 'Regisztráció sikertelen.';
+              errEl.textContent = (window.i18n && window.i18n.t('loginErrorGeneric')) || '注册失败，请重试。';
             }
             errEl.hidden = false;
           })
-          .catch(function () {
+          .catch(function (e) {
+            if (e && e.skipCatch) return;
             btn.disabled = false;
-            errEl.textContent = (window.i18n && window.i18n.t('loginErrorNetwork')) || 'Hálózati hiba. Futtatod a szervert? (cd server && npm start)';
+            errEl.textContent = (window.i18n && window.i18n.t('loginErrorNetwork')) || '网络错误，请确认后端已运行。';
             errEl.hidden = false;
           });
       });

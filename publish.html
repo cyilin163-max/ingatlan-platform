@@ -282,7 +282,7 @@
   <script src="js/auth-header.js"></script>
   <script>
     (function () {
-      var apiBase = (window.location.protocol === 'file:' || (window.location.port && window.location.port !== '3000')) ? 'http://localhost:3000' : '';
+      var apiBase = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
       var editId = new URLSearchParams(window.location.search).get('edit') || '';
       var currentUser = null;
       var authPrompt = document.getElementById('publish-auth-prompt');
@@ -365,19 +365,9 @@
         .then(function (data) {
           if (data && data.user) {
             currentUser = data.user;
-            if (data.user.canPublish) {
-              setFormEditable(true);
-              if (subtitleEl) subtitleEl.textContent = t('publishIntroLoggedIn', '请填写以下字段以发布房源。');
-              if (authPrompt) authPrompt.hidden = true;
-            } else {
-              setFormEditable(false);
-              if (submitBtn) submitBtn.textContent = t('navPostAdPending', '等待审批');
-              if (subtitleEl) subtitleEl.textContent = t('publishPendingSubtitle', '你的账号已注册，等待管理员批准后才能发布房源。');
-              if (authPrompt) {
-                authPrompt.textContent = t('publishApprovalRequired', '你的账号已注册，等待管理员批准后才能发布房源。');
-                authPrompt.hidden = false;
-              }
-            }
+            setFormEditable(true);
+            if (subtitleEl) subtitleEl.textContent = t('publishIntroLoggedIn', '请填写以下字段以发布房源。房源需管理员审批通过后才会公开展示。');
+            if (authPrompt) authPrompt.hidden = true;
           } else {
             setFormEditable(false);
             if (submitBtn) submitBtn.textContent = t('accountPublishBtn', '发布房源（登录）');
@@ -505,10 +495,7 @@
       }
 
       function uploadFile(file) {
-        if (!currentUser || !currentUser.canPublish) {
-          alert(t('publishApprovalRequired', '你的账号已注册，等待管理员批准后才能发布房源。'));
-          return;
-        }
+        if (!currentUser) return;
         if (!file.type.match(/^image\//)) return;
         if (photos.length >= 10) { alert('最多上传10张照片'); return; }
         var reader = new FileReader();
@@ -531,7 +518,7 @@
                 photo.previewUrl = photo.serverUrl;
               } else {
                 if (data.error === 'not_approved') {
-                  alert(t('publishApprovalRequired', '你的账号已注册，等待管理员批准后才能发布房源。'));
+                  alert(t('publishApprovalRequired', '发布房源需管理员审核，请等待审核通过。'));
                 }
                 photo.failed = true;
               }
@@ -582,10 +569,6 @@
         e.preventDefault();
         if (!currentUser) {
           window.location.href = (apiBase || '') + '/login.html?from=publish';
-          return;
-        }
-        if (!currentUser.canPublish) {
-          alert(t('publishApprovalRequired', '你的账号已注册，等待管理员批准后才能发布房源。'));
           return;
         }
         var title = document.getElementById('pub-title').value.trim();
@@ -662,7 +645,7 @@
           var code = err && err.code;
           var status = err && err.status;
           if (code === 'not_approved') {
-            alert(t('publishApprovalRequired', '你的账号已注册，等待管理员批准后才能发布房源。'));
+            alert(t('publishApprovalRequired', '发布房源需管理员审核，请等待审核通过。'));
             return;
           }
           if (code === 'listing_limit_reached') {

@@ -11,7 +11,7 @@
   var userEls = navActions.querySelectorAll('[data-auth="user"]');
   if (!guestEls.length || !userEls.length) return;
 
-  var apiBase = (window.location.protocol === 'file:' || (window.location.port && window.location.port !== '3000')) ? 'http://localhost:3000' : '';
+  var apiBase = (window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
   var defaultPublishHref = publishCta ? publishCta.getAttribute('href') : '';
   var publishUrl = (apiBase || '') + '/publish.html';
 
@@ -47,11 +47,7 @@
           if (api && api.setCurrentUser && data && data.user) api.setCurrentUser(data.user);
           showUser();
           if (publishCta) {
-            if (data && data.user && data.user.canPublish) {
-              setPublishCtaState('navPostAd', t('navPostAd', '发布房源'), publishUrl);
-            } else {
-              setPublishCtaState('navPostAdPending', t('navPostAdPending', '等待审批'), publishUrl, t('publishApprovalRequired', '你的账号已注册，等待管理员批准后才能发布房源。'));
-            }
+            setPublishCtaState('navPostAd', t('navPostAd', '发布房源'), publishUrl);
           }
           var logoutBtn = navActions.querySelector('#header-logout-btn');
           if (logoutBtn && !logoutBtn._bound) {

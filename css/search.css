@@ -41,6 +41,26 @@
   padding: var(--space-5);
   box-shadow: var(--shadow-sm);
 }
+.filters-toggle-btn {
+  display: none;
+  width: 100%;
+  justify-content: center;
+  margin-bottom: 0;
+}
+@media (max-width: 900px) {
+  .filters-toggle-btn { display: flex; }
+  .filters-sidebar {
+    position: static;
+    margin-bottom: var(--space-6);
+  }
+  .filters-sidebar.filters-sidebar--collapsed .filters-title,
+  .filters-sidebar.filters-sidebar--collapsed .filters-form {
+    display: none;
+  }
+  .filters-sidebar.filters-sidebar--collapsed {
+    padding: var(--space-3) var(--space-5);
+  }
+}
 .filters-title {
   font-weight: 600;
   font-size: var(--text-lg);
